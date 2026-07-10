@@ -1481,11 +1481,12 @@ export async function adminRoutes(app: FastifyInstance) {
     }
 
     const keys = Array.from(keySet);
+    let deleted = 0;
     if (keys.length > 0) {
-      await app.redis.unlink(...keys);
+      deleted = await app.redis.unlink(...keys);
     }
 
-    return { success: true, data: { purged: true, mode: "targeted", keys: keys.length } };
+    return { success: true, data: { purged: true, mode: "targeted", matched: keys.length, deleted, namespaces } };
   });
 
   app.get("/stats", async () => {
