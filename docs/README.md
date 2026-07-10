@@ -44,6 +44,9 @@
    - 阶段性目标
    - 明确暂不做事项
 
+Reviewer / QA Baseline:
+`docs/reviewer/README.md`
+
 ## 最高级原则
 
 ModelWiki 不是“爬虫采集展示站”。
