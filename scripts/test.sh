@@ -23,7 +23,7 @@ cd "$(dirname "$0")"
 
 echo "=== L1: Infrastructure ==="
 check "PostgreSQL ready" "docker compose exec -T postgres pg_isready -U modelwiki" "accepting connections"
-check "MySQL alive" "docker compose exec -T mysql mysqladmin ping -h localhost -u root -p\${MYSQL_ROOT_PASSWORD:-mw_root_pass_2026} 2>/dev/null" "alive"
+check "MySQL alive" "docker compose exec -T mysql mysqladmin ping -h localhost -u root -p\${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD is required} 2>/dev/null" "alive"
 check "Redis PONG" "docker compose exec -T redis redis-cli ping" "PONG"
 check "PG tables" "docker compose exec -T postgres psql -U modelwiki -c '\\dt' -t" "figures"
 check "PG seed data" "docker compose exec -T postgres psql -U modelwiki -t -c 'SELECT count(*) FROM manufacturers;'" "5"
