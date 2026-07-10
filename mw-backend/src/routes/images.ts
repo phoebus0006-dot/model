@@ -4,12 +4,16 @@ import http from "http";
 import https from "https";
 import crypto from "crypto";
 import fs from "fs";
+import fsp from "fs/promises";
 import path from "path";
 import sharp from "sharp";
+import dns from "dns";
+import os from "os";
 
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
 const DOWNLOAD_TIMEOUT = 15_000; // 15 seconds
 const ASSETS_PATH = process.env.ASSETS_PATH || "/app/assets";
+const MAX_REDIRECTS = 5;
 
 const IMAGE_SIZES = {
   raw: { width: null, quality: 100 },
@@ -32,6 +36,7 @@ const BLOCKED_HOSTS = new Set([
 ]);
 
 function isPrivateIp(ip: string): boolean {
+  // IPv4
   const parts = ip.split(".").map(Number);
   if (parts.length === 4 && parts.every(p => !isNaN(p))) {
     if (parts[0] === 10) return true;
@@ -41,11 +46,40 @@ function isPrivateIp(ip: string): boolean {
     if (parts[0] === 0) return true;
     if (parts[0] === 127) return true;
     if (parts[0] >= 224) return true;
+    return false;
   }
+  // IPv6
+  if (ip === "::1" || ip === "0:0:0:0:0:0:0:1") return true;
+  if (ip.startsWith("fc") || ip.startsWith("fd") || ip.startsWith("FE80:") || ip.startsWith("fe80:")) return true;
+  if (ip.startsWith("ff") || ip.startsWith("FF")) return true;
+  // Check if it's an IPv6 mapped IPv4 (e.g. ::ffff:10.0.0.1)
+  const v4match = ip.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/i);
+  if (v4match) return isPrivateIp(v4match[1]);
   return false;
 }
 
-export function validateImageUrl(imageUrl: string): { ok: boolean; reason?: string } {
+async function resolveAndValidateHost(hostname: string): Promise<{ ok: boolean; reason?: string; address?: string }> {
+  try {
+    const addresses = await dns.promises.resolve4(hostname);
+    if (addresses.length === 0) {
+      // Try AAAA
+      const aaaa = await dns.promises.resolve6(hostname);
+      if (aaaa.length === 0) return { ok: false, reason: "DNS resolution returned no addresses" };
+      for (const addr of aaaa) {
+        if (isPrivateIp(addr)) return { ok: false, reason: `DNS resolved to private IPv6: ${addr}` };
+      }
+      return { ok: true, address: aaaa[0] };
+    }
+    for (const addr of addresses) {
+      if (isPrivateIp(addr)) return { ok: false, reason: `DNS resolved to private IP: ${addr}` };
+    }
+    return { ok: true, address: addresses[0] };
+  } catch (e: any) {
+    return { ok: false, reason: `DNS resolution failed: ${e.message || e}` };
+  }
+}
+
+export async function validateImageUrl(imageUrl: string): Promise<{ ok: boolean; reason?: string; resolvedAddress?: string }> {
   try {
     const u = new URL(imageUrl);
     if (u.protocol !== "http:" && u.protocol !== "https:") {
@@ -53,8 +87,10 @@ export function validateImageUrl(imageUrl: string): { ok: boolean; reason?: stri
     }
     const host = u.hostname.toLowerCase();
     if (BLOCKED_HOSTS.has(host)) return { ok: false, reason: "Blocked host" };
-    if (isPrivateIp(host)) return { ok: false, reason: "Private/internal IP blocked" };
-    return { ok: true };
+    // DNS resolve and validate IP
+    const resolved = await resolveAndValidateHost(host);
+    if (!resolved.ok) return { ok: false, reason: resolved.reason || "Host validation failed" };
+    return { ok: true, resolvedAddress: resolved.address };
   } catch (e: any) {
     return { ok: false, reason: "Invalid URL: " + (e?.message || "") };
   }
@@ -84,8 +120,11 @@ function safeBigInt(value: string): bigint | null {
 }
 
 
-export async function downloadImage(imageUrl: string): Promise<DownloadResult> {
-  const urlCheck = validateImageUrl(imageUrl);
+export async function downloadImage(imageUrl: string, redirectDepth = 0): Promise<DownloadResult> {
+  if (redirectDepth > MAX_REDIRECTS) {
+    return Promise.reject(new Error("Too many redirects"));
+  }
+  const urlCheck = await validateImageUrl(imageUrl);
   if (!urlCheck.ok) {
     return Promise.reject(new Error("URL validation failed: " + (urlCheck.reason || "blocked")));
   }
@@ -95,7 +134,7 @@ export async function downloadImage(imageUrl: string): Promise<DownloadResult> {
 
     const req = proto.request(
       {
-        hostname: urlObj.hostname,
+        hostname: urlCheck.resolvedAddress || urlObj.hostname,
         port: urlObj.port || (urlObj.protocol === "https:" ? 443 : 80),
         path: urlObj.pathname + urlObj.search,
         method: "GET",
@@ -105,12 +144,13 @@ export async function downloadImage(imageUrl: string): Promise<DownloadResult> {
           Referer: new URL(imageUrl).origin + "/",
         },
         timeout: DOWNLOAD_TIMEOUT,
+        servername: urlObj.hostname,
       },
       (res) => {
-        // Follow redirects
+        // Follow redirects (re-validate each hop)
         if (res.statusCode && res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
           const redirectUrl = new URL(res.headers.location, imageUrl).toString();
-          downloadImage(redirectUrl).then(resolve).catch(reject);
+          downloadImage(redirectUrl, redirectDepth + 1).then(resolve).catch(reject);
           return;
         }
 
@@ -584,7 +624,7 @@ export async function imageRoutes(app: FastifyInstance) {
   }, async (req: any, reply: any) => {
     const { url } = proxyQuerySchema.parse(req.query);
 
-    const urlCheck = validateImageUrl(url);
+    const urlCheck = await validateImageUrl(url);
     if (!urlCheck.ok) {
       return reply.status(422).send({
         success: false,
@@ -657,7 +697,7 @@ export async function imageRoutes(app: FastifyInstance) {
         return reply.send(result.buffer);
       } catch {
         // Validate URL before redirect (open redirect / SSRF prevention)
-        const urlCheck = validateImageUrl(legacyUrl);
+        const urlCheck = await validateImageUrl(legacyUrl);
         if (!urlCheck.ok) {
           return reply.status(422).send({ success: false, error: { code: "URL_BLOCKED", message: urlCheck.reason || "URL not allowed for redirect" } });
         }

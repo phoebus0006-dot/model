@@ -366,6 +366,7 @@ h1{font-size:2rem}h3{font-size:1.25rem}
         users: [], alerts: [], loading: {},
         loginError: null, loginUsername: '',
         showModal: null, idleTimer: null, idleTriggered: false,
+        keepPendingId: null, keepPendingReason: '',
         newUserForm: {email:'',displayName:'',password:'',role:'viewer'}
     };
 
@@ -833,12 +834,16 @@ h1{font-size:2rem}h3{font-size:1.25rem}
     }
 
     function reviewFigureTitle(item){
+        var cf = item.currentFigure || {};
+        if(cf.title) return cf.title;
         var p = item.payload || {};
         var fig = p.figure || {};
         return p.figureTitle || p.figureName || fig.name || p.name || item.figureTitle || item.figureSlug || '-';
     }
 
     function reviewFigureSlug(item){
+        var cf = item.currentFigure || {};
+        if(cf.slug) return cf.slug;
         var p = item.payload || {};
         var fig = p.figure || {};
         return item.figureSlug || p.figureSlug || fig.slug || p.slug || '';
@@ -930,7 +935,7 @@ h1{font-size:2rem}h3{font-size:1.25rem}
             var cand = item.candidateImage || p.candidateImage || null;
             var candidates = p.candidates || p.candidateImages || p.processedImages || p.images || [];
             var riskName = reviewRiskTypeName(item.riskType);
-            var imgCount = item._imageCount != null ? item._imageCount + ' 张' : '...';
+            var imgCount = (item.currentFigure && item.currentFigure.imageCount != null) ? item.currentFigure.imageCount + ' 张' : (item._imageCount != null ? item._imageCount + ' 张' : '...');
             html += reviewKv([
                 ['风险类型', riskName],
                 ['当前图片数', imgCount],
@@ -958,16 +963,21 @@ h1{font-size:2rem}h3{font-size:1.25rem}
             var snap = item.detailSnapshot || p.detailSnapshot || {};
             var specCount = snap.specCount || (snap.specs ? (Array.isArray(snap.specs) ? snap.specs.length : 0) : 0);
             var descLen = (snap.description || '').length;
+            var cf = item.currentFigure || {};
+            var cfDetail = cf.detail || {};
             html += reviewKv([
                 ['风险类型', reviewRiskTypeName(item.riskType)],
                 ['风险原因', item.riskReason || ''],
                 ['建议操作', item.suggestedAction || ''],
-                ['现有描述长度', descLen > 0 ? descLen + ' 字符' : '无描述'],
-                ['规格数量', specCount > 0 ? specCount + ' 项' : '无规格'],
-                ['分类', Array.isArray(snap.categories) ? snap.categories.map(function(c){return typeof c==='string'?c:(c.name||c.slug||'');}).join(', ') : ''],
+                ['原始描述长度', descLen > 0 ? descLen + ' 字符' : '无描述'],
+                ['原始规格数量', specCount > 0 ? specCount + ' 项' : '无规格'],
+                ['当前描述长度', cfDetail.descriptionLength != null ? cfDetail.descriptionLength + ' 字符' : '—'],
+                ['当前规格数量', cfDetail.validSpecCount != null ? cfDetail.validSpecCount + ' 项' : '—'],
             ]);
-            if(snap.description){
-                html += '<div class="admin-subtle" style="margin-top:8px;padding:8px;background:var(--mw-bg);border-radius:var(--mw-radius-sm);max-height:120px;overflow-y:auto"><strong>现有描述：</strong><br>'+esc(shortText(snap.description, 300))+'</div>';
+            if(cfDetail.descriptionSnapshot){
+                html += '<div class="admin-subtle" style="margin-top:8px;padding:8px;background:var(--mw-bg);border-radius:var(--mw-radius-sm);max-height:120px;overflow-y:auto"><strong>当前描述：</strong><br>'+esc(shortText(cfDetail.descriptionSnapshot, 300))+'</div>';
+            } else if(snap.description){
+                html += '<div class="admin-subtle" style="margin-top:8px;padding:8px;background:var(--mw-bg);border-radius:var(--mw-radius-sm);max-height:120px;overflow-y:auto"><strong>原始描述：</strong><br>'+esc(shortText(snap.description, 300))+'</div>';
             }
         } else if(item.type === 'rewrite'){
             html += reviewKv([
@@ -1036,6 +1046,9 @@ h1{font-size:2rem}h3{font-size:1.25rem}
         if(state.showModal === 'createUser'){
             var f = state.newUserForm;
             return '<div class="admin-modal-overlay open" data-close-modal><div class="admin-modal admin-animate"><div class="admin-modal-title">添加用户</div><div class="admin-form-group"><label class="admin-form-label">邮箱 *</label><input type="email" id="nu-email" class="admin-form-input no-icon" placeholder="user@example.com" value="'+esc(f.email)+'"></div><div class="admin-form-group"><label class="admin-form-label">用户名 *</label><input type="text" id="nu-displayName" class="admin-form-input no-icon" placeholder="显示名称" value="'+esc(f.displayName)+'"></div><div class="admin-form-group"><label class="admin-form-label">密码 *</label>'+pwdInput('nu-password','nu-password','至少8个字符')+'</div><div class="admin-form-group"><label class="admin-form-label">角色</label><select id="nu-role" class="admin-form-input no-icon">'+ROLE_OPTIONS.map(function(o){return '<option value="'+o.v+'"'+(f.role===o.v?' selected':'')+'>'+o.l+'</option>';}).join('')+'</select></div><div class="admin-modal-actions"><button class="admin-btn" data-close-modal>取消</button><button class="admin-btn admin-btn-primary" id="create-user-btn"'+(state.loading.createUser?' disabled':'')+'>'+(state.loading.createUser?renderSpinner()+' 创建中...':'确认创建')+'</button></div></div></div>';
+        }
+        if(state.showModal === 'keepPending'){
+            return '<div class="admin-modal-overlay open" data-close-modal><div class="admin-modal admin-animate" style="max-width:440px"><div class="admin-modal-title">无法判断</div><div class="admin-form-group"><label class="admin-form-label">无法判断的原因：</label><textarea id="kp-reason" class="admin-form-input" style="min-height:80px;resize:vertical" placeholder="请描述无法判断的原因">'+esc(state.keepPendingReason)+'</textarea></div><div class="admin-modal-actions"><button class="admin-btn" data-close-modal>取消</button><button class="admin-btn admin-btn-primary" id="kp-submit-btn"'+(state.loading.keepPending?' disabled':'')+'>'+(state.loading.keepPending?renderSpinner()+' 提交中...':'保持待审')+'</button></div></div></div>';
         }
         return '';
     }
@@ -1255,6 +1268,7 @@ h1{font-size:2rem}h3{font-size:1.25rem}
                 actions = '<div class="admin-inline-actions">' +
                     '<button class="admin-btn admin-btn-primary admin-btn-sm" data-review-id="'+esc(id)+'" data-review-action="mark_detail_ok"'+(rowLoading?' disabled':'')+'>详情OK</button>' +
                     '<button class="admin-btn admin-btn-sm" data-review-id="'+esc(id)+'" data-review-action="request_refetch"'+(rowLoading?' disabled':'')+'>重抓</button>' +
+                    '<button class="admin-btn admin-btn-sm" data-review-id="'+esc(id)+'" data-review-action="keep_pending"'+(rowLoading?' disabled':'')+'>无法判断</button>' +
                 '</div>';
             } else if(item.type === 'rewrite'){
                 var canEdit = !!slug && !(item.type === 'figure_import' && !item.figureSlug);
@@ -1388,13 +1402,25 @@ h1{font-size:2rem}h3{font-size:1.25rem}
                         action === 'keep_pending' ? '标记为无法判断，保留待审状态吗？' : '';
                     if(confirmMsg && !confirm(confirmMsg)) return;
                     if(action === 'keep_pending'){
-                        var reason = prompt('请输入无法判断的原因：', '');
-                        if(reason === null) return; // user cancelled
-                        setLoading('reviewAction_'+id, true);
-                        api('/admin/review/items/'+encodeURIComponent(id)+'/action', 'POST', {action:'keep_pending', notes:reason}).then(function(r){
-                            if(r.success){ addAlert('success','已标记为无法判断，保留待审状态'); loadReviewItems(); }
-                            else addAlert('error', getErrorMessage(r, '操作失败'));
-                        }).catch(function(){ addAlert('error','操作请求失败'); }).then(function(){ setLoading('reviewAction_'+id, false); });
+                        state.keepPendingId = id;
+                        state.keepPendingReason = '';
+                        state.showModal = 'keepPending';
+                        render();
+                        setTimeout(function(){
+                            var ta = document.getElementById('kp-reason');
+                            if(ta) ta.focus();
+                            var submitBtn = document.getElementById('kp-submit-btn');
+                            if(submitBtn) submitBtn.addEventListener('click', function(){
+                                var reason = document.getElementById('kp-reason').value || '';
+                                state.loading.keepPending = true;
+                                render();
+                                var kid = state.keepPendingId;
+                                api('/admin/review/items/'+encodeURIComponent(kid)+'/action', 'POST', {action:'keep_pending', notes:reason}).then(function(r){
+                                    if(r.success){ addAlert('success','已标记为无法判断，保留待审状态'); state.showModal = null; loadReviewItems(); }
+                                    else addAlert('error', getErrorMessage(r, '操作失败'));
+                                }).catch(function(){ addAlert('error','操作请求失败'); }).then(function(){ state.loading.keepPending = false; render(); });
+                            });
+                        }, 50);
                         return;
                     }
                     setLoading('reviewAction_'+id, true);

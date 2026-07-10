@@ -2,6 +2,7 @@ import { FastifyInstance } from "fastify";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 import fs from "fs";
+import fsp from "fs/promises";
 import path from "path";
 import sharp from "sharp";
 import crypto from "crypto";
@@ -34,6 +35,7 @@ const updateUserSchema = z.object({
 });
 
 const reviewStatusSchema = z.enum(["pending", "approved", "rejected", "needs_changes", "resolved", "stale"]);
+const queryReviewStatusSchema = z.union([reviewStatusSchema, z.literal("all")]);
 const reviewTypeSchema = z.enum(["jan_match", "figure_import", "rewrite", "image", "general", "image_review", "detail_review"]);
 // Review risk types (Track RQ): unified vocabulary for crawler/agent uncertain content
 const reviewRiskTypeSchema = z.enum([
@@ -74,7 +76,7 @@ const reviewItemSchema = z.object({
   figureSlug: z.string().optional(),
   // Track RQ: risk metadata for crawler/agent uncertain content
   riskType: reviewRiskTypeSchema.optional(),
-  riskReason: z.string().optional(),
+  riskReason: z.string().max(1000).optional(),
   candidateImage: z.object({
     source: z.string(),
     imageId: z.union([z.number(), z.string()]).optional(),
@@ -119,11 +121,11 @@ const candidateImageUpdateSchema = z.object({
 }).passthrough().optional();
 
 const reviewUpdateSchema = z.object({
-  status: z.union([reviewStatusSchema, z.literal('all')]).optional(),
+  status: reviewStatusSchema.optional(),
   priority: z.coerce.number().int().min(0).max(3).optional(),
   confidence: z.coerce.number().min(0).max(1).optional(),
   payload: z.any().optional(),
-  notes: z.string().optional(),
+  notes: z.string().max(2000).optional(),
   automation: z.object({
     provider: z.enum(["n8n", "hermes", "manual", "other"]).default("manual"),
     workflow: z.string().optional(),
@@ -140,7 +142,7 @@ const reviewUpdateSchema = z.object({
 });
 
 const reviewQuerySchema = z.object({
-  status: z.union([reviewStatusSchema, z.literal('all')]).optional(),
+  status: queryReviewStatusSchema.optional(),
   type: reviewTypeSchema.optional(),
   riskType: reviewRiskTypeSchema.optional(),
   suggestedAction: reviewActionSchema.optional(),
@@ -226,8 +228,8 @@ async function evaluateReviewItem(app: FastifyInstance, item: any) {
   const problems: string[] = [];
   const figure = await resolveReviewFigure(app, item, payload);
 
-  if (["image", "image_review", "rewrite", "jan_match"].includes(item.type) && !figure) {
-    problems.push("找不到对应手办，无法完成复检");
+  if (["image", "image_review", "rewrite", "jan_match", "detail_review"].includes(item.type) && !figure) {
+    problems.push("FIGURE_NOT_FOUND");
     return problems;
   }
 
@@ -309,6 +311,38 @@ async function evaluateReviewItem(app: FastifyInstance, item: any) {
       select: { id: true, contentMd: true },
     });
     if (!activeRevision || !activeRevision.contentMd || activeRevision.contentMd.trim().length < 80) problems.push("洗稿正文仍为空或过短");
+  } else if (item.type === "detail_review" && figure) {
+    const figureDetail = await app.prisma.figure.findUnique({
+      where: { id: figure.id },
+      select: {
+        id: true, description: true, scale: true, material: true,
+        priceJpy: true, releaseDate: true, heightMm: true, weightG: true,
+        productLine: true, ageRating: true,
+        manufacturer: { select: { name: true } },
+        series: { select: { name: true } },
+      },
+    });
+    if (!figureDetail) {
+      problems.push("FIGURE_NOT_FOUND");
+    } else {
+      const riskType = String(item.riskType || "");
+      if (riskType === "detail_missing_description") {
+        const descLen = (figureDetail.description || "").length;
+        if (descLen < 50) problems.push(`描述仅 ${descLen} 字符，仍不足`);
+      }
+      if (riskType === "detail_sparse_specs") {
+        const specFields = [
+          figureDetail.scale, figureDetail.material, figureDetail.priceJpy,
+          figureDetail.releaseDate, figureDetail.heightMm, figureDetail.weightG,
+          figureDetail.productLine, figureDetail.ageRating,
+          figureDetail.manufacturer?.name, figureDetail.series?.name,
+        ].filter(f => f != null);
+        if (specFields.length < 3) problems.push(`有效规格字段仅 ${specFields.length} 项，仍不足`);
+      }
+      if (riskType === "detail_conflict") {
+        problems.push("详细信息冲突，需人工判断");
+      }
+    }
   } else if (item.type === "jan_match" && figure) {
     const expectedJan = payload.janCode ? String(payload.janCode) : "";
     if (expectedJan && figure.janCode !== expectedJan) problems.push(`JAN 仍未更新为 ${expectedJan}`);
@@ -428,6 +462,76 @@ export async function adminRoutes(app: FastifyInstance) {
     const offset = query.offset || 0;
     const items = filtered.slice(offset, offset + query.limit);
 
+    // Enrich items with current figure state (batch, no N+1)
+    const slugSet = new Set<string>();
+    const idSet = new Set<bigint>();
+    for (const item of items) {
+      if (item.figureSlug) slugSet.add(item.figureSlug);
+      if (item.figureId) idSet.add(BigInt(item.figureId));
+    }
+    const figures: any[] = [];
+    if (idSet.size > 0) {
+      const byId = await app.prisma.figure.findMany({
+        where: { id: { in: [...idSet] }, isDeleted: false },
+        select: {
+          id: true, slug: true, name: true, description: true,
+          scale: true, material: true, priceJpy: true, releaseDate: true, heightMm: true,
+          manufacturer: { select: { name: true } },
+          series: { select: { name: true } },
+          images: { take: 5, orderBy: [{ sortOrder: "asc" }, { id: "asc" }], select: { id: true, width: true, height: true, data: true } },
+        },
+      });
+      figures.push(...byId);
+    }
+    if (slugSet.size > 0) {
+      const bySlug = await app.prisma.figure.findMany({
+        where: { slug: { in: [...slugSet] }, isDeleted: false },
+        select: {
+          id: true, slug: true, name: true, description: true,
+          scale: true, material: true, priceJpy: true, releaseDate: true, heightMm: true,
+          manufacturer: { select: { name: true } },
+          series: { select: { name: true } },
+          images: { take: 5, orderBy: [{ sortOrder: "asc" }, { id: "asc" }], select: { id: true, width: true, height: true, data: true } },
+        },
+      });
+      for (const fig of bySlug) {
+        if (!figures.some(f => f.id === fig.id)) figures.push(fig);
+      }
+    }
+    const figureMap = new Map<string, any>();
+    for (const fig of figures) {
+      figureMap.set(fig.slug, fig);
+      figureMap.set(String(fig.id), fig);
+    }
+
+    for (const item of items) {
+      const fig = figureMap.get(item.figureSlug) || figureMap.get(String(item.figureId));
+      if (fig) {
+        const primaryImage = (fig.images || []).length > 0 ? (fig.images[0] || null) : null;
+        const primaryMeta = primaryImage?.data || {};
+        const specFields = [fig.scale, fig.material, fig.priceJpy, fig.releaseDate, fig.heightMm, fig.manufacturer?.name, fig.series?.name].filter((f: any) => f != null);
+        item.currentFigure = {
+          id: Number(fig.id),
+          title: fig.name || "",
+          slug: fig.slug,
+          imageCount: fig.images?.length || 0,
+          primaryImage: primaryImage ? {
+            imageId: Number(primaryImage.id),
+            sourceKind: String(primaryMeta.source_kind || ""),
+            width: primaryImage.width,
+            height: primaryImage.height,
+            apiUrl: primaryImage ? `/api/v1/figures/images/${primaryImage.id}` : null,
+          } : null,
+          detail: {
+            descriptionLength: (fig.description || "").length,
+            descriptionSnapshot: (fig.description || "").slice(0, 200),
+            validSpecCount: specFields.length,
+            missingFields: [],
+          },
+        };
+      }
+    }
+
     return { success: true, data: items, meta: { count: items.length, total, limit: query.limit, offset, defaultStatus: statusFilter } };
   });
 
@@ -530,13 +634,16 @@ export async function adminRoutes(app: FastifyInstance) {
       reviewProblems: problems,
       lastCheckedAt: now,
     };
+    const hasDeterministicProblem = problems.length > 0 && !problems.some(p => p.includes("需人工判断"));
+    const newStatus = problems.length === 0 ? "resolved" : hasDeterministicProblem ? "needs_changes" : item.status;
+    const noteText = problems.length === 0
+      ? `复检通过：${now}`
+      : `复检仍有问题：${problems.join("；")}`;
     const updatedItem = {
       ...item,
       payload: nextPayload,
-      status: problems.length === 0 ? "resolved" : "needs_changes",
-      notes: problems.length === 0
-        ? (item.notes ? `${item.notes}\n复检通过：${now}` : `复检通过：${now}`)
-        : (item.notes ? `${item.notes}\n复检仍有问题：${problems.join("；")}` : `复检仍有问题：${problems.join("；")}`),
+      status: newStatus,
+      notes: item.notes ? `${item.notes}\n${noteText}` : noteText,
       updatedAt: now,
     };
 
@@ -1524,7 +1631,7 @@ export async function adminRoutes(app: FastifyInstance) {
     const { url } = z.object({ url: z.string() }).parse(req.query);
 
     // SSRF protection
-    const urlCheck = validateImageUrl(url);
+    const urlCheck = await validateImageUrl(url);
     if (!urlCheck.ok) {
       return reply.status(422).send({ success: false, error: { code: "URL_BLOCKED", message: urlCheck.reason || "URL not allowed" } });
     }
@@ -1590,22 +1697,32 @@ export async function adminRoutes(app: FastifyInstance) {
       if (actualHash !== hash.toLowerCase()) {
         return reply.status(422).send({ success: false, error: { code: "HASH_MISMATCH", message: "Content sha256 does not match submitted hash" } });
       }
+      // Server-side re-encode: normalize jpeg/png/webp with sharp
+      const reEncoded = await sharp(buf)
+        .rotate()
+        .toFormat(meta.format || "jpeg", { quality: 90 })
+        .toBuffer();
+      const normalizedHash = crypto.createHash("sha256").update(reEncoded).digest("hex");
+      // Path containment check
       const reviewDir = path.join(REVIEW_CACHE_DIR, reviewId);
       const resolved = path.resolve(reviewDir);
       const cacheRoot = path.resolve(REVIEW_CACHE_DIR);
       if (!resolved.startsWith(cacheRoot + path.sep) && resolved !== cacheRoot) {
         return reply.status(422).send({ success: false, error: { code: "PATH_TRAVERSAL" } });
       }
-      fs.mkdirSync(reviewDir, { recursive: true });
-      const fileName = hash + "." + fileExt;
+      await fsp.mkdir(reviewDir, { recursive: true });
+      const fileName = normalizedHash + "." + fileExt;
       const filePath = path.join(reviewDir, fileName);
-      fs.writeFileSync(filePath, buf);
+      // Temp file + atomic rename
+      const tmpPath = filePath + ".tmp." + crypto.randomBytes(8).toString("hex");
+      await fsp.writeFile(tmpPath, reEncoded);
+      await fsp.rename(tmpPath, filePath);
       const expiresAt = Date.now() + 86400000;
       const signPayload = `${reviewId}/${fileName}:${expiresAt}`;
       const sig = crypto.createHmac("sha256", process.env.JWT_SECRET || "fallback-secret").update(signPayload).digest("hex").slice(0, 16);
       return reply.status(201).send({
         success: true,
-        data: { reviewId, hash, ext: fileExt, url: `/api/v1/review/cached-image/${reviewId}/${fileName}?exp=${expiresAt}&sig=${sig}` },
+        data: { reviewId, hash: normalizedHash, ext: fileExt, url: `/api/v1/review/cached-image/${reviewId}/${fileName}?exp=${expiresAt}&sig=${sig}` },
       });
     }
   );
