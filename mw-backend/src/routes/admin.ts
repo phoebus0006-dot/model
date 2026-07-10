@@ -1413,39 +1413,76 @@ export async function adminRoutes(app: FastifyInstance) {
     return { success: true, data: job };
   });
 
-  app.post("/cache/purge", async (req: any) => {
+  // Allowed cache namespaces for purge (no review/crawler/session/rate-limit)
+  const CACHE_ALLOWLIST = [
+    "figures:detail:*",
+    "figures:list:*",
+    "search:*",
+    "homepage:*",
+  ];
+  const BLOCKED_NAMESPACES = ["review:", "crawler:", "session:", "rate-limit:"];
+
+  function isAllowedPattern(p: string): boolean {
+    if (!p || typeof p !== "string") return false;
+    for (const blocked of BLOCKED_NAMESPACES) {
+      if (p.startsWith(blocked) || p.includes(blocked)) return false;
+    }
+    for (const allowed of CACHE_ALLOWLIST) {
+      const re = new RegExp("^" + allowed.replace(/\*/g, ".*").replace(/\?/g, ".") + "$");
+      if (re.test(p)) return true;
+    }
+    return false;
+  }
+
+  app.post("/cache/purge", async (req: any, reply: any) => {
     const body = (req.body as any) || {};
     const pattern = typeof body.pattern === "string" ? body.pattern : undefined;
     const paths = Array.isArray(body.paths) ? body.paths.filter((p: unknown): p is string => typeof p === "string" && p.length > 0) : [];
-    const purgeAll = body.purgeAll === true || (!pattern && paths.length === 0);
 
-    if (purgeAll || pattern === "*") {
-      await app.redis.flushdb();
-      return { success: true, data: { purged: true, mode: "all" } };
+    // Block FLUSHDB / purgeAll
+    if (body.purgeAll === true || (!pattern && paths.length === 0) || pattern === "*") {
+      return reply.status(422).send({ success: false, error: { code: "PURGE_ALL_BLOCKED", message: "Full flush is not allowed. Use specific namespace patterns." } });
     }
 
+    const namespaces: string[] = [];
     const keySet = new Set<string>();
 
     if (pattern) {
-      const keys = await app.redis.keys(pattern);
-      keys.forEach((k: string) => keySet.add(k));
+      if (!isAllowedPattern(pattern)) {
+        return reply.status(422).send({ success: false, error: { code: "NAMESPACE_NOT_ALLOWED", message: `Pattern "${pattern}" is not in the allowed cache namespace list` } });
+      }
+      namespaces.push(pattern);
+      // Use SCAN instead of KEYS
+      let cursor = "0";
+      do {
+        const result = await (app.redis as any).scan(cursor, "MATCH", pattern, "COUNT", "100");
+        cursor = result[0];
+        for (const k of result[1]) keySet.add(k);
+      } while (cursor !== "0");
     }
 
     for (const path of paths) {
       const m = path.match(/^\/figures?\/([^/]+)\/?$/);
       if (m?.[1]) {
-        keySet.add(`figures:detail:${m[1]}`);
+        const detailKey = `figures:detail:${m[1]}`;
+        keySet.add(detailKey);
+        namespaces.push(detailKey);
       }
     }
 
     if (paths.length > 0) {
-      const listKeys = await app.redis.keys("figures:list:*");
-      listKeys.forEach((k: string) => keySet.add(k));
+      namespaces.push("figures:list:*");
+      let cursor2 = "0";
+      do {
+        const result2 = await (app.redis as any).scan(cursor2, "MATCH", "figures:list:*", "COUNT", "100");
+        cursor2 = result2[0];
+        for (const k of result2[1]) keySet.add(k);
+      } while (cursor2 !== "0");
     }
 
     const keys = Array.from(keySet);
     if (keys.length > 0) {
-      await app.redis.del(...keys);
+      await app.redis.unlink(...keys);
     }
 
     return { success: true, data: { purged: true, mode: "targeted", keys: keys.length } };
@@ -1717,9 +1754,14 @@ export async function adminRoutes(app: FastifyInstance) {
       const tmpPath = filePath + ".tmp." + crypto.randomBytes(8).toString("hex");
       await fsp.writeFile(tmpPath, reEncoded);
       await fsp.rename(tmpPath, filePath);
-      const expiresAt = Date.now() + 86400000;
+      const signingSecret = process.env.REVIEW_CACHE_SIGNING_SECRET;
+      if (!signingSecret) {
+        return reply.status(500).send({ success: false, error: { code: "SIGNING_NOT_CONFIGURED", message: "REVIEW_CACHE_SIGNING_SECRET is not set" } });
+      }
+      const maxTtl = 86400000;
+      const expiresAt = Math.floor(Date.now() + maxTtl);
       const signPayload = `${reviewId}/${fileName}:${expiresAt}`;
-      const sig = crypto.createHmac("sha256", process.env.JWT_SECRET || "fallback-secret").update(signPayload).digest("hex").slice(0, 16);
+      const sig = crypto.createHmac("sha256", signingSecret).update(signPayload).digest("hex");
       return reply.status(201).send({
         success: true,
         data: { reviewId, hash: normalizedHash, ext: fileExt, url: `/api/v1/review/cached-image/${reviewId}/${fileName}?exp=${expiresAt}&sig=${sig}` },

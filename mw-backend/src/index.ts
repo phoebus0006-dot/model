@@ -132,15 +132,31 @@ async function main() {
       if (!/^[a-zA-Z0-9_-]+$/.test(reviewId) || !/^[a-f0-9]{64}\.[a-z]+$/i.test(fileName)) {
         return reply.status(404).send({ success: false, error: { code: "NOT_FOUND" } });
       }
+      const signingSecret = process.env.REVIEW_CACHE_SIGNING_SECRET;
+      if (!signingSecret) {
+        return reply.status(500).send({ success: false, error: { code: "SIGNING_NOT_CONFIGURED", message: "REVIEW_CACHE_SIGNING_SECRET is not set" } });
+      }
       // Signature validation
       const qExp = (req.query as any).exp;
       const qSig = (req.query as any).sig;
-      if (!qExp || !qSig || Date.now() > parseInt(qExp)) {
+      if (!qExp || !qSig) {
+        return reply.status(403).send({ success: false, error: { code: "ACCESS_DENIED" } });
+      }
+      const expInt = parseInt(qExp, 10);
+      if (isNaN(expInt) || Date.now() > expInt) {
+        return reply.status(403).send({ success: false, error: { code: "ACCESS_DENIED" } });
+      }
+      const maxTtl = 86400000;
+      if (expInt > Date.now() + maxTtl) {
         return reply.status(403).send({ success: false, error: { code: "ACCESS_DENIED" } });
       }
       const signPayload = `${reviewId}/${fileName}:${qExp}`;
-      const expectedSig = crypto.createHmac("sha256", process.env.JWT_SECRET || "fallback-secret").update(signPayload).digest("hex").slice(0, 16);
-      if (qSig !== expectedSig) {
+      const expectedSig = crypto.createHmac("sha256", signingSecret).update(signPayload).digest("hex");
+      // timingSafeEqual to prevent timing attacks
+      if (qSig.length !== expectedSig.length) {
+        return reply.status(403).send({ success: false, error: { code: "ACCESS_DENIED" } });
+      }
+      if (!crypto.timingSafeEqual(Buffer.from(qSig), Buffer.from(expectedSig))) {
         return reply.status(403).send({ success: false, error: { code: "ACCESS_DENIED" } });
       }
       const REVIEW_CACHE_DIR = process.env.REVIEW_CACHE_DIR || "/app/assets/review-cache";
