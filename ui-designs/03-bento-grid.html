@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ModelWiki - Anime Figure Encyclopedia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  :root {
+    --bg: #f5f5f7;
+    --surface: #ffffff;
+    --text-primary: #1d1d1f;
+    --text-secondary: #6e6e73;
+    --text-tertiary: #86868b;
+    --border: rgba(0,0,0,0.06);
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.06), 0 2px 4px rgba(0,0,0,0.04);
+    --shadow-lg: 0 8px 30px rgba(0,0,0,0.08), 0 4px 8px rgba(0,0,0,0.04);
+    --shadow-hover: 0 12px 40px rgba(0,0,0,0.1), 0 4px 12px rgba(0,0,0,0.05);
+    --radius: 20px;
+    --radius-sm: 14px;
+    --radius-xs: 10px;
+    --cell-pink: #fff0f3;
+    --cell-blue: #f0f4ff;
+    --cell-green: #f0faf4;
+    --cell-purple: #f5f0ff;
+    --cell-orange: #fff8f0;
+    --cell-yellow: #fefcf3;
+    --cell-teal: #f0fbfb;
+    --cell-rose: #fff5f7;
+    --transition: 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  body {
+    font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text-primary);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
+  }
+
+  /* Top Nav */
+  .topnav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 40px;
+    background: rgba(245,245,247,0.72);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .topnav-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--text-primary);
+  }
+
+  .topnav-brand svg {
+    width: 28px;
+    height: 28px;
+  }
+
+  .topnav-brand span {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+  }
+
+  .topnav-links {
+    display: flex;
+    gap: 32px;
+    list-style: none;
+  }
+
+  .topnav-links a {
+    text-decoration: none;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+    transition: color var(--transition);
+  }
+
+  .topnav-links a:hover {
+    color: var(--text-primary);
+  }
+
+  .topnav-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .btn-nav {
+    padding: 8px 18px;
+    border-radius: 980px;
+    border: none;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition);
+  }
+
+  .btn-nav-ghost {
+    background: transparent;
+    color: var(--text-secondary);
+  }
+
+  .btn-nav-ghost:hover {
+    color: var(--text-primary);
+  }
+
+  .btn-nav-primary {
+    background: var(--text-primary);
+    color: #fff;
+  }
+
+  .btn-nav-primary:hover {
+    background: #333;
+    transform: scale(1.02);
+  }
+
+  /* Main Container */
+  .container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 32px 40px 80px;
+  }
+
+  /* Bento Grid */
+  .bento-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: auto;
+    grid-template-areas:
+      "hero hero hero hero"
+      "featured featured stats1 stats2"
+      "featured featured stats3 stats4"
+      "series1 series1 series2 series2"
+      "series3 manufacturer manufacturer series4"
+      "recent1 recent2 recent3 recent4"
+      "browse browse browse browse";
+    gap: 16px;
+  }
+
+  /* Bento Cell Base */
+  .bento-cell {
+    border-radius: var(--radius);
+    overflow: hidden;
+    position: relative;
+    transition: transform var(--transition), box-shadow var(--transition);
+    cursor: pointer;
+  }
+
+  .bento-cell:hover {
+    transform: translateY(-3px) scale(1.005);
+    box-shadow: var(--shadow-hover);
+  }
+
+  .bento-cell-inner {
+    padding: 28px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    z-index: 1;
+  }
+
+  .cell-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-tertiary);
+    margin-bottom: 8px;
+  }
+
+  .cell-title {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.4px;
+    line-height: 1.2;
+    color: var(--text-primary);
+  }
+
+  .cell-subtitle {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-top: 6px;
+    line-height: 1.5;
+  }
+
+  /* Hero Cell */
+  .cell-hero {
+    grid-area: hero;
+    background: linear-gradient(135deg, #1d1d1f 0%, #2d2d30 50%, #3a3a3c 100%);
+    min-height: 340px;
+  }
+
+  .cell-hero .bento-cell-inner {
+    padding: 48px 52px;
+    justify-content: center;
+    align-items: flex-start;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 980px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255,255,255,0.8);
+    margin-bottom: 20px;
+    backdrop-filter: blur(10px);
+  }
+
+  .hero-badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #34c759;
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .hero-title {
+    font-size: 48px;
+    font-weight: 800;
+    letter-spacing: -1.5px;
+    line-height: 1.08;
+    color: #fff;
+    margin-bottom: 12px;
+  }
+
+  .hero-desc {
+    font-size: 17px;
+    color: rgba(255,255,255,0.55);
+    max-width: 480px;
+    line-height: 1.55;
+    margin-bottom: 32px;
+    font-weight: 400;
+  }
+
+  .hero-search {
+    display: flex;
+    align-items: center;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 14px;
+    padding: 4px 4px 4px 18px;
+    width: 100%;
+    max-width: 520px;
+    transition: all var(--transition);
+    backdrop-filter: blur(10px);
+  }
+
+  .hero-search:focus-within {
+    background: rgba(255,255,255,0.12);
+    border-color: rgba(255,255,255,0.2);
+    box-shadow: 0 0 0 4px rgba(255,255,255,0.05);
+  }
+
+  .hero-search input {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    font-family: inherit;
+    font-size: 15px;
+    color: #fff;
+    padding: 10px 0;
+  }
+
+  .hero-search input::placeholder {
+    color: rgba(255,255,255,0.35);
+  }
+
+  .hero-search-btn {
+    padding: 10px 22px;
+    background: #fff;
+    color: #1d1d1f;
+    border: none;
+    border-radius: 11px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition);
+    white-space: nowrap;
+  }
+
+  .hero-search-btn:hover {
+    background: #f0f0f0;
+    transform: scale(1.02);
+  }
+
+  .hero-search-icon {
+    width: 18px;
+    height: 18px;
+    margin-right: 10px;
+    opacity: 0.4;
+    flex-shrink: 0;
+  }
+
+  .hero-deco {
+    position: absolute;
+    right: 40px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 280px;
+    height: 280px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.06), transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-deco-ring {
+    position: absolute;
+    right: 60px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 220px;
+    height: 220px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.06);
+    pointer-events: none;
+  }
+
+  /* Featured Cell */
+  .cell-featured {
+    grid-area: featured;
+    background: var(--cell-pink);
+    min-height: 400px;
+  }
+
+  .cell-featured .bento-cell-inner {
+    padding: 0;
+    position: relative;
+  }
+
+  .featured-image {
+    width: 100%;
+    height: 260px;
+    object-fit: cover;
+    display: block;
+  }
+
+  .featured-content {
+    padding: 24px 28px 28px;
+  }
+
+  .featured-series {
+    font-size: 12px;
+    font-weight: 600;
+    color: #c41e3a;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    margin-bottom: 6px;
+  }
+
+  .featured-name {
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+
+  .featured-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  .featured-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .featured-price {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-top: 12px;
+  }
+
+  .featured-badge {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(12px);
+    border-radius: 980px;
+    padding: 6px 14px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #c41e3a;
+  }
+
+  /* Stats Cells */
+  .cell-stats {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .cell-stats-1 { grid-area: stats1; background: var(--cell-blue); }
+  .cell-stats-2 { grid-area: stats2; background: var(--cell-green); }
+  .cell-stats-3 { grid-area: stats3; background: var(--cell-purple); }
+  .cell-stats-4 { grid-area: stats4; background: var(--cell-orange); }
+
+  .stats-number {
+    font-size: 36px;
+    font-weight: 800;
+    letter-spacing: -1.2px;
+    line-height: 1;
+    margin-top: 4px;
+  }
+
+  .stats-trend {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-top: 8px;
+    padding: 3px 8px;
+    border-radius: 6px;
+  }
+
+  .stats-trend-up {
+    color: #1b7a3d;
+    background: rgba(27,122,61,0.1);
+  }
+
+  .stats-trend-new {
+    color: #0071e3;
+    background: rgba(0,113,227,0.1);
+  }
+
+  /* Series Cells */
+  .cell-series {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cell-series-1 { grid-area: series1; background: var(--cell-blue); }
+  .cell-series-2 { grid-area: series2; background: var(--cell-rose); }
+  .cell-series-3 { grid-area: series3; background: var(--cell-teal); }
+  .cell-series-4 { grid-area: series4; background: var(--cell-yellow); }
+
+  .cell-series .bento-cell-inner {
+    justify-content: flex-end;
+    min-height: 200px;
+  }
+
+  .series-bg-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.18;
+    transition: opacity var(--transition), transform var(--transition);
+  }
+
+  .bento-cell:hover .series-bg-img {
+    opacity: 0.25;
+    transform: scale(1.04);
+  }
+
+  .series-count {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-top: 4px;
+  }
+
+  /* Manufacturer Cell */
+  .cell-manufacturer {
+    grid-area: manufacturer;
+    background: var(--surface);
+    border: 1px solid var(--border);
+  }
+
+  .manufacturer-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 16px;
+  }
+
+  .manufacturer-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 8px;
+    background: var(--bg);
+    border-radius: var(--radius-xs);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    transition: all var(--transition);
+    text-align: center;
+    letter-spacing: -0.1px;
+  }
+
+  .manufacturer-item:hover {
+    background: var(--text-primary);
+    color: #fff;
+    transform: scale(1.03);
+  }
+
+  /* Recent Cells */
+  .cell-recent {
+    background: var(--surface);
+    border: 1px solid var(--border);
+  }
+
+  .cell-recent-1 { grid-area: recent1; }
+  .cell-recent-2 { grid-area: recent2; }
+  .cell-recent-3 { grid-area: recent3; }
+  .cell-recent-4 { grid-area: recent4; }
+
+  .cell-recent .bento-cell-inner {
+    padding: 0;
+  }
+
+  .recent-image {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    display: block;
+  }
+
+  .recent-content {
+    padding: 16px 20px 20px;
+  }
+
+  .recent-name {
+    font-size: 15px;
+    font-weight: 650;
+    letter-spacing: -0.2px;
+    line-height: 1.3;
+    margin-bottom: 4px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .recent-series {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    margin-bottom: 8px;
+  }
+
+  .recent-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .recent-price {
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .recent-scale {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    background: var(--bg);
+    padding: 3px 8px;
+    border-radius: 6px;
+  }
+
+  /* Browse CTA Cell */
+  .cell-browse {
+    grid-area: browse;
+    background: linear-gradient(135deg, var(--cell-blue) 0%, var(--cell-purple) 100%);
+    min-height: 120px;
+  }
+
+  .cell-browse .bento-cell-inner {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .browse-text .cell-title {
+    font-size: 24px;
+  }
+
+  .browse-text .cell-subtitle {
+    margin-top: 4px;
+  }
+
+  .btn-browse {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 28px;
+    background: var(--text-primary);
+    color: #fff;
+    border: none;
+    border-radius: 980px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition);
+    white-space: nowrap;
+  }
+
+  .btn-browse:hover {
+    background: #333;
+    transform: scale(1.04);
+  }
+
+  .btn-browse svg {
+    width: 16px;
+    height: 16px;
+    transition: transform var(--transition);
+  }
+
+  .btn-browse:hover svg {
+    transform: translateX(3px);
+  }
+
+  /* Animations */
+  .bento-cell {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: cellReveal 0.6s ease forwards;
+  }
+
+  .bento-cell:nth-child(1) { animation-delay: 0.05s; }
+  .bento-cell:nth-child(2) { animation-delay: 0.1s; }
+  .bento-cell:nth-child(3) { animation-delay: 0.15s; }
+  .bento-cell:nth-child(4) { animation-delay: 0.2s; }
+  .bento-cell:nth-child(5) { animation-delay: 0.25s; }
+  .bento-cell:nth-child(6) { animation-delay: 0.3s; }
+  .bento-cell:nth-child(7) { animation-delay: 0.35s; }
+  .bento-cell:nth-child(8) { animation-delay: 0.4s; }
+  .bento-cell:nth-child(9) { animation-delay: 0.45s; }
+  .bento-cell:nth-child(10) { animation-delay: 0.5s; }
+  .bento-cell:nth-child(11) { animation-delay: 0.55s; }
+  .bento-cell:nth-child(12) { animation-delay: 0.6s; }
+  .bento-cell:nth-child(13) { animation-delay: 0.65s; }
+  .bento-cell:nth-child(14) { animation-delay: 0.7s; }
+
+  @keyframes cellReveal {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-tertiary);
+    font-size: 13px;
+  }
+
+  .footer a {
+    color: var(--text-secondary);
+    text-decoration: none;
+  }
+
+  .footer a:hover {
+    color: var(--text-primary);
+  }
+
+  /* Responsive */
+  @media (max-width: 1024px) {
+    .bento-grid {
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-areas:
+        "hero hero"
+        "featured featured"
+        "stats1 stats2"
+        "stats3 stats4"
+        "series1 series1"
+        "series2 series2"
+        "series3 series4"
+        "manufacturer manufacturer"
+        "recent1 recent2"
+        "recent3 recent4"
+        "browse browse";
+      gap: 14px;
+    }
+
+    .container {
+      padding: 24px 24px 60px;
+    }
+
+    .hero-title {
+      font-size: 36px;
+    }
+
+    .hero-deco, .hero-deco-ring {
+      display: none;
+    }
+
+    .topnav {
+      padding: 14px 24px;
+    }
+
+    .topnav-links {
+      display: none;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .bento-grid {
+      grid-template-columns: 1fr;
+      grid-template-areas:
+        "hero"
+        "featured"
+        "stats1"
+        "stats2"
+        "stats3"
+        "stats4"
+        "series1"
+        "series2"
+        "series3"
+        "series4"
+        "manufacturer"
+        "recent1"
+        "recent2"
+        "recent3"
+        "recent4"
+        "browse";
+      gap: 12px;
+    }
+
+    .container {
+      padding: 16px 16px 48px;
+    }
+
+    .hero-title {
+      font-size: 30px;
+    }
+
+    .hero-desc {
+      font-size: 15px;
+    }
+
+    .cell-hero .bento-cell-inner {
+      padding: 32px 28px;
+    }
+
+    .topnav {
+      padding: 12px 16px;
+    }
+
+    .topnav-brand span {
+      font-size: 16px;
+    }
+
+    .btn-nav {
+      padding: 6px 14px;
+      font-size: 12px;
+    }
+
+    .manufacturer-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .cell-browse .bento-cell-inner {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .btn-browse {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="topnav">
+  <a href="#" class="topnav-brand">
+    <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="28" height="28" rx="7" fill="#1d1d1f"/>
+      <path d="M8 8h4v12H8V8zm8 0h4v12h-4V8zm-4 4h4v4h-4v-4z" fill="#fff"/>
+    </svg>
+    <span>ModelWiki</span>
+  </a>
+  <ul class="topnav-links">
+    <li><a href="#">Figures</a></li>
+    <li><a href="#">Series</a></li>
+    <li><a href="#">Manufacturers</a></li>
+    <li><a href="#">Sculptors</a></li>
+    <li><a href="#">Community</a></li>
+  </ul>
+  <div class="topnav-actions">
+    <button class="btn-nav btn-nav-ghost">Sign In</button>
+    <button class="btn-nav btn-nav-primary">Join Free</button>
+  </div>
+</nav>
+
+<!-- Main Content -->
+<main class="container">
+  <div class="bento-grid">
+
+    <!-- Hero -->
+    <div class="bento-cell cell-hero">
+      <div class="bento-cell-inner">
+        <div class="hero-badge">
+          <span class="hero-badge-dot"></span>
+          Database updated daily
+        </div>
+        <h1 class="hero-title">Your Anime Figure<br>Encyclopedia</h1>
+        <p class="hero-desc">Explore thousands of collectible figures from top manufacturers. Track releases, compare prices, and build your collection.</p>
+        <div class="hero-search">
+          <svg class="hero-search-icon" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+          </svg>
+          <input type="text" placeholder="Search figures, series, manufacturers..." id="searchInput">
+          <button class="hero-search-btn" onclick="handleSearch()">Search</button>
+        </div>
+      </div>
+      <div class="hero-deco"></div>
+      <div class="hero-deco-ring"></div>
+    </div>
+
+    <!-- Featured Figure -->
+    <div class="bento-cell cell-featured">
+      <div class="bento-cell-inner">
+        <span class="featured-badge">Featured</span>
+        <img class="featured-image" src="http://141.253.114.69/api/v1/figures/images/3" alt="Featured Figure">
+        <div class="featured-content">
+          <div class="featured-series">Vocaloid</div>
+          <div class="featured-name">Hatsune Miku - World is Mine 2024 Ver.</div>
+          <div class="featured-meta">
+            <span class="featured-meta-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7h-9m3 10H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg>
+              1/7 Scale
+            </span>
+            <span class="featured-meta-item">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+              Good Smile Company
+            </span>
+          </div>
+          <div class="featured-price">25,273 JPY</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="bento-cell cell-stats cell-stats-1">
+      <div class="bento-cell-inner">
+        <div class="cell-label">Total Figures</div>
+        <div class="stats-number">24,891</div>
+        <span class="stats-trend stats-trend-up">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m18 15-6-6-6 6"/></svg>
+          +342 this month
+        </span>
+      </div>
+    </div>
+
+    <div class="bento-cell cell-stats cell-stats-2">
+      <div class="bento-cell-inner">
+        <div class="cell-label">Manufacturers</div>
+        <div class="stats-number">187</div>
+        <span class="stats-trend stats-trend-new">
+          12 new in 2025
+        </span>
+      </div>
+    </div>
+
+    <div class="bento-cell cell-stats cell-stats-3">
+      <div class="bento-cell-inner">
+        <div class="cell-label">Series Tracked</div>
+        <div class="stats-number">1,204</div>
+        <span class="stats-trend stats-trend-up">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m18 15-6-6-6 6"/></svg>
+          +89 this month
+        </span>
+      </div>
+    </div>
+
+    <div class="bento-cell cell-stats cell-stats-4">
+      <div class="bento-cell-inner">
+        <div class="cell-label">Avg. Price</div>
+        <div class="stats-number">14,350</div>
+        <span class="stats-trend stats-trend-new">
+          JPY across all scales
+        </span>
+      </div>
+    </div>
+
+    <!-- Series Cards -->
+    <div class="bento-cell cell-series cell-series-1">
+      <div class="bento-cell-inner">
+        <img class="series-bg-img" src="http://141.253.114.69/api/v1/figures/images/109" alt="">
+        <div class="cell-label">Series</div>
+        <div class="cell-title">Fate/Grand Order</div>
+        <div class="series-count">487 figures cataloged</div>
+      </div>
+    </div>
+
+    <div class="bento-cell cell-series cell-series-2">
+      <div class="bento-cell-inner">
+        <img class="series-bg-img" src="http://141.253.114.69/api/v1/figures/images/130" alt="">
+        <div class="cell-label">Series</div>
+        <div class="cell-title">One Piece</div>
+        <div class="series-count">312 figures cataloged</div>
+      </div>
+    </div>
+
+    <div class="bento-cell cell-series cell-series-3">
+      <div class="bento-cell-inner">
+        <img class="series-bg-img" src="http://141.253.114.69/api/v1/figures/images/151" alt="">
+        <div class="cell-label">Series</div>
+        <div class="cell-title">Naruto</div>
+        <div class="series-count">256 figures cataloged</div>
+      </div>
+    </div>
+
+    <div class="bento-cell cell-series cell-series-4">
+      <div class="bento-cell-inner">
+        <img class="series-bg-img" src="http://141.253.114.69/api/v1/figures/images/202" alt="">
+        <div class="cell-label">Series</div>
+        <div class="cell-title">Jujutsu Kaisen</div>
+        <div class="series-count">198 figures cataloged</div>
+      </div>
+    </div>
+
+    <!-- Manufacturers -->
+    <div class="bento-cell cell-manufacturer">
+      <div class="bento-cell-inner">
+        <div class="cell-label">Top Manufacturers</div>
+        <div class="cell-title">Trusted Brands</div>
+        <div class="manufacturer-grid">
+          <div class="manufacturer-item">Good Smile</div>
+          <div class="manufacturer-item">Alter</div>
+          <div class="manufacturer-item">Kotobukiya</div>
+          <div class="manufacturer-item">Max Factory</div>
+          <div class="manufacturer-item">FREEing</div>
+          <div class="manufacturer-item">MegaHouse</div>
+          <div class="manufacturer-item">Aniplex</div>
+          <div class="manufacturer-item">Myethos</div>
+          <div class="manufacturer-item">eStream</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Additions -->
+    <div class="bento-cell cell-recent cell-recent-1">
+      <div class="bento-cell-inner">
+        <img class="recent-image" src="http://141.253.114.69/api/v1/figures/images/121" alt="">
+        <div class="recent-content">
+          <div class="recent-name">Rem - Graceful Beauty 2024</div>
+          <div class="recent-series">Re:Zero</div>
+          <div class="recent-bottom">
+            <span class="recent-price">19,600 JPY</span>
+            <span class="recent-scale">1/7</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bento-cell cell-recent cell-recent-2">
+      <div class="bento-cell-inner">
+        <img class="recent-image" src="http://141.253.114.69/api/v1/figures/images/512" alt="">
+        <div class="recent-content">
+          <div class="recent-name">Monkey D. Luffy - Mega Cat Project</div>
+          <div class="recent-series">One Piece</div>
+          <div class="recent-bottom">
+            <span class="recent-price">2,000 JPY</span>
+            <span class="recent-scale">Non-scale</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bento-cell cell-recent cell-recent-3">
+      <div class="bento-cell-inner">
+        <img class="recent-image" src="http://141.253.114.69/api/v1/figures/images/112" alt="">
+        <div class="recent-content">
+          <div class="recent-name">Emilia - Graceful Beauty 2024</div>
+          <div class="recent-series">Re:Zero</div>
+          <div class="recent-bottom">
+            <span class="recent-price">21,600 JPY</span>
+            <span class="recent-scale">1/7</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bento-cell cell-recent cell-recent-4">
+      <div class="bento-cell-inner">
+        <img class="recent-image" src="http://141.253.114.69/api/v1/figures/images/202" alt="">
+        <div class="recent-content">
+          <div class="recent-name">Gojo Satoru - Badge</div>
+          <div class="recent-series">Jujutsu Kaisen</div>
+          <div class="recent-bottom">
+            <span class="recent-price">550 JPY</span>
+            <span class="recent-scale">Badge</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Browse CTA -->
+    <div class="bento-cell cell-browse">
+      <div class="bento-cell-inner">
+        <div class="browse-text">
+          <div class="cell-title">Browse the Full Collection</div>
+          <div class="cell-subtitle">Over 24,000 figures from 187 manufacturers worldwide</div>
+        </div>
+        <button class="btn-browse" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+          Explore Now
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14m-7-7 7 7-7 7"/></svg>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- Footer -->
+<footer class="footer">
+  <p>ModelWiki - The Anime Figure Encyclopedia. Built with care for collectors.</p>
+</footer>
+
+<script>
+  // Search handler
+  function handleSearch() {
+    const query = document.getElementById('searchInput').value.trim();
+    if (query) {
+      alert('Searching for: ' + query);
+    }
+  }
+
+  // Enter key search
+  document.getElementById('searchInput').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  });
+
+  // Subtle parallax on hero decorations
+  const hero = document.querySelector('.cell-hero');
+  const deco = document.querySelector('.hero-deco');
+  const ring = document.querySelector('.hero-deco-ring');
+
+  if (hero && deco && ring) {
+    hero.addEventListener('mousemove', function(e) {
+      const rect = hero.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width - 0.5;
+      const y = (e.clientY - rect.top) / rect.height - 0.5;
+      deco.style.transform = 'translateY(-50%) translate(' + (x * 20) + 'px, ' + (y * 20) + 'px)';
+      ring.style.transform = 'translateY(-50%) translate(' + (x * 12) + 'px, ' + (y * 12) + 'px)';
+    });
+
+    hero.addEventListener('mouseleave', function() {
+      deco.style.transform = 'translateY(-50%)';
+      ring.style.transform = 'translateY(-50%)';
+    });
+  }
+
+  // Staggered reveal on scroll for cells that come into view
+  const observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        entry.target.style.animationPlayState = 'running';
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.bento-cell').forEach(function(cell) {
+    observer.observe(cell);
+  });
+</script>
+
+</body>
+</html>

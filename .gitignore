@@ -1,0 +1,114 @@
+# Secrets and credentials
+.env
+env
+.env.*
+*.key
+*.pem
+*password*
+*token*
+*secret*
+*cookie*
+*session*
+auth.json
+credentials.json
+
+# Production data
+*.sql
+*.dump
+*.bak
+*.backup
+*.backup.*
+
+# Node
+node_modules/
+npm-debug.log
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.idea/
+.vscode/
+*.sublime-*
+
+# Logs
+*.log
+/tmp/
+
+# Cleanup archive (backups)
+cleanup-archive/
+crawler-backups/
+
+# Temp files from operations
+/tmp/
+tmp/*.py
+tmp/*.sh
+tmp/*.json
+
+# Local work copies (orig/work diff files)
+*_orig.ts
+*_work.ts
+
+# Reports with potential sensitive data - keep only the final ones
+HERMES_M1A_EXECUTION_REPORT.md
+HERMES_M1B_EXECUTION_REPORT.md
+HERMES_M2A_CANARY_GATE_REPORT.md
+HERMES_M2B_CONTROLLED_BATCH_REPORT.md
+HERMES_M2B_REPAIR_REPORT.md
+HERMES_M2B_MFC_FINAL_CLEANUP_REPORT.md
+HERMES_M3A_PILOT_REPORT.md
+HERMES_M3B_FINAL_GATE_FIX_REPORT.md
+HERMES_M3B_OPERATIONAL_PILOT_REPORT.md
+HERMES_M3B_REPAIR_CLEANUP_REPORT.md
+HERMES_MFC_DETAIL_AND_IMAGE_QUALITY_REPAIR_M6_FIX_REPORT.md
+HERMES_MFC_IMAGE_EXTRACTION_REPAIR_REPORT.md
+HERMES_MFC_IMAGE_POLLUTION_REPAIR_V3_CACHE_FIX_REPORT.md
+HERMES_MFC_IMAGE_POLLUTION_REPAIR_V3_REPORT.md
+HERMES_MFC_OFFICIAL_IMAGE_RECOVERY_M4_REPORT.md
+HERMES_MFC_OFFICIAL_IMAGE_RECOVERY_M5_20_REPORT.md
+HERMES_MFC_OFFICIAL_IMAGE_RECOVERY_M6_REMAINING_REPORT.md
+HERMES_PARALLEL_ADMIN_AND_CRAWLER_FIX_REPORT.md
+HERMES_REVIEW_QUEUE_CRAWLER_INTEGRATION_REPORT.md
+HERMES_REVIEW_QUEUE_CLEANUP_AND_UI_FIX_REPORT.md
+HERMES_ADMIN_FULL_AUDIT_AND_FINAL_FIX_REPORT.md
+HERMES_FINAL_OPERATIONAL_CLOSEOUT_REPORT.md
+HERMES_FINAL_REVIEW_WORKFLOW_CLOSEOUT_REPORT.md
+HERMES_IMAGE_DEDUP_URL_FIELD_REVIEW_COVERAGE_CLOSEOUT_REPORT.md
+HERMES_IMAGE_QUALITY_AUDIT_AND_QUARANTINE_REPORT.md
+HERMES_IMAGE_QUALITY_AUDIT_REPAIR_V2_REPORT.md
+HERMES_CRAWLER_TASK_SPEC.md
+HERMES_CRAWLER_MIGRATION_PLAN.md
+HERMES_NEXT_STAGE_REVIEW_AND_CRAWLER_CLOSEOUT_REPORT.md
+HERMES_PRODUCTION_FIX_FINAL_REPORT.md
+BASELINE_ISSUES.md
+CRAWLER_ACCEPTANCE_REPORT.md
+CRAWLER_PIPELINE_MAP.md
+CRAWLER_REPAIR_QUEUE.md
+DATA_CONTRACT.md
+ARCHITECTURE_MAP.md
+SMOKE_TEST_REPORT.md
+THEME_DEPLOYMENT_PLAN.md
+mfc_backup_contact_sheet.html
+
+# Deployment and temp files
+m4_*.sql
+m4_*.sh
+m4_*.py
+m5_*.sql
+m5_*.sh
+m5_*.py
+m6_*.sql
+m6_*.sh
+m6_*.py
+m6fix_*.sh
+m6fix_*.sql
+p_*.py
+p_*.sql

@@ -1,0 +1,45 @@
+{
+  "name": "modelwiki-api",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsup src/index.ts --format esm --external @prisma/client --external bcryptjs --external sharp",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@fastify/cors": "^10.0.0",
+    "@fastify/helmet": "^13.0.2",
+    "@fastify/jwt": "^10.1.0",
+    "@fastify/rate-limit": "^10.0.0",
+    "@prisma/client": "^6.0.0",
+    "@types/nodemailer": "^6.4.24",
+    "bcryptjs": "^2.4.3",
+    "fastify": "^5.0.0",
+    "fastify-plugin": "^5.0.0",
+    "ioredis": "^5.4.0",
+    "nodemailer": "^6.10.1",
+    "sharp": "^0.33.5",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.0",
+    "@types/node": "^22.0.0",
+    "prisma": "^6.0.0",
+    "tsup": "^8.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.6.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/client",
+      "@prisma/engines",
+      "esbuild",
+      "prisma",
+      "sharp"
+    ]
+  },
+  "overrides": {
+    "esbuild": "0.28.1"
+  }
+}

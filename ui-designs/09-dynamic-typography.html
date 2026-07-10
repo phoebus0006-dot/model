@@ -1,0 +1,1642 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ModelWiki - Anime Figure Encyclopedia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   CSS CUSTOM PROPERTIES
+   ============================================================ */
+:root {
+  --font-heading: 'Syne', sans-serif;
+  --font-body: 'Inter', sans-serif;
+
+  --bg-primary: #0a0a0a;
+  --bg-secondary: #111111;
+  --bg-tertiary: #1a1a1a;
+  --bg-card: #141414;
+  --bg-card-hover: #1c1c1c;
+
+  --text-hero: #f5f0e8;
+  --text-primary: #ede8df;
+  --text-secondary: #8a8578;
+  --text-muted: #5a5650;
+  --text-accent: #e8c547;
+
+  --accent: #e8c547;
+  --accent-secondary: #c947e8;
+  --accent-tertiary: #47e8c5;
+
+  --border: rgba(245, 240, 232, 0.08);
+  --border-hover: rgba(245, 240, 232, 0.16);
+
+  --shadow-card: 0 4px 32px rgba(0,0,0,0.4);
+  --shadow-glow: 0 0 60px rgba(232, 197, 71, 0.08);
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  --transition-fast: 0.2s var(--ease-out-expo);
+  --transition-mid: 0.4s var(--ease-out-expo);
+  --transition-slow: 0.7s var(--ease-out-expo);
+  --transition-slower: 1s var(--ease-out-expo);
+}
+
+/* ============================================================
+   RESET & BASE
+   ============================================================ */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--bg-primary);
+}
+
+/* ============================================================
+   SCROLL PROGRESS BAR
+   ============================================================ */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 2px;
+  background: var(--accent);
+  z-index: 1000;
+  transform-origin: left;
+  transform: scaleX(0);
+  transition: none;
+}
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+.nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 900;
+  padding: 1.5rem 3rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  mix-blend-mode: difference;
+}
+
+.nav-logo {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-hero);
+}
+
+.nav-links {
+  display: flex;
+  gap: 2.5rem;
+  list-style: none;
+}
+
+.nav-links a {
+  font-family: var(--font-heading);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-hero);
+  position: relative;
+  transition: letter-spacing var(--transition-mid);
+}
+
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: var(--text-hero);
+  transition: width var(--transition-mid);
+}
+
+.nav-links a:hover {
+  letter-spacing: 0.35em;
+}
+
+.nav-links a:hover::after {
+  width: 100%;
+}
+
+/* ============================================================
+   HERO SECTION
+   ============================================================ */
+.hero {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 6rem 3rem 4rem;
+  overflow: hidden;
+}
+
+.hero-bg-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--font-heading);
+  font-size: clamp(15vw, 25vw, 35vw);
+  font-weight: 800;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(245, 240, 232, 0.04);
+  text-transform: uppercase;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+  letter-spacing: -0.02em;
+}
+
+.hero-title {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+}
+
+.hero-title-line {
+  display: block;
+  font-family: var(--font-heading);
+  font-weight: 800;
+  text-transform: uppercase;
+  line-height: 0.9;
+  letter-spacing: -0.03em;
+  color: var(--text-hero);
+  overflow: hidden;
+}
+
+.hero-title-line--1 {
+  font-size: clamp(4rem, 12vw, 14rem);
+  transform: translateX(-5vw);
+  transition: transform 0.1s linear;
+}
+
+.hero-title-line--2 {
+  font-size: clamp(4rem, 12vw, 14rem);
+  transform: translateX(5vw);
+  transition: transform 0.1s linear;
+  -webkit-text-stroke: 2px var(--text-hero);
+  color: transparent;
+}
+
+.hero-title-line--3 {
+  font-size: clamp(2rem, 5vw, 6rem);
+  color: var(--accent);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  transform: scaleX(1);
+  transition: transform 0.1s linear;
+}
+
+.hero-subtitle {
+  position: relative;
+  z-index: 2;
+  margin-top: 2rem;
+  font-family: var(--font-body);
+  font-size: clamp(0.875rem, 1.2vw, 1.1rem);
+  font-weight: 300;
+  color: var(--text-secondary);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.hero-scroll-indicator {
+  position: absolute;
+  bottom: 3rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.hero-scroll-text {
+  font-family: var(--font-heading);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  writing-mode: vertical-rl;
+}
+
+.hero-scroll-line {
+  width: 1px;
+  height: 60px;
+  background: linear-gradient(to bottom, var(--text-muted), transparent);
+  animation: scrollPulse 2s ease-in-out infinite;
+}
+
+@keyframes scrollPulse {
+  0%, 100% { opacity: 0.3; transform: scaleY(1); }
+  50% { opacity: 1; transform: scaleY(1.2); }
+}
+
+/* ============================================================
+   SECTION HEADERS - Dynamic Typography
+   ============================================================ */
+.section-header {
+  position: relative;
+  padding: 6rem 3rem 3rem;
+  overflow: hidden;
+}
+
+.section-number {
+  font-family: var(--font-heading);
+  font-size: clamp(6rem, 12vw, 16rem);
+  font-weight: 800;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(245, 240, 232, 0.06);
+  position: absolute;
+  top: 0;
+  right: 3rem;
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+}
+
+.section-title {
+  font-family: var(--font-heading);
+  font-size: clamp(2.5rem, 6vw, 6rem);
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--text-hero);
+  letter-spacing: -0.02em;
+  line-height: 1;
+  position: relative;
+  display: inline-block;
+  transform: scaleX(0.85);
+  opacity: 0;
+  transition: transform 1.2s var(--ease-out-expo), opacity 0.8s var(--ease-out-expo);
+}
+
+.section-header.is-visible .section-title {
+  transform: scaleX(1);
+  opacity: 1;
+}
+
+.section-title-accent {
+  color: var(--accent);
+}
+
+.section-subtitle {
+  margin-top: 1rem;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.8s var(--ease-out-expo) 0.2s, transform 0.8s var(--ease-out-expo) 0.2s;
+}
+
+.section-header.is-visible .section-subtitle {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ============================================================
+   MARQUEE TEXT BAND
+   ============================================================ */
+.marquee-band {
+  padding: 2rem 0;
+  overflow: hidden;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.marquee-track {
+  display: flex;
+  animation: marqueeScroll 30s linear infinite;
+  width: max-content;
+}
+
+.marquee-item {
+  font-family: var(--font-heading);
+  font-size: clamp(1.5rem, 3vw, 3rem);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  padding: 0 2rem;
+  flex-shrink: 0;
+  transition: color var(--transition-fast);
+}
+
+.marquee-item:hover {
+  color: var(--accent);
+}
+
+.marquee-separator {
+  color: var(--accent);
+  padding: 0 1rem;
+  font-size: 0.5em;
+  vertical-align: middle;
+}
+
+@keyframes marqueeScroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* ============================================================
+   FEATURED FIGURES - Typography-Driven Cards
+   ============================================================ */
+.figures-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 2px;
+  padding: 0 3rem 6rem;
+}
+
+.figure-card {
+  position: relative;
+  background: var(--bg-card);
+  overflow: hidden;
+  cursor: pointer;
+  min-height: 480px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.figure-card-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.25;
+  transition: opacity var(--transition-slow), transform var(--transition-slower);
+  filter: grayscale(60%);
+}
+
+.figure-card:hover .figure-card-image {
+  opacity: 0.4;
+  transform: scale(1.05);
+  filter: grayscale(0%);
+}
+
+.figure-card-content {
+  position: relative;
+  z-index: 2;
+  padding: 2.5rem;
+  background: linear-gradient(to top, var(--bg-primary) 0%, transparent 100%);
+}
+
+.figure-card-name {
+  font-family: var(--font-heading);
+  font-size: clamp(2rem, 3.5vw, 3.5rem);
+  font-weight: 800;
+  text-transform: uppercase;
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  color: var(--text-hero);
+  transition: letter-spacing var(--transition-mid), color var(--transition-mid);
+  margin-bottom: 0.5rem;
+}
+
+.figure-card:hover .figure-card-name {
+  letter-spacing: 0.05em;
+  color: var(--accent);
+}
+
+.figure-card-series {
+  font-family: var(--font-heading);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+}
+
+.figure-card-meta {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+}
+
+.figure-card-meta-item {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.figure-card-meta-item span {
+  color: var(--text-secondary);
+}
+
+.figure-card-index {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  font-family: var(--font-heading);
+  font-size: 5rem;
+  font-weight: 800;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(245, 240, 232, 0.08);
+  line-height: 1;
+  z-index: 1;
+  transition: -webkit-text-stroke-color var(--transition-mid);
+}
+
+.figure-card:hover .figure-card-index {
+  -webkit-text-stroke-color: rgba(232, 197, 71, 0.2);
+}
+
+/* ============================================================
+   A-Z BROWSE SECTION
+   ============================================================ */
+.az-section {
+  padding: 0 3rem 6rem;
+}
+
+.az-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 2px;
+}
+
+.az-letter {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-heading);
+  font-size: clamp(1.5rem, 2.5vw, 2.5rem);
+  font-weight: 800;
+  color: var(--text-muted);
+  background: var(--bg-card);
+  cursor: pointer;
+  transition: all var(--transition-mid);
+  position: relative;
+  overflow: hidden;
+}
+
+.az-letter::before {
+  content: attr(data-count);
+  position: absolute;
+  bottom: 6px;
+  right: 8px;
+  font-family: var(--font-body);
+  font-size: 0.55rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.az-letter:hover::before {
+  opacity: 1;
+}
+
+.az-letter:hover {
+  color: var(--accent);
+  background: var(--bg-card-hover);
+  transform: scale(1.15);
+  z-index: 2;
+  box-shadow: 0 0 40px rgba(232, 197, 71, 0.1);
+}
+
+.az-letter.is-active {
+  color: var(--bg-primary);
+  background: var(--accent);
+}
+
+.az-letter.is-empty {
+  color: var(--text-muted);
+  opacity: 0.25;
+  cursor: default;
+  pointer-events: none;
+}
+
+/* ============================================================
+   MANUFACTURERS - Typography List
+   ============================================================ */
+.manufacturers-section {
+  padding: 0 3rem 6rem;
+}
+
+.manufacturers-list {
+  list-style: none;
+}
+
+.manufacturer-item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 1.5rem 0;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.manufacturer-item::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.6s var(--ease-out-expo);
+}
+
+.manufacturer-item:hover::before {
+  transform: scaleX(1);
+}
+
+.manufacturer-name {
+  font-family: var(--font-heading);
+  font-size: clamp(1.5rem, 3vw, 3rem);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  color: var(--text-hero);
+  transition: letter-spacing var(--transition-mid), color var(--transition-mid), transform var(--transition-mid);
+  white-space: nowrap;
+}
+
+.manufacturer-item:hover .manufacturer-name {
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  transform: translateX(1rem);
+}
+
+.manufacturer-count {
+  font-family: var(--font-heading);
+  font-size: clamp(1rem, 1.5vw, 1.5rem);
+  font-weight: 700;
+  color: var(--text-muted);
+  transition: color var(--transition-mid);
+  flex-shrink: 0;
+  margin-left: 2rem;
+}
+
+.manufacturer-item:hover .manufacturer-count {
+  color: var(--accent);
+}
+
+/* ============================================================
+   STATS SECTION - Kinetic Numbers
+   ============================================================ */
+.stats-section {
+  padding: 4rem 3rem 6rem;
+  border-top: 1px solid var(--border);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 3rem;
+}
+
+.stat-item {
+  text-align: left;
+}
+
+.stat-number {
+  font-family: var(--font-heading);
+  font-size: clamp(3rem, 6vw, 6rem);
+  font-weight: 800;
+  line-height: 1;
+  color: var(--text-hero);
+  letter-spacing: -0.03em;
+  transition: letter-spacing var(--transition-mid);
+}
+
+.stat-item:hover .stat-number {
+  letter-spacing: 0.05em;
+  color: var(--accent);
+}
+
+.stat-label {
+  font-family: var(--font-heading);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-top: 0.75rem;
+}
+
+/* ============================================================
+   RECENT ADDITIONS - Horizontal Scroll
+   ============================================================ */
+.recent-section {
+  padding: 0 0 6rem;
+}
+
+.recent-scroll {
+  display: flex;
+  gap: 2px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 0 3rem;
+}
+
+.recent-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.recent-item {
+  flex: 0 0 300px;
+  scroll-snap-align: start;
+  background: var(--bg-card);
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 400px;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.recent-item-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.15;
+  transition: opacity var(--transition-slow);
+}
+
+.recent-item:hover .recent-item-image {
+  opacity: 0.3;
+}
+
+.recent-item-letter {
+  font-family: var(--font-heading);
+  font-size: 8rem;
+  font-weight: 800;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(245, 240, 232, 0.06);
+  line-height: 1;
+  position: relative;
+  z-index: 1;
+}
+
+.recent-item-info {
+  position: relative;
+  z-index: 1;
+}
+
+.recent-item-name {
+  font-family: var(--font-heading);
+  font-size: 1.4rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: var(--text-hero);
+  transition: letter-spacing var(--transition-mid), color var(--transition-mid);
+}
+
+.recent-item:hover .recent-item-name {
+  letter-spacing: 0.05em;
+  color: var(--accent);
+}
+
+.recent-item-detail {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-top: 0.5rem;
+}
+
+/* ============================================================
+   TEXT REVEAL ANIMATION
+   ============================================================ */
+.text-reveal {
+  overflow: hidden;
+  display: inline-block;
+}
+
+.text-reveal-inner {
+  display: inline-block;
+  transform: translateY(110%);
+  transition: transform 1s var(--ease-out-expo);
+}
+
+.is-visible .text-reveal-inner {
+  transform: translateY(0);
+}
+
+/* ============================================================
+   STRETCH TEXT ON HOVER
+   ============================================================ */
+.stretch-hover {
+  display: inline-block;
+  transition: letter-spacing var(--transition-mid), transform var(--transition-mid);
+  cursor: pointer;
+}
+
+.stretch-hover:hover {
+  letter-spacing: 0.15em;
+}
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+.footer {
+  padding: 4rem 3rem 2rem;
+  border-top: 1px solid var(--border);
+}
+
+.footer-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 4rem;
+}
+
+.footer-brand {
+  font-family: var(--font-heading);
+  font-size: clamp(2rem, 5vw, 5rem);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  color: var(--text-hero);
+  line-height: 1;
+}
+
+.footer-brand-accent {
+  color: var(--accent);
+}
+
+.footer-links-group {
+  display: flex;
+  gap: 4rem;
+}
+
+.footer-links-col h4 {
+  font-family: var(--font-heading);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 1.25rem;
+}
+
+.footer-links-col ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.footer-links-col a {
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: var(--text-secondary);
+  transition: color var(--transition-fast), letter-spacing var(--transition-fast);
+}
+
+.footer-links-col a:hover {
+  color: var(--accent);
+  letter-spacing: 0.05em;
+}
+
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border);
+}
+
+.footer-copyright {
+  font-family: var(--font-body);
+  font-size: 0.7rem;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+
+.footer-tagline {
+  font-family: var(--font-heading);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 1024px) {
+  .figures-grid {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  }
+  .footer-top {
+    flex-direction: column;
+    gap: 3rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .nav {
+    padding: 1rem 1.5rem;
+  }
+  .nav-links {
+    gap: 1.5rem;
+  }
+  .nav-links a {
+    font-size: 0.65rem;
+  }
+  .hero {
+    padding: 4rem 1.5rem 3rem;
+  }
+  .section-header {
+    padding: 4rem 1.5rem 2rem;
+  }
+  .figures-grid {
+    grid-template-columns: 1fr;
+    padding: 0 1.5rem 4rem;
+  }
+  .az-section {
+    padding: 0 1.5rem 4rem;
+  }
+  .az-grid {
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+  }
+  .manufacturers-section {
+    padding: 0 1.5rem 4rem;
+  }
+  .stats-section {
+    padding: 3rem 1.5rem 4rem;
+  }
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+  }
+  .recent-scroll {
+    padding: 0 1.5rem;
+  }
+  .footer {
+    padding: 3rem 1.5rem 1.5rem;
+  }
+  .footer-links-group {
+    gap: 2rem;
+  }
+  .footer-bottom {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+  .section-number {
+    font-size: 6rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .nav-links {
+    display: none;
+  }
+  .az-grid {
+    grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+  }
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .footer-links-group {
+    flex-direction: column;
+    gap: 2rem;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- Scroll Progress -->
+<div class="scroll-progress" id="scrollProgress"></div>
+
+<!-- Navigation -->
+<nav class="nav">
+  <a href="#" class="nav-logo">ModelWiki</a>
+  <ul class="nav-links">
+    <li><a href="#figures">Figures</a></li>
+    <li><a href="#browse">Browse</a></li>
+    <li><a href="#manufacturers">Makers</a></li>
+    <li><a href="#recent">Recent</a></li>
+  </ul>
+</nav>
+
+<!-- Hero Section -->
+<section class="hero" id="hero">
+  <div class="hero-bg-text" aria-hidden="true">WIKI</div>
+  <div class="hero-title">
+    <span class="hero-title-line hero-title-line--1" id="heroLine1">MODEL</span>
+    <span class="hero-title-line hero-title-line--2" id="heroLine2">WIKI</span>
+    <span class="hero-title-line hero-title-line--3" id="heroLine3">ENCYCLOPEDIA</span>
+  </div>
+  <p class="hero-subtitle">The definitive catalog of anime figures -- scales, prices, makers, and more</p>
+  <div class="hero-scroll-indicator">
+    <span class="hero-scroll-text">Scroll</span>
+    <div class="hero-scroll-line"></div>
+  </div>
+</section>
+
+<!-- Marquee Band -->
+<div class="marquee-band">
+  <div class="marquee-track">
+    <span class="marquee-item">PVC</span>
+    <span class="marquee-separator">/</span>
+    <span class="marquee-item">Resin</span>
+    <span class="marquee-separator">/</span>
+    <span class="marquee-item">ABS</span>
+    <span class="marquee-separator">/</span>
+    <span class="marquee-item">1/4 Scale</span>
+    <span class="marquee-separator">/</span>
+    <span class="marquee-item">1/6 Scale</span>
+    <span class="marquee-separator">/</span>
+    <span class="marquee-item">1/7 Scale</span>
+    <span class="marquee-separator">/</span>
+    <span class="marquee-item">1/8 Scale</span>
+    <span class="marquee-separator">/</span>
+    <span class="marquee-item">Prize Figure</span>
+    <span class="marquee-separator">/</span>
+    <span class="marquee-item">Nendoroid</span>
+    <span class="marquee-separator">/</span>
+    <span class="marquee-item">Figma</span>
+    <span class="marquee-separator">/</span>
+    <span class="marquee-item">Scale Figure</span>
+    <span class="marquee-separator">/</span>
+    <span class="marquee-item">PVC</span>
+    <span class="marquee-separator">/</span>
+    <span class="marquee-item">Resin</span>
+    <span class="marquee-separator">/</span>
+    <span class="marquee-item">ABS</span>
+    <span class="marquee-separator">/</span>
+    <span class="marquee-item">1/4 Scale</span>
+    <span class="marquee-separator">/</span>
+    <span class="marquee-item">1/6 Scale</span>
+    <span class="marquee-separator">/</span>
+    <span class="marquee-item">1/7 Scale</span>
+    <span class="marquee-separator">/</span>
+    <span class="marquee-item">1/8 Scale</span>
+    <span class="marquee-separator">/</span>
+    <span class="marquee-item">Prize Figure</span>
+    <span class="marquee-separator">/</span>
+    <span class="marquee-item">Nendoroid</span>
+    <span class="marquee-separator">/</span>
+    <span class="marquee-item">Figma</span>
+    <span class="marquee-separator">/</span>
+    <span class="marquee-item">Scale Figure</span>
+    <span class="marquee-separator">/</span>
+  </div>
+</div>
+
+<!-- Featured Figures Section -->
+<section id="figures">
+  <div class="section-header" data-animate>
+    <span class="section-number">01</span>
+    <h2 class="section-title">Featured <span class="section-title-accent">Figures</span></h2>
+    <p class="section-subtitle">Curated selections from the collection</p>
+  </div>
+
+  <div class="figures-grid">
+
+    <article class="figure-card">
+      <img class="figure-card-image" src="http://141.253.114.69/api/v1/figures/images/3" alt="Hatsune Miku figure" loading="lazy">
+      <span class="figure-card-index">01</span>
+      <div class="figure-card-content">
+        <h3 class="figure-card-name">Hatsune Miku</h3>
+        <p class="figure-card-series">Vocaloid -- World is Mine 2024 Ver.</p>
+        <div class="figure-card-meta">
+          <span class="figure-card-meta-item">1/7 <span>Scale</span></span>
+          <span class="figure-card-meta-item"><span>Good Smile Company</span></span>
+          <span class="figure-card-meta-item"><span>25,273 JPY</span></span>
+        </div>
+      </div>
+    </article>
+
+    <article class="figure-card">
+      <img class="figure-card-image" src="http://141.253.114.69/api/v1/figures/images/121" alt="Rem figure" loading="lazy">
+      <span class="figure-card-index">02</span>
+      <div class="figure-card-content">
+        <h3 class="figure-card-name">Rem</h3>
+        <p class="figure-card-series">Re:Zero -- Graceful Beauty 2024 New Year Ver.</p>
+        <div class="figure-card-meta">
+          <span class="figure-card-meta-item">1/7 <span>Scale</span></span>
+          <span class="figure-card-meta-item"><span>Kadokawa</span></span>
+          <span class="figure-card-meta-item"><span>19,600 JPY</span></span>
+        </div>
+      </div>
+    </article>
+
+    <article class="figure-card">
+      <img class="figure-card-image" src="http://141.253.114.69/api/v1/figures/images/112" alt="Emilia figure" loading="lazy">
+      <span class="figure-card-index">03</span>
+      <div class="figure-card-content">
+        <h3 class="figure-card-name">Emilia</h3>
+        <p class="figure-card-series">Re:Zero -- Graceful Beauty 2024 New Year Ver.</p>
+        <div class="figure-card-meta">
+          <span class="figure-card-meta-item">1/7 <span>Scale</span></span>
+          <span class="figure-card-meta-item"><span>Kadokawa</span></span>
+          <span class="figure-card-meta-item"><span>21,600 JPY</span></span>
+        </div>
+      </div>
+    </article>
+
+    <article class="figure-card">
+      <img class="figure-card-image" src="http://141.253.114.69/api/v1/figures/images/298" alt="Hatsune Miku Racing figure" loading="lazy">
+      <span class="figure-card-index">04</span>
+      <div class="figure-card-content">
+        <h3 class="figure-card-name">Hatsune Miku</h3>
+        <p class="figure-card-series">Good Smile Racing -- Racing 2025 Ver.</p>
+        <div class="figure-card-meta">
+          <span class="figure-card-meta-item">1/7 <span>Scale</span></span>
+          <span class="figure-card-meta-item"><span>Good Smile Company</span></span>
+          <span class="figure-card-meta-item"><span>20,000 JPY</span></span>
+        </div>
+      </div>
+    </article>
+
+    <article class="figure-card">
+      <img class="figure-card-image" src="http://141.253.114.69/api/v1/figures/images/12" alt="Megurine Luka figure" loading="lazy">
+      <span class="figure-card-index">05</span>
+      <div class="figure-card-content">
+        <h3 class="figure-card-name">Megurine Luka</h3>
+        <p class="figure-card-series">Vocaloid -- Symphony 2024 Ver.</p>
+        <div class="figure-card-meta">
+          <span class="figure-card-meta-item">Nendoroid <span>Scale</span></span>
+          <span class="figure-card-meta-item"><span>Good Smile Company</span></span>
+          <span class="figure-card-meta-item"><span>6,818 JPY</span></span>
+        </div>
+      </div>
+    </article>
+
+    <article class="figure-card">
+      <img class="figure-card-image" src="http://141.253.114.69/api/v1/figures/images/103" alt="Hatsune Miku Figma figure" loading="lazy">
+      <span class="figure-card-index">06</span>
+      <div class="figure-card-content">
+        <h3 class="figure-card-name">Hatsune Miku</h3>
+        <p class="figure-card-series">Good Smile Racing -- Figma Racing 2024 Ver.</p>
+        <div class="figure-card-meta">
+          <span class="figure-card-meta-item">figma <span>Scale</span></span>
+          <span class="figure-card-meta-item"><span>Max Factory</span></span>
+          <span class="figure-card-meta-item"><span>12,545 JPY</span></span>
+        </div>
+      </div>
+    </article>
+
+  </div>
+</section>
+
+<!-- A-Z Browse Section -->
+<section id="browse">
+  <div class="section-header" data-animate>
+    <span class="section-number">02</span>
+    <h2 class="section-title">Browse <span class="section-title-accent">A--Z</span></h2>
+    <p class="section-subtitle">Navigate the entire catalog by first letter</p>
+  </div>
+
+  <div class="az-section">
+    <div class="az-grid" id="azGrid"></div>
+  </div>
+</section>
+
+<!-- Manufacturers Section -->
+<section id="manufacturers">
+  <div class="section-header" data-animate>
+    <span class="section-number">03</span>
+    <h2 class="section-title">Manufact<span class="section-title-accent">urers</span></h2>
+    <p class="section-subtitle">The makers behind the figures</p>
+  </div>
+
+  <div class="manufacturers-section">
+    <ul class="manufacturers-list" id="manufacturersList"></ul>
+  </div>
+</section>
+
+<!-- Stats Section -->
+<section>
+  <div class="section-header" data-animate>
+    <span class="section-number">04</span>
+    <h2 class="section-title">By The <span class="section-title-accent">Numbers</span></h2>
+    <p class="section-subtitle">The encyclopedia in figures</p>
+  </div>
+
+  <div class="stats-section">
+    <div class="stats-grid">
+      <div class="stat-item">
+        <div class="stat-number" data-count="12847">0</div>
+        <div class="stat-label">Total Figures</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number" data-count="342">0</div>
+        <div class="stat-label">Manufacturers</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number" data-count="1896">0</div>
+        <div class="stat-label">Series</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number" data-count="47">0</div>
+        <div class="stat-label">Sculptors</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Recent Additions -->
+<section id="recent">
+  <div class="section-header" data-animate>
+    <span class="section-number">05</span>
+    <h2 class="section-title">Recently <span class="section-title-accent">Added</span></h2>
+    <p class="section-subtitle">Latest entries in the encyclopedia</p>
+  </div>
+
+  <div class="recent-section">
+    <div class="recent-scroll" id="recentScroll"></div>
+  </div>
+</section>
+
+<!-- Second Marquee -->
+<div class="marquee-band">
+  <div class="marquee-track" style="animation-direction: reverse;">
+    <span class="marquee-item">Alter</span>
+    <span class="marquee-separator">--</span>
+    <span class="marquee-item">Kotobukiya</span>
+    <span class="marquee-separator">--</span>
+    <span class="marquee-item">Good Smile Company</span>
+    <span class="marquee-separator">--</span>
+    <span class="marquee-item">Max Factory</span>
+    <span class="marquee-separator">--</span>
+    <span class="marquee-item">FREEing</span>
+    <span class="marquee-separator">--</span>
+    <span class="marquee-item">Furyu</span>
+    <span class="marquee-separator">--</span>
+    <span class="marquee-item">SEGA</span>
+    <span class="marquee-separator">--</span>
+    <span class="marquee-item">MegaHouse</span>
+    <span class="marquee-separator">--</span>
+    <span class="marquee-item">Bandai Spirits</span>
+    <span class="marquee-separator">--</span>
+    <span class="marquee-item">Aniplex</span>
+    <span class="marquee-separator">--</span>
+    <span class="marquee-item">Alter</span>
+    <span class="marquee-separator">--</span>
+    <span class="marquee-item">Kotobukiya</span>
+    <span class="marquee-separator">--</span>
+    <span class="marquee-item">Good Smile Company</span>
+    <span class="marquee-separator">--</span>
+    <span class="marquee-item">Max Factory</span>
+    <span class="marquee-separator">--</span>
+    <span class="marquee-item">FREEing</span>
+    <span class="marquee-separator">--</span>
+    <span class="marquee-item">Furyu</span>
+    <span class="marquee-separator">--</span>
+    <span class="marquee-item">SEGA</span>
+    <span class="marquee-separator">--</span>
+    <span class="marquee-item">MegaHouse</span>
+    <span class="marquee-separator">--</span>
+    <span class="marquee-item">Bandai Spirits</span>
+    <span class="marquee-separator">--</span>
+    <span class="marquee-item">Aniplex</span>
+    <span class="marquee-separator">--</span>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="footer-top">
+    <div class="footer-brand">
+      MODEL<span class="footer-brand-accent">WIKI</span>
+    </div>
+    <div class="footer-links-group">
+      <div class="footer-links-col">
+        <h4>Explore</h4>
+        <ul>
+          <li><a href="#">Figures</a></li>
+          <li><a href="#">Manufacturers</a></li>
+          <li><a href="#">Series</a></li>
+          <li><a href="#">Sculptors</a></li>
+        </ul>
+      </div>
+      <div class="footer-links-col">
+        <h4>Resources</h4>
+        <ul>
+          <li><a href="#">Price Guide</a></li>
+          <li><a href="#">Release Calendar</a></li>
+          <li><a href="#">Comparison Tool</a></li>
+          <li><a href="#">API</a></li>
+        </ul>
+      </div>
+      <div class="footer-links-col">
+        <h4>About</h4>
+        <ul>
+          <li><a href="#">Contribute</a></li>
+          <li><a href="#">Contact</a></li>
+          <li><a href="#">Privacy</a></li>
+          <li><a href="#">Terms</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span class="footer-copyright">2026 ModelWiki. All rights reserved.</span>
+    <span class="footer-tagline">Text is design. Design is text.</span>
+  </div>
+</footer>
+
+<script>
+/* ============================================================
+   SAMPLE DATA
+   ============================================================ */
+const azData = {
+  A: 847, B: 623, C: 912, D: 534, E: 289, F: 756,
+  G: 645, H: 478, I: 156, J: 892, K: 1034, L: 367,
+  M: 1189, N: 423, O: 198, P: 567, Q: 34, R: 678,
+  S: 1456, T: 789, U: 123, V: 234, W: 345, X: 12,
+  Y: 456, Z: 78
+};
+
+const manufacturers = [
+  { name: 'Good Smile Company', count: 2847 },
+  { name: 'Kotobukiya', count: 1923 },
+  { name: 'Alter', count: 1456 },
+  { name: 'Max Factory', count: 1234 },
+  { name: 'FREEing', count: 987 },
+  { name: 'Furyu', count: 876 },
+  { name: 'SEGA', count: 2345 },
+  { name: 'MegaHouse', count: 654 },
+  { name: 'Bandai Spirits', count: 3456 },
+  { name: 'Aniplex', count: 432 },
+  { name: 'Phat Company', count: 321 },
+  { name: 'Stronger', count: 234 },
+  { name: 'eStream', count: 178 },
+  { name: 'Skytube', count: 145 },
+  { name: 'Native', count: 267 },
+];
+
+const recentFigures = [
+  { name: 'Hatsune Miku', series: 'Vocaloid', scale: '1/7', manufacturer: 'Good Smile Company', letter: 'H', imageId: 3 },
+  { name: 'Rem', series: 'Re:Zero', scale: '1/7', manufacturer: 'Kadokawa', letter: 'R', imageId: 121 },
+  { name: 'Emilia', series: 'Re:Zero', scale: '1/7', manufacturer: 'Kadokawa', letter: 'E', imageId: 112 },
+  { name: 'Hatsune Miku', series: 'Good Smile Racing', scale: '1/7', manufacturer: 'Good Smile Company', letter: 'M', imageId: 298 },
+  { name: 'Megurine Luka', series: 'Vocaloid', scale: 'Nendoroid', manufacturer: 'Good Smile Company', letter: 'L', imageId: 12 },
+  { name: 'Hatsune Miku', series: 'Good Smile Racing', scale: 'figma', manufacturer: 'Max Factory', letter: 'F', imageId: 103 },
+  { name: 'Gojo Satoru', series: 'Jujutsu Kaisen', scale: 'Badge', manufacturer: 'Aniplex', letter: 'G', imageId: 202 },
+  { name: 'Hatsune Miku', series: 'Vocaloid', scale: 'Pop Up Parade', manufacturer: 'Good Smile Company', letter: 'P', imageId: 265 },
+  { name: 'Hatsune Miku', series: 'Vocaloid', scale: 'Prize', manufacturer: 'BANDAI SPIRITS', letter: 'S', imageId: 166 },
+  { name: 'Monkey D. Luffy', series: 'One Piece', scale: 'Non-scale', manufacturer: 'MegaHouse', letter: 'D', imageId: 512 },
+];
+
+/* ============================================================
+   A-Z GRID
+   ============================================================ */
+const azGrid = document.getElementById('azGrid');
+const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+
+alphabet.forEach(letter => {
+  const count = azData[letter] || 0;
+  const el = document.createElement('div');
+  el.className = 'az-letter' + (count === 0 ? ' is-empty' : '');
+  el.setAttribute('data-count', count);
+  el.textContent = letter;
+  if (count > 0) {
+    el.addEventListener('click', () => {
+      document.querySelectorAll('.az-letter.is-active').forEach(a => a.classList.remove('is-active'));
+      el.classList.add('is-active');
+    });
+  }
+  azGrid.appendChild(el);
+});
+
+/* ============================================================
+   MANUFACTURERS LIST
+   ============================================================ */
+const manufacturersList = document.getElementById('manufacturersList');
+
+manufacturers.forEach(m => {
+  const li = document.createElement('li');
+  li.className = 'manufacturer-item';
+  li.innerHTML = `
+    <span class="manufacturer-name">${m.name}</span>
+    <span class="manufacturer-count">${m.count.toLocaleString()}</span>
+  `;
+  manufacturersList.appendChild(li);
+});
+
+/* ============================================================
+   RECENT ADDITIONS
+   ============================================================ */
+const recentScroll = document.getElementById('recentScroll');
+
+recentFigures.forEach((fig, i) => {
+  const item = document.createElement('div');
+  item.className = 'recent-item';
+  item.innerHTML = `
+    <img class="recent-item-image" src="http://141.253.114.69/api/v1/figures/images/${fig.imageId}" alt="${fig.name}" loading="lazy">
+    <span class="recent-item-letter">${fig.letter}</span>
+    <div class="recent-item-info">
+      <h3 class="recent-item-name">${fig.name}</h3>
+      <p class="recent-item-detail">${fig.series} / ${fig.scale} / ${fig.manufacturer}</p>
+    </div>
+  `;
+  recentScroll.appendChild(item);
+});
+
+/* ============================================================
+   SCROLL PROGRESS
+   ============================================================ */
+const scrollProgress = document.getElementById('scrollProgress');
+
+function updateScrollProgress() {
+  const scrollTop = window.pageYOffset;
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  const progress = docHeight > 0 ? scrollTop / docHeight : 0;
+  scrollProgress.style.transform = `scaleX(${progress})`;
+}
+
+/* ============================================================
+   HERO PARALLAX / SCROLL EFFECTS
+   ============================================================ */
+const heroLine1 = document.getElementById('heroLine1');
+const heroLine2 = document.getElementById('heroLine2');
+const heroLine3 = document.getElementById('heroLine3');
+
+function updateHeroScroll() {
+  const scrollY = window.pageYOffset;
+  const vh = window.innerHeight;
+  const progress = Math.min(scrollY / vh, 1);
+
+  // Line 1: moves left and stretches
+  const l1x = -5 - progress * 30;
+  const l1scale = 1 + progress * 0.3;
+  heroLine1.style.transform = `translateX(${l1x}vw) scaleX(${l1scale})`;
+  heroLine1.style.opacity = 1 - progress * 0.8;
+
+  // Line 2: moves right and stretches
+  const l2x = 5 + progress * 30;
+  const l2scale = 1 + progress * 0.3;
+  heroLine2.style.transform = `translateX(${l2x}vw) scaleX(${l2scale})`;
+  heroLine2.style.opacity = 1 - progress * 0.8;
+
+  // Line 3: stretches horizontally
+  const l3scale = 1 + progress * 2;
+  heroLine3.style.transform = `scaleX(${l3scale})`;
+  heroLine3.style.opacity = 1 - progress;
+}
+
+/* ============================================================
+   INTERSECTION OBSERVER - Section Animations
+   ============================================================ */
+const sectionHeaders = document.querySelectorAll('[data-animate]');
+
+const sectionObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('is-visible');
+    }
+  });
+}, {
+  threshold: 0.2,
+  rootMargin: '0px 0px -50px 0px'
+});
+
+sectionHeaders.forEach(header => sectionObserver.observe(header));
+
+/* ============================================================
+   STAT COUNTER ANIMATION
+   ============================================================ */
+const statNumbers = document.querySelectorAll('.stat-number[data-count]');
+
+const statObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const el = entry.target;
+      const target = parseInt(el.getAttribute('data-count'), 10);
+      animateCounter(el, target);
+      statObserver.unobserve(el);
+    }
+  });
+}, { threshold: 0.5 });
+
+statNumbers.forEach(el => statObserver.observe(el));
+
+function animateCounter(el, target) {
+  const duration = 2000;
+  const start = performance.now();
+
+  function tick(now) {
+    const elapsed = now - start;
+    const progress = Math.min(elapsed / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 4);
+    const current = Math.round(eased * target);
+    el.textContent = current.toLocaleString();
+    if (progress < 1) {
+      requestAnimationFrame(tick);
+    }
+  }
+
+  requestAnimationFrame(tick);
+}
+
+/* ============================================================
+   FIGURE CARD SCROLL REVEAL
+   ============================================================ */
+const figureCards = document.querySelectorAll('.figure-card');
+
+const cardObserver = new IntersectionObserver((entries) => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) {
+      setTimeout(() => {
+        entry.target.style.opacity = '1';
+        entry.target.style.transform = 'translateY(0)';
+      }, i * 80);
+      cardObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.1 });
+
+figureCards.forEach(card => {
+  card.style.opacity = '0';
+  card.style.transform = 'translateY(40px)';
+  card.style.transition = 'opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1)';
+  cardObserver.observe(card);
+});
+
+/* ============================================================
+   MANUFACTURER ITEM SCROLL REVEAL
+   ============================================================ */
+const manufacturerItems = document.querySelectorAll('.manufacturer-item');
+
+const mfgObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.style.opacity = '1';
+      entry.target.style.transform = 'translateX(0)';
+      mfgObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.1 });
+
+manufacturerItems.forEach((item, i) => {
+  item.style.opacity = '0';
+  item.style.transform = 'translateX(-30px)';
+  item.style.transition = `opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1) ${i * 0.05}s, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) ${i * 0.05}s`;
+  mfgObserver.observe(item);
+});
+
+/* ============================================================
+   AZ LETTER SCROLL REVEAL
+   ============================================================ */
+const azLetters = document.querySelectorAll('.az-letter');
+
+const azObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const letters = entry.target.parentElement.querySelectorAll('.az-letter');
+      letters.forEach((letter, i) => {
+        setTimeout(() => {
+          letter.style.opacity = '1';
+          letter.style.transform = 'scale(1)';
+        }, i * 25);
+      });
+      azObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.1 });
+
+azLetters.forEach(letter => {
+  letter.style.opacity = '0';
+  letter.style.transform = 'scale(0.7)';
+  letter.style.transition = 'opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
+});
+
+if (azLetters.length > 0) {
+  azObserver.observe(azLetters[0]);
+}
+
+/* ============================================================
+   SCROLL EVENT HANDLER
+   ============================================================ */
+let ticking = false;
+
+function onScroll() {
+  if (!ticking) {
+    requestAnimationFrame(() => {
+      updateScrollProgress();
+      updateHeroScroll();
+      ticking = false;
+    });
+    ticking = true;
+  }
+}
+
+window.addEventListener('scroll', onScroll, { passive: true });
+
+// Initial calls
+updateScrollProgress();
+updateHeroScroll();
+
+/* ============================================================
+   HORIZONTAL SCROLL DRAG
+   ============================================================ */
+const recentScrollEl = document.getElementById('recentScroll');
+let isDragging = false;
+let startX = 0;
+let scrollLeft = 0;
+
+recentScrollEl.addEventListener('mousedown', (e) => {
+  isDragging = true;
+  startX = e.pageX - recentScrollEl.offsetLeft;
+  scrollLeft = recentScrollEl.scrollLeft;
+  recentScrollEl.style.cursor = 'grabbing';
+});
+
+recentScrollEl.addEventListener('mouseleave', () => {
+  isDragging = false;
+  recentScrollEl.style.cursor = '';
+});
+
+recentScrollEl.addEventListener('mouseup', () => {
+  isDragging = false;
+  recentScrollEl.style.cursor = '';
+});
+
+recentScrollEl.addEventListener('mousemove', (e) => {
+  if (!isDragging) return;
+  e.preventDefault();
+  const x = e.pageX - recentScrollEl.offsetLeft;
+  const walk = (x - startX) * 1.5;
+  recentScrollEl.scrollLeft = scrollLeft - walk;
+});
+</script>
+</body>
+</html>

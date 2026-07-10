@@ -1,0 +1,354 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Figure {
+  id                 BigInt     @id @default(autoincrement())
+  slug               String     @unique
+  name               String
+  nameJp             String?    @map("name_jp")
+  nameEn             String?    @map("name_en")
+  description        String?
+  scale              String?
+  material           String?
+  priceJpy           Int?       @map("price_jpy")
+  releaseDate        DateTime?  @map("release_date")
+  heightMm           Int?       @map("height_mm")
+  weightG            Int?       @map("weight_g")
+  janCode            String?    @unique @map("jan_code")
+  parentId           BigInt?    @map("parent_id")
+  seriesId           BigInt?    @map("series_id")
+  manufacturerId     BigInt?    @map("manufacturer_id")
+  activeRevisionId   BigInt?    @unique @map("active_revision_id")
+  mfcId              String?    @map("mfc_id")
+  productLine        String?    @map("product_line")
+  hobbySearchId      String?    @map("hobby_search_id")
+  ageRating          String?    @map("age_rating")
+  amiamiId           String?    @map("amiami_id")
+  hljId              String?    @map("hlj_id")
+  isDeleted          Boolean    @default(false) @map("is_deleted")
+  createdAt          DateTime   @default(now()) @map("created_at")
+  updatedAt          DateTime   @updatedAt @map("updated_at")
+
+  parent             Figure?            @relation("FigureLineage", fields: [parentId], references: [id])
+  children           Figure[]           @relation("FigureLineage")
+  series             Series?            @relation(fields: [seriesId], references: [id])
+  manufacturer       Manufacturer?      @relation(fields: [manufacturerId], references: [id])
+  activeRevision     Revision?          @relation("ActiveRevision", fields: [activeRevisionId], references: [id])
+  images             FigureImage[]
+  revisions          Revision[]         @relation("FigureRevisions")
+  categories         FigureCategory[]
+  sculptors          FigureSculptor[]
+  characters         FigureCharacter[]
+  favorites          Favorite[]
+  likes              FigureLike[]
+  comments           FigureComment[]
+  localized          FigureLocalized[]
+  releases           FigureRelease[]
+
+  @@map("figures")
+}
+
+model FigureLocalized {
+  id          BigInt   @id @default(autoincrement())
+  figureId    BigInt   @map("figure_id")
+  language    String
+  title       String?
+  origin      String?
+  character   String?  @map("character_name")
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  figure Figure @relation(fields: [figureId], references: [id])
+
+  @@unique([figureId, language])
+  @@map("figure_localized")
+}
+
+model FigureRelease {
+  id          BigInt    @id @default(autoincrement())
+  figureId    BigInt    @map("figure_id")
+  edition     String
+  releaseDate DateTime? @map("release_date")
+  priceJpy    Int?      @map("price_jpy")
+  isRerelease Boolean   @default(false) @map("is_rerelease")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  figure Figure @relation(fields: [figureId], references: [id])
+
+  @@map("figure_releases")
+}
+
+model Series {
+  id          BigInt   @id @default(autoincrement())
+  slug        String   @unique
+  name        String
+  nameJp      String?  @map("name_jp")
+  nameEn      String?  @map("name_en")
+  mediaType   String?  @map("media_type")
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  figures        Figure[]
+  characters     Character[]
+
+  @@map("series")
+}
+
+model Character {
+  id          BigInt   @id @default(autoincrement())
+  slug        String   @unique
+  name        String
+  nameJp      String?  @map("name_jp")
+  nameEn      String?  @map("name_en")
+  seriesId    BigInt?  @map("series_id")
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  series        Series?         @relation(fields: [seriesId], references: [id])
+  figures       FigureCharacter[]
+
+  @@map("characters")
+}
+
+model Manufacturer {
+  id          BigInt   @id @default(autoincrement())
+  slug        String   @unique
+  name        String
+  nameJp      String?  @map("name_jp")
+  nameEn      String?  @map("name_en")
+  country     String?
+  website     String?
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  figures        Figure[]
+
+  @@map("manufacturers")
+}
+
+model Sculptor {
+  id          BigInt   @id @default(autoincrement())
+  slug        String   @unique
+  name        String
+  nameJp      String?  @map("name_jp")
+  nameEn      String?  @map("name_en")
+  alias       String[]
+  styleTags   String[] @map("style_tags")
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  figures        FigureSculptor[]
+
+  @@map("sculptors")
+}
+
+model Category {
+  id        BigInt    @id @default(autoincrement())
+  slug      String    @unique
+  name      String
+  parentId  BigInt?   @map("parent_id")
+  sortOrder Int       @default(0) @map("sort_order")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  parent      Category?   @relation("CategoryTree", fields: [parentId], references: [id])
+  children    Category[]  @relation("CategoryTree")
+  figures     FigureCategory[]
+
+  @@map("categories")
+}
+
+model Revision {
+  id              BigInt   @id @default(autoincrement())
+  figureId        BigInt   @map("figure_id")
+  contentMd       String   @map("content_md")
+  summaryMd       String?  @map("summary_md")
+  keyPoints       String[] @map("key_points")
+  relatedKeywords String[] @map("related_keywords")
+  versionNumber   Int      @map("version_number")
+  editSummary     String?  @map("edit_summary")
+  editorId        BigInt?  @map("editor_id")
+  isActive        Boolean  @default(false) @map("is_active")
+  promptVersion   String?  @map("prompt_version")
+  qualityScore    Decimal? @map("quality_score")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  figure                Figure  @relation("FigureRevisions", fields: [figureId], references: [id])
+  activeRevisionFigure  Figure? @relation("ActiveRevision")
+
+  @@unique([figureId, versionNumber])
+  @@map("revisions")
+}
+
+model FigureImage {
+  id        BigInt   @id @default(autoincrement())
+  figureId  BigInt   @map("figure_id")
+  url       String?  // Legacy: external URL, kept for backward compat
+  janCode   String?  @map("jan_code")
+  sha256    String?
+  size      String   @default("raw")
+  format    String    @default("webp")
+  width     Int?
+  height    Int?
+  alt       String?
+  blurhash  String?
+  fileSize  Int?     @map("file_size")
+  sortOrder Int      @default(0) @map("sort_order")
+  source    String?
+  isNsfw    Boolean  @default(false) @map("is_nsfw")
+  data      Json?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  figure Figure @relation(fields: [figureId], references: [id])
+
+  @@unique([figureId, sha256, size], name: "figure_images_figure_sha256_size_key")
+  @@map("figure_images")
+}
+
+model FigureCategory {
+  figureId   BigInt   @map("figure_id")
+  categoryId BigInt   @map("category_id")
+
+  figure    Figure   @relation(fields: [figureId], references: [id])
+  category  Category @relation(fields: [categoryId], references: [id])
+
+  @@id([figureId, categoryId])
+  @@map("figure_category")
+}
+
+model FigureSculptor {
+  figureId   BigInt  @map("figure_id")
+  sculptorId BigInt  @map("sculptor_id")
+  role       String?
+  isPrimary  Boolean @default(false) @map("is_primary")
+
+  figure    Figure   @relation(fields: [figureId], references: [id])
+  sculptor  Sculptor @relation(fields: [sculptorId], references: [id])
+
+  @@id([figureId, sculptorId])
+  @@map("figure_sculptor")
+}
+
+model FigureCharacter {
+  figureId    BigInt  @map("figure_id")
+  characterId BigInt  @map("character_id")
+  isFeatured  Boolean @default(false) @map("is_featured")
+
+  figure    Figure    @relation(fields: [figureId], references: [id])
+  character Character @relation(fields: [characterId], references: [id])
+
+  @@id([figureId, characterId])
+  @@map("figure_character")
+}
+
+model User {
+  id           BigInt   @id @default(autoincrement())
+  email        String?  @unique
+  passwordHash String?  @map("password_hash")
+  displayName  String   @map("display_name")
+  avatarUrl    String?  @map("avatar_url")
+  googleSub    String?  @unique @map("google_sub")
+  wechatOpenid String?  @unique @map("wechat_openid")
+  role         String   @default("user")
+  isActive     Boolean  @default(true) @map("is_active")
+  emailVerifiedAt DateTime? @map("email_verified_at")
+  emailVerifyTokenHash String? @map("email_verify_token_hash")
+  emailVerifyExpiresAt DateTime? @map("email_verify_expires_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  favorites      Favorite[]
+  favoriteGroups FavoriteGroup[]
+  likes          FigureLike[]
+  comments       FigureComment[]
+
+  @@map("users")
+}
+
+model FavoriteGroup {
+  id        BigInt   @id @default(autoincrement())
+  userId    BigInt   @map("user_id")
+  name      String
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user      User      @relation(fields: [userId], references: [id])
+  favorites Favorite[]
+
+  @@map("favorite_groups")
+}
+
+model Favorite {
+  id        BigInt   @id @default(autoincrement())
+  userId    BigInt   @map("user_id")
+  figureId  BigInt   @map("figure_id")
+  groupId   BigInt?  @map("group_id")
+  notes     String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user  User           @relation(fields: [userId], references: [id])
+  figure Figure         @relation(fields: [figureId], references: [id])
+  group FavoriteGroup?  @relation(fields: [groupId], references: [id])
+
+  @@unique([userId, figureId])
+  @@map("favorites")
+}
+
+model FigureLike {
+  id        BigInt   @id @default(autoincrement())
+  userId    BigInt   @map("user_id")
+  figureId  BigInt   @map("figure_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user   User   @relation(fields: [userId], references: [id])
+  figure Figure @relation(fields: [figureId], references: [id])
+
+  @@unique([userId, figureId])
+  @@map("figure_likes")
+}
+
+model FigureComment {
+  id        BigInt   @id @default(autoincrement())
+  userId    BigInt   @map("user_id")
+  figureId  BigInt   @map("figure_id")
+  body      String
+  isDeleted Boolean  @default(false) @map("is_deleted")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user   User   @relation(fields: [userId], references: [id])
+  figure Figure @relation(fields: [figureId], references: [id])
+
+  @@map("figure_comments")
+}
+
+model EntityMapping {
+  id         BigInt   @id @default(autoincrement())
+  entityType String   @map("entity_type")
+  entityId   BigInt   @map("entity_id")
+  source     String
+  sourceId   String   @map("source_id")
+  sourceName String?  @map("source_name")
+  confidence Decimal?
+  isVerified Boolean  @default(false) @map("is_verified")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@unique([entityType, source, sourceId])
+  @@map("entity_mapping")
+}
+
+model RedirectMap {
+  id         BigInt   @id @default(autoincrement())
+  fromPath   String   @unique @map("from_path")
+  toPath     String   @map("to_path")
+  statusCode Int      @default(301) @map("status_code")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("redirect_map")
+}

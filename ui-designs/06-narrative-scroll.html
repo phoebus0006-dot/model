@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ModelWiki -- Anime Figure Encyclopedia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg-deep:#0a0a0b;
+  --bg-surface:#111113;
+  --bg-card:#18181b;
+  --bg-elevated:#1f1f23;
+  --fg-primary:#f0ece4;
+  --fg-secondary:#9a958c;
+  --fg-muted:#5c5850;
+  --accent:#d4a24e;
+  --accent-dim:#a07832;
+  --accent-glow:rgba(212,162,78,0.15);
+  --accent-glow-strong:rgba(212,162,78,0.3);
+  --border:rgba(212,162,78,0.1);
+  --border-strong:rgba(212,162,78,0.25);
+  --radius-sm:6px;
+  --radius-md:12px;
+  --radius-lg:20px;
+  --font-display:'Instrument Serif',Georgia,serif;
+  --font-body:'Plus Jakarta Sans',system-ui,sans-serif;
+  --progress:0%;
+}
+html{scroll-behavior:smooth;scrollbar-width:thin;scrollbar-color:var(--accent-dim) var(--bg-deep)}
+body{
+  font-family:var(--font-body);
+  background:var(--bg-deep);
+  color:var(--fg-primary);
+  line-height:1.6;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* Scroll Progress */
+.scroll-progress{
+  position:fixed;top:0;left:0;height:3px;width:var(--progress);
+  background:linear-gradient(90deg,var(--accent-dim),var(--accent),#f0d78c);
+  z-index:9999;transition:width .05s linear;
+  box-shadow:0 0 12px var(--accent-glow-strong);
+}
+
+/* Navigation */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  padding:1.25rem 2rem;
+  display:flex;align-items:center;justify-content:space-between;
+  transition:background .4s,backdrop-filter .4s;
+}
+.nav.scrolled{
+  background:rgba(10,10,11,0.85);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+}
+.nav-logo{
+  font-family:var(--font-display);
+  font-size:1.5rem;color:var(--accent);
+  letter-spacing:-0.02em;
+  text-decoration:none;
+}
+.nav-logo span{color:var(--fg-primary);font-weight:400}
+.nav-links{display:flex;gap:2rem;list-style:none}
+.nav-links a{
+  color:var(--fg-secondary);text-decoration:none;
+  font-size:.85rem;font-weight:500;letter-spacing:.04em;
+  text-transform:uppercase;transition:color .3s;position:relative;
+}
+.nav-links a::after{
+  content:'';position:absolute;bottom:-4px;left:0;width:0;height:1px;
+  background:var(--accent);transition:width .3s;
+}
+.nav-links a:hover{color:var(--fg-primary)}
+.nav-links a:hover::after{width:100%}
+
+/* Chapter Connector */
+.chapter-connector{
+  position:relative;height:160px;
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;
+}
+.chapter-connector::before{
+  content:'';position:absolute;
+  width:1px;height:100%;
+  background:linear-gradient(to bottom,transparent,var(--accent-dim),transparent);
+}
+.chapter-connector .connector-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--accent);
+  box-shadow:0 0 20px var(--accent-glow-strong);
+  position:relative;z-index:1;
+}
+.chapter-connector .connector-label{
+  position:absolute;
+  font-family:var(--font-display);
+  font-style:italic;
+  color:var(--fg-muted);
+  font-size:.9rem;
+  letter-spacing:.08em;
+}
+
+/* Hero Section */
+.hero{
+  position:relative;min-height:100vh;
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;
+}
+.hero-parallax{
+  position:absolute;inset:0;
+  will-change:transform;
+}
+.hero-layer{
+  position:absolute;inset:0;
+  background-size:cover;background-position:center;
+  will-change:transform;
+}
+.hero-layer--back{
+  background-image:url('http://141.253.114.69/api/v1/figures/images/121');
+  opacity:.25;filter:blur(2px) brightness(0.6);
+  transform:scale(1.15);
+}
+.hero-layer--mid{
+  background:radial-gradient(ellipse at 50% 80%,var(--accent-glow) 0%,transparent 60%);
+}
+.hero-layer--front{
+  background:linear-gradient(to bottom,transparent 50%,var(--bg-deep) 100%);
+}
+.hero-content{
+  position:relative;z-index:2;text-align:center;
+  max-width:800px;padding:0 2rem;
+}
+.hero-chapter{
+  font-family:var(--font-body);
+  font-size:.75rem;font-weight:600;
+  letter-spacing:.2em;text-transform:uppercase;
+  color:var(--accent);margin-bottom:1.5rem;
+  opacity:0;transform:translateY(20px);
+  animation:fadeUp .8s ease forwards .3s;
+}
+.hero-title{
+  font-family:var(--font-display);
+  font-size:clamp(3rem,8vw,6.5rem);
+  line-height:.95;letter-spacing:-.03em;
+  margin-bottom:1.5rem;
+  opacity:0;transform:translateY(30px);
+  animation:fadeUp .8s ease forwards .5s;
+}
+.hero-title em{
+  font-style:italic;color:var(--accent);
+}
+.hero-subtitle{
+  font-size:1.1rem;color:var(--fg-secondary);
+  max-width:500px;margin:0 auto 2.5rem;
+  font-weight:300;line-height:1.7;
+  opacity:0;transform:translateY(20px);
+  animation:fadeUp .8s ease forwards .7s;
+}
+.hero-cta{
+  display:inline-flex;align-items:center;gap:.75rem;
+  padding:.9rem 2.2rem;
+  background:var(--accent);color:var(--bg-deep);
+  font-family:var(--font-body);
+  font-size:.85rem;font-weight:600;
+  letter-spacing:.06em;text-transform:uppercase;
+  border:none;border-radius:var(--radius-sm);
+  cursor:pointer;text-decoration:none;
+  transition:all .3s;
+  opacity:0;transform:translateY(20px);
+  animation:fadeUp .8s ease forwards .9s;
+}
+.hero-cta:hover{
+  background:#f0d78c;
+  box-shadow:0 8px 30px var(--accent-glow-strong);
+  transform:translateY(-2px);
+}
+.hero-cta svg{width:16px;height:16px;transition:transform .3s}
+.hero-cta:hover svg{transform:translateX(4px)}
+.hero-scroll-hint{
+  position:absolute;bottom:3rem;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:.5rem;
+  color:var(--fg-muted);font-size:.7rem;letter-spacing:.15em;
+  text-transform:uppercase;
+  opacity:0;animation:fadeUp .8s ease forwards 1.2s;
+}
+.hero-scroll-hint .scroll-line{
+  width:1px;height:40px;
+  background:linear-gradient(to bottom,var(--accent-dim),transparent);
+  animation:scrollPulse 2s ease infinite;
+}
+
+/* Narrative Reveal */
+.reveal{opacity:0;transform:translateY(40px);transition:opacity .8s ease,transform .8s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.reveal-left{opacity:0;transform:translateX(-60px);transition:opacity .8s ease,transform .8s ease}
+.reveal-left.visible{opacity:1;transform:translateX(0)}
+.reveal-right{opacity:0;transform:translateX(60px);transition:opacity .8s ease,transform .8s ease}
+.reveal-right.visible{opacity:1;transform:translateX(0)}
+.reveal-scale{opacity:0;transform:scale(.9);transition:opacity .8s ease,transform .8s ease}
+.reveal-scale.visible{opacity:1;transform:scale(1)}
+
+/* Section Common */
+.section{padding:6rem 2rem;position:relative}
+.section-container{max-width:1200px;margin:0 auto}
+.section-chapter{
+  font-family:var(--font-body);
+  font-size:.7rem;font-weight:600;
+  letter-spacing:.25em;text-transform:uppercase;
+  color:var(--accent);margin-bottom:.75rem;
+}
+.section-heading{
+  font-family:var(--font-display);
+  font-size:clamp(2rem,5vw,3.5rem);
+  line-height:1.05;letter-spacing:-.02em;
+  margin-bottom:1rem;
+}
+.section-heading em{font-style:italic;color:var(--accent)}
+.section-desc{
+  color:var(--fg-secondary);font-size:1rem;
+  max-width:520px;line-height:1.7;font-weight:300;
+  margin-bottom:3rem;
+}
+
+/* Discover Section */
+.discover{background:var(--bg-deep)}
+.discover-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:3rem;
+  align-items:start;
+}
+.discover-featured{
+  position:relative;
+  border-radius:var(--radius-lg);
+  overflow:hidden;
+  aspect-ratio:3/4;
+}
+.discover-featured img{
+  width:100%;height:100%;object-fit:cover;
+  transition:transform .6s ease;
+}
+.discover-featured:hover img{transform:scale(1.03)}
+.discover-featured-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(to top,rgba(10,10,11,.9) 0%,transparent 50%);
+  display:flex;flex-direction:column;justify-content:flex-end;
+  padding:2rem;
+}
+.discover-featured-tag{
+  font-size:.65rem;font-weight:600;letter-spacing:.15em;
+  text-transform:uppercase;color:var(--accent);
+  margin-bottom:.5rem;
+}
+.discover-featured-name{
+  font-family:var(--font-display);
+  font-size:1.8rem;margin-bottom:.25rem;
+}
+.discover-featured-detail{
+  color:var(--fg-secondary);font-size:.85rem;
+}
+.discover-list{display:flex;flex-direction:column;gap:1.5rem}
+.discover-item{
+  display:grid;grid-template-columns:80px 1fr auto;
+  gap:1.25rem;align-items:center;
+  padding:1rem 1.25rem;
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:var(--radius-md);
+  transition:all .3s;cursor:pointer;
+}
+.discover-item:hover{
+  border-color:var(--border-strong);
+  background:var(--bg-elevated);
+  transform:translateX(6px);
+}
+.discover-item-img{
+  width:80px;height:80px;border-radius:var(--radius-sm);
+  overflow:hidden;flex-shrink:0;
+}
+.discover-item-img img{width:100%;height:100%;object-fit:cover}
+.discover-item-info{min-width:0}
+.discover-item-name{
+  font-family:var(--font-display);
+  font-size:1.1rem;margin-bottom:.15rem;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.discover-item-series{color:var(--fg-secondary);font-size:.8rem}
+.discover-item-price{
+  font-weight:600;color:var(--accent);
+  font-size:.95rem;white-space:nowrap;
+}
+.discover-item-scale{
+  color:var(--fg-muted);font-size:.7rem;
+  font-weight:500;letter-spacing:.05em;
+}
+
+/* Collection Section */
+.collection{
+  background:var(--bg-surface);
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+}
+.collection-header{
+  display:flex;justify-content:space-between;
+  align-items:flex-end;margin-bottom:3rem;
+  flex-wrap:wrap;gap:1rem;
+}
+.collection-filters{
+  display:flex;gap:.5rem;flex-wrap:wrap;
+}
+.collection-filter{
+  padding:.5rem 1.1rem;
+  background:transparent;
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  color:var(--fg-secondary);
+  font-family:var(--font-body);
+  font-size:.78rem;font-weight:500;
+  cursor:pointer;transition:all .3s;
+}
+.collection-filter:hover,.collection-filter.active{
+  background:var(--accent-glow);
+  border-color:var(--accent);
+  color:var(--accent);
+}
+.collection-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:1.5rem;
+}
+.collection-card{
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:var(--radius-md);
+  overflow:hidden;
+  transition:all .4s;cursor:pointer;
+}
+.collection-card:hover{
+  border-color:var(--border-strong);
+  transform:translateY(-6px);
+  box-shadow:0 20px 50px rgba(0,0,0,.4),0 0 30px var(--accent-glow);
+}
+.collection-card-img{
+  aspect-ratio:4/3;overflow:hidden;position:relative;
+}
+.collection-card-img img{
+  width:100%;height:100%;object-fit:cover;
+  transition:transform .5s;
+}
+.collection-card:hover .collection-card-img img{transform:scale(1.06)}
+.collection-card-img .card-badge{
+  position:absolute;top:.75rem;left:.75rem;
+  padding:.3rem .7rem;
+  background:rgba(10,10,11,.75);
+  backdrop-filter:blur(8px);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  font-size:.65rem;font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;
+  color:var(--accent);
+}
+.collection-card-body{padding:1.25rem}
+.collection-card-series{
+  font-size:.7rem;font-weight:500;
+  color:var(--fg-muted);letter-spacing:.08em;
+  text-transform:uppercase;margin-bottom:.35rem;
+}
+.collection-card-name{
+  font-family:var(--font-display);
+  font-size:1.15rem;margin-bottom:.75rem;
+}
+.collection-card-meta{
+  display:flex;justify-content:space-between;
+  align-items:center;
+}
+.collection-card-manufacturer{
+  font-size:.78rem;color:var(--fg-secondary);
+}
+.collection-card-price{
+  font-weight:600;color:var(--accent);font-size:.95rem;
+}
+
+/* Community Section */
+.community{background:var(--bg-deep)}
+.community-layout{
+  display:grid;grid-template-columns:1fr 1fr;gap:4rem;
+  align-items:start;
+}
+.community-picks{display:flex;flex-direction:column;gap:1.5rem}
+.community-pick{
+  display:flex;gap:1.25rem;
+  padding:1.25rem;
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:var(--radius-md);
+  transition:all .3s;cursor:pointer;
+}
+.community-pick:hover{
+  border-color:var(--border-strong);
+  background:var(--bg-elevated);
+}
+.community-pick-img{
+  width:100px;height:100px;border-radius:var(--radius-sm);
+  overflow:hidden;flex-shrink:0;
+}
+.community-pick-img img{width:100%;height:100%;object-fit:cover}
+.community-pick-content{flex:1;min-width:0}
+.community-pick-user{
+  display:flex;align-items:center;gap:.5rem;
+  margin-bottom:.5rem;
+}
+.community-pick-avatar{
+  width:24px;height:24px;border-radius:50%;
+  background:var(--accent-glow);border:1px solid var(--accent-dim);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.6rem;font-weight:700;color:var(--accent);
+}
+.community-pick-username{
+  font-size:.75rem;font-weight:600;color:var(--fg-secondary);
+}
+.community-pick-name{
+  font-family:var(--font-display);
+  font-size:1.05rem;margin-bottom:.25rem;
+}
+.community-pick-quote{
+  font-size:.82rem;color:var(--fg-secondary);
+  font-style:italic;line-height:1.5;
+}
+.community-stats{
+  display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;
+}
+.community-stat{
+  padding:1.5rem;
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:var(--radius-md);
+  text-align:center;
+  transition:all .3s;
+}
+.community-stat:hover{
+  border-color:var(--border-strong);
+}
+.community-stat-value{
+  font-family:var(--font-display);
+  font-size:2.2rem;color:var(--accent);
+  margin-bottom:.25rem;
+}
+.community-stat-label{
+  font-size:.75rem;color:var(--fg-muted);
+  letter-spacing:.08em;text-transform:uppercase;
+  font-weight:500;
+}
+
+/* Footer */
+.footer{
+  padding:4rem 2rem 2rem;
+  border-top:1px solid var(--border);
+  text-align:center;
+}
+.footer-logo{
+  font-family:var(--font-display);
+  font-size:1.8rem;color:var(--accent);
+  margin-bottom:.5rem;
+}
+.footer-logo span{color:var(--fg-primary)}
+.footer-tagline{
+  color:var(--fg-muted);font-size:.85rem;
+  margin-bottom:2rem;font-weight:300;
+}
+.footer-links{
+  display:flex;justify-content:center;gap:2rem;
+  margin-bottom:2rem;flex-wrap:wrap;
+}
+.footer-links a{
+  color:var(--fg-secondary);text-decoration:none;
+  font-size:.8rem;font-weight:500;
+  letter-spacing:.05em;transition:color .3s;
+}
+.footer-links a:hover{color:var(--accent)}
+.footer-copy{
+  color:var(--fg-muted);font-size:.72rem;
+  letter-spacing:.05em;
+}
+
+/* Loading skeleton */
+.skeleton{
+  background:linear-gradient(90deg,var(--bg-card) 25%,var(--bg-elevated) 50%,var(--bg-card) 75%);
+  background-size:200% 100%;
+  animation:shimmer 1.5s infinite;
+  border-radius:var(--radius-sm);
+}
+
+/* Keyframes */
+@keyframes fadeUp{
+  to{opacity:1;transform:translateY(0)}
+}
+@keyframes scrollPulse{
+  0%,100%{opacity:.3;transform:scaleY(1)}
+  50%{opacity:1;transform:scaleY(1.2)}
+}
+@keyframes shimmer{
+  0%{background-position:200% 0}
+  100%{background-position:-200% 0}
+}
+@keyframes float{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-8px)}
+}
+
+/* Responsive */
+@media(max-width:900px){
+  .discover-grid{grid-template-columns:1fr;gap:2rem}
+  .discover-featured{aspect-ratio:4/3}
+  .community-layout{grid-template-columns:1fr;gap:3rem}
+  .nav-links{display:none}
+}
+@media(max-width:600px){
+  .section{padding:4rem 1.25rem}
+  .collection-grid{grid-template-columns:1fr 1fr;gap:1rem}
+  .collection-card-body{padding:1rem}
+  .discover-item{grid-template-columns:60px 1fr;gap:1rem}
+  .discover-item-price{display:none}
+  .discover-item-scale{display:none}
+  .community-stats{grid-template-columns:1fr 1fr}
+  .hero-title{font-size:clamp(2.2rem,10vw,3.5rem)}
+}
+</style>
+</head>
+<body>
+
+<!-- Scroll Progress -->
+<div class="scroll-progress" id="scrollProgress"></div>
+
+<!-- Navigation -->
+<nav class="nav" id="nav">
+  <a href="#" class="nav-logo">Model<span>Wiki</span></a>
+  <ul class="nav-links">
+    <li><a href="#discover">Discover</a></li>
+    <li><a href="#collection">Collection</a></li>
+    <li><a href="#community">Community</a></li>
+  </ul>
+</nav>
+
+<!-- Hero -->
+<section class="hero" id="hero">
+  <div class="hero-parallax" id="heroParallax">
+    <div class="hero-layer hero-layer--back" id="heroBack"></div>
+    <div class="hero-layer hero-layer--mid"></div>
+    <div class="hero-layer hero-layer--front"></div>
+  </div>
+  <div class="hero-content">
+    <div class="hero-chapter">Chapter I</div>
+    <h1 class="hero-title">Every Figure<br><em>Tells a Story</em></h1>
+    <p class="hero-subtitle">The definitive encyclopedia for anime figure collectors. Discover, catalog, and share the art that moves you.</p>
+    <a href="#discover" class="hero-cta">
+      Begin Exploring
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+    </a>
+  </div>
+  <div class="hero-scroll-hint">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- Connector -->
+<div class="chapter-connector reveal">
+  <div class="connector-dot"></div>
+  <div class="connector-label">Chapter II</div>
+</div>
+
+<!-- Discover -->
+<section class="section discover" id="discover">
+  <div class="section-container">
+    <div class="reveal">
+      <div class="section-chapter">Discover</div>
+      <h2 class="section-heading">Figures That<em> Define</em><br>Collecting</h2>
+      <p class="section-desc">From limited editions to beloved re-releases, uncover the pieces that collectors return to again and again.</p>
+    </div>
+    <div class="discover-grid">
+      <div class="discover-featured reveal-left" style="transition-delay:.2s">
+        <img src="http://141.253.114.69/api/v1/figures/images/3" alt="Featured Figure" loading="lazy">
+        <div class="discover-featured-overlay">
+          <div class="discover-featured-tag">Featured</div>
+          <div class="discover-featured-name">Rem -- Crimson Warrior</div>
+          <div class="discover-featured-detail">Alter / 1/7 Scale / Re:Zero Season 2</div>
+        </div>
+      </div>
+      <div class="discover-list" id="discoverList">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Connector -->
+<div class="chapter-connector reveal">
+  <div class="connector-dot"></div>
+  <div class="connector-label">Chapter III</div>
+</div>
+
+<!-- Collection -->
+<section class="section collection" id="collection">
+  <div class="section-container">
+    <div class="collection-header reveal">
+      <div>
+        <div class="section-chapter">Your Collection</div>
+        <h2 class="section-heading">Curate Your<em> World</em></h2>
+      </div>
+      <div class="collection-filters">
+        <button class="collection-filter active">All</button>
+        <button class="collection-filter">1/7 Scale</button>
+        <button class="collection-filter">1/4 Scale</button>
+        <button class="collection-filter">Nendoroid</button>
+        <button class="collection-filter">Figma</button>
+      </div>
+    </div>
+    <div class="collection-grid" id="collectionGrid">
+      <!-- Populated by JS -->
+    </div>
+  </div>
+</section>
+
+<!-- Connector -->
+<div class="chapter-connector reveal">
+  <div class="connector-dot"></div>
+  <div class="connector-label">Chapter IV</div>
+</div>
+
+<!-- Community -->
+<section class="section community" id="community">
+  <div class="section-container">
+    <div class="reveal">
+      <div class="section-chapter">Community</div>
+      <h2 class="section-heading">Voices From<em> The Shelf</em></h2>
+      <p class="section-desc">Real collectors, real stories. See which figures the community cherishes most and why.</p>
+    </div>
+    <div class="community-layout">
+      <div class="community-picks" id="communityPicks">
+        <!-- Populated by JS -->
+      </div>
+      <div class="community-stats" id="communityStats">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="footer-logo">Model<span>Wiki</span></div>
+  <p class="footer-tagline">The anime figure encyclopedia, built by collectors.</p>
+  <div class="footer-links">
+    <a href="#">About</a>
+    <a href="#">Database</a>
+    <a href="#">Contribute</a>
+    <a href="#">API</a>
+    <a href="#">Privacy</a>
+  </div>
+  <p class="footer-copy">2026 ModelWiki. All figure data belongs to respective manufacturers.</p>
+</footer>
+
+<script>
+// ---- Data ----
+const discoverItems = [
+  { name:'Hatsune Miku -- World is Mine 2024', series:'Vocaloid', price:'25,273', scale:'1/7', manufacturer:'Good Smile Company', imageId:3 },
+  { name:'Rem -- Graceful Beauty 2024', series:'Re:Zero', price:'19,600', scale:'1/7', manufacturer:'Kadokawa', imageId:121 },
+  { name:'Emilia -- Graceful Beauty 2024', series:'Re:Zero', price:'21,600', scale:'1/7', manufacturer:'Kadokawa', imageId:112 },
+  { name:'Hatsune Miku -- Racing 2025', series:'Good Smile Racing', price:'20,000', scale:'1/7', manufacturer:'Good Smile Company', imageId:298 },
+  { name:'Megurine Luka -- Symphony 2024', series:'Vocaloid', price:'6,818', scale:'Nendoroid', manufacturer:'Good Smile Company', imageId:12 },
+];
+
+const collectionItems = [
+  { name:'Hatsune Miku -- Snow Miku 2024', series:'Vocaloid', price:'745', scale:'Prize', manufacturer:'BANDAI SPIRITS', badge:'Limited', imageId:166 },
+  { name:'Hatsune Miku -- World is Mine 2024', series:'Vocaloid', price:'25,273', scale:'1/7', manufacturer:'Good Smile Company', badge:'Popular', imageId:3 },
+  { name:'Gojo Satoru -- Badge', series:'Jujutsu Kaisen', price:'550', scale:'Badge', manufacturer:'Aniplex', badge:'New', imageId:202 },
+  { name:'Rem -- Graceful Beauty 2024', series:'Re:Zero', price:'19,600', scale:'1/7', manufacturer:'Kadokawa', badge:'Rare', imageId:121 },
+  { name:'Emilia -- Graceful Beauty 2024', series:'Re:Zero', price:'21,600', scale:'1/7', manufacturer:'Kadokawa', badge:'', imageId:112 },
+  { name:'Hatsune Miku -- Racing 2025', series:'Good Smile Racing', price:'20,000', scale:'1/7', manufacturer:'Good Smile Company', badge:'Pre-order', imageId:298 },
+  { name:'Hatsune Miku -- Pop Up Parade', series:'Vocaloid', price:'800', scale:'Pop Up Parade', manufacturer:'Good Smile Company', badge:'', imageId:265 },
+  { name:'Hatsune Miku -- Figma Racing 2024', series:'Good Smile Racing', price:'12,545', scale:'figma', manufacturer:'Max Factory', badge:'Trending', imageId:103 },
+];
+
+const communityPicks = [
+  { name:'Hatsune Miku -- World is Mine 2024', user:'AK', username:'akira_collects', quote:'The detail on this release is unmatched. Good Smile Company really outdid themselves with the shading.', imageId:3 },
+  { name:'Rem -- Graceful Beauty 2024', user:'YU', username:'yuki_shelf', quote:'My grail piece. The dynamic pose captures everything I love about this character design.', imageId:121 },
+  { name:'Emilia -- Graceful Beauty 2024', user:'RN', username:'ren_boxes', quote:'The translucent effect on her outfit is incredible in person. Photos do not do it justice.', imageId:112 },
+  { name:'Hatsune Miku -- Racing 2025', user:'MK', username:'mako_figs', quote:'Worth every yen. The racing outfit detail is the best I have seen in this price range.', imageId:298 },
+];
+
+const communityStats = [
+  { value:'24.8K', label:'Figures Cataloged' },
+  { value:'1,420', label:'Manufacturers' },
+  { value:'89.3K', label:'Collections' },
+  { value:'312', label:'New This Week' },
+];
+
+// ---- Render Functions ----
+function renderDiscoverList() {
+  const container = document.getElementById('discoverList');
+  container.innerHTML = discoverItems.map((item, i) => `
+    <div class="discover-item reveal-right" style="transition-delay:${0.15 * (i + 1)}s">
+      <div class="discover-item-img">
+        <img src="http://141.253.114.69/api/v1/figures/images/${item.imageId}" alt="${item.name}" loading="lazy">
+      </div>
+      <div class="discover-item-info">
+        <div class="discover-item-name">${item.name}</div>
+        <div class="discover-item-series">${item.series}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="discover-item-price">${item.price} JPY</div>
+        <div class="discover-item-scale">${item.scale}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderCollectionGrid() {
+  const container = document.getElementById('collectionGrid');
+  container.innerHTML = collectionItems.map((item, i) => `
+    <div class="collection-card reveal-scale" style="transition-delay:${0.1 * i}s">
+      <div class="collection-card-img">
+        <img src="http://141.253.114.69/api/v1/figures/images/${item.imageId}" alt="${item.name}" loading="lazy">
+        ${item.badge ? `<div class="card-badge">${item.badge}</div>` : ''}
+      </div>
+      <div class="collection-card-body">
+        <div class="collection-card-series">${item.series} / ${item.scale}</div>
+        <div class="collection-card-name">${item.name}</div>
+        <div class="collection-card-meta">
+          <span class="collection-card-manufacturer">${item.manufacturer}</span>
+          <span class="collection-card-price">${item.price} JPY</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderCommunityPicks() {
+  const container = document.getElementById('communityPicks');
+  container.innerHTML = communityPicks.map((item, i) => `
+    <div class="community-pick reveal-left" style="transition-delay:${0.15 * i}s">
+      <div class="community-pick-img">
+        <img src="http://141.253.114.69/api/v1/figures/images/${item.imageId}" alt="${item.name}" loading="lazy">
+      </div>
+      <div class="community-pick-content">
+        <div class="community-pick-user">
+          <div class="community-pick-avatar">${item.user}</div>
+          <span class="community-pick-username">${item.username}</span>
+        </div>
+        <div class="community-pick-name">${item.name}</div>
+        <div class="community-pick-quote">"${item.quote}"</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderCommunityStats() {
+  const container = document.getElementById('communityStats');
+  container.innerHTML = communityStats.map((item, i) => `
+    <div class="community-stat reveal-scale" style="transition-delay:${0.1 * i}s">
+      <div class="community-stat-value">${item.value}</div>
+      <div class="community-stat-label">${item.label}</div>
+    </div>
+  `).join('');
+}
+
+// ---- Scroll Progress ----
+function updateScrollProgress() {
+  const scrollTop = window.scrollY;
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+  document.documentElement.style.setProperty('--progress', progress + '%');
+}
+
+// ---- Parallax ----
+function updateParallax() {
+  const scrollY = window.scrollY;
+  const heroHeight = document.getElementById('hero').offsetHeight;
+  if (scrollY < heroHeight) {
+    const backLayer = document.getElementById('heroBack');
+    if (backLayer) {
+      backLayer.style.transform = `scale(1.15) translateY(${scrollY * 0.3}px)`;
+    }
+  }
+}
+
+// ---- Nav Scroll State ----
+function updateNav() {
+  const nav = document.getElementById('nav');
+  if (window.scrollY > 60) {
+    nav.classList.add('scrolled');
+  } else {
+    nav.classList.remove('scrolled');
+  }
+}
+
+// ---- Intersection Observer ----
+function setupRevealObserver() {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+  document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale').forEach(el => {
+    observer.observe(el);
+  });
+}
+
+// ---- Filter Buttons ----
+function setupFilters() {
+  const filters = document.querySelectorAll('.collection-filter');
+  filters.forEach(btn => {
+    btn.addEventListener('click', () => {
+      filters.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      // Re-trigger reveal animations
+      const cards = document.querySelectorAll('.collection-card');
+      cards.forEach((card, i) => {
+        card.classList.remove('visible');
+        setTimeout(() => card.classList.add('visible'), 60 * i);
+      });
+    });
+  });
+}
+
+// ---- Init ----
+function init() {
+  renderDiscoverList();
+  renderCollectionGrid();
+  renderCommunityPicks();
+  renderCommunityStats();
+
+  window.addEventListener('scroll', () => {
+    requestAnimationFrame(() => {
+      updateScrollProgress();
+      updateParallax();
+      updateNav();
+    });
+  }, { passive: true });
+
+  updateScrollProgress();
+  updateNav();
+
+  // Small delay to let DOM settle before observing
+  requestAnimationFrame(() => {
+    setupRevealObserver();
+    setupFilters();
+  });
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

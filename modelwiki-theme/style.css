@@ -1,0 +1,17 @@
+/*
+Theme Name: ModelWiki
+Theme URI: https://www.phoebusstudio.com
+Description: European minimalist design theme for the ModelWiki figure encyclopedia.
+Version: 2.7.6
+Author: Phoebus Studio
+License: Proprietary
+Text Domain: modelwiki
+
+=== 架构说明 ===
+
+此文件提供 WordPress 主题元数据。
+
+实际样式在 assets/css/main.css 中通过 CSS 变量系统管理。
+
+路由映射见 functions.php: mw_template_include() 函数。
+*/

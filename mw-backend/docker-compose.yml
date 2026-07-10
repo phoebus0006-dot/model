@@ -1,0 +1,181 @@
+﻿services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: mw-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: modelwiki
+      POSTGRES_USER: modelwiki
+      POSTGRES_PASSWORD: ${PG_PASSWORD:?PG_PASSWORD is required}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U modelwiki"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - mw-backend
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+
+  redis:
+    image: redis:7-alpine
+    container_name: mw-redis
+    restart: always
+    command: redis-server --maxmemory 2gb --maxmemory-policy allkeys-lru --appendonly yes --requirepass ${REDIS_PASSWORD:?REDIS_PASSWORD is required}
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:?REDIS_PASSWORD is required}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - mw-backend
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: mw-api
+    restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://modelwiki:${PG_PASSWORD:?PG_PASSWORD is required}@postgres:5432/modelwiki
+      REDIS_URL: redis://:${REDIS_PASSWORD:?REDIS_PASSWORD is required}@redis:6379
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      ENABLE_PUBLIC_REGISTRATION: ${ENABLE_PUBLIC_REGISTRATION:-true}
+      SITE_URL: ${SITE_URL:-https://www.phoebusstudio.com}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_FROM: ${SMTP_FROM:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      NODE_ENV: production
+      PORT: 3000
+      ASSETS_PATH: /app/assets
+    volumes:
+      - figure_assets:/app/assets
+    ports:
+      - "127.0.0.1:3001:3000"
+    networks:
+      - mw-backend
+      - mw-frontend
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
+  wordpress:
+    image: wordpress:6-php8.2-fpm-alpine
+    container_name: mw-wordpress
+    restart: always
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      WORDPRESS_DB_HOST: mysql
+      WORDPRESS_DB_USER: ${MYSQL_USER:-modelwiki}
+      WORDPRESS_DB_PASSWORD: ${MYSQL_PASSWORD:?MYSQL_PASSWORD is required}
+      WORDPRESS_DB_NAME: ${MYSQL_DB:-wordpress}
+      WORDPRESS_TABLE_PREFIX: wp_
+    volumes:
+      - wp_data:/var/www/html
+      - ./wordpress/wp-content/themes/modelwiki:/var/www/html/wp-content/themes/modelwiki:ro
+      - ./wordpress/wp-content/plugins/modelwiki-api:/var/www/html/wp-content/plugins/modelwiki-api:ro
+    ports:
+      - "127.0.0.1:9000:9000"
+    networks:
+      - mw-backend
+      - mw-frontend
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
+  mysql:
+    image: mysql:8.0
+    container_name: mw-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD is required}
+      MYSQL_DATABASE: ${MYSQL_DB:-wordpress}
+      MYSQL_USER: ${MYSQL_USER:-modelwiki}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?MYSQL_PASSWORD is required}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - mw-backend
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
+  kuro:
+    build:
+      context: ./kuro
+      dockerfile: Dockerfile
+    container_name: mw-kuro
+    restart: always
+    ports:
+      - "127.0.0.1:9192:9192"
+    networks:
+      - mw-backend
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  imgproxy:
+    image: darthsim/imgproxy:v3
+    container_name: mw-imgproxy
+    restart: always
+    environment:
+      IMGPROXY_BIND: ":8080"
+      IMGPROXY_LOCAL_FILESYSTEM_ROOT: /var/www/html
+      IMGPROXY_MAX_SRC_RESOLUTION: 20
+      IMGPROXY_ENABLE_AVIF_DETECTION: "true"
+      IMGPROXY_BASE_URL: /wp-content/uploads/
+    ports:
+      - "127.0.0.1:8081:8080"
+    volumes:
+      - wp_data:/var/www/html:ro
+    networks:
+      - mw-frontend
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+networks:
+  mw-frontend:
+    driver: bridge
+  mw-backend:
+    driver: bridge
+
+volumes:
+  pg_data:
+  redis_data:
+  mysql_data:
+  wp_data:
+  figure_assets:

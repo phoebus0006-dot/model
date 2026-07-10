@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ModelWiki - Anime Figure Encyclopedia</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+
+:root{
+  --bg-deep:#0a0a1a;
+  --glass-bg:rgba(255,255,255,0.06);
+  --glass-bg-hover:rgba(255,255,255,0.10);
+  --glass-border:rgba(255,255,255,0.12);
+  --glass-border-strong:rgba(255,255,255,0.22);
+  --glass-blur:20px;
+  --glass-blur-strong:32px;
+  --text-primary:rgba(255,255,255,0.95);
+  --text-secondary:rgba(255,255,255,0.60);
+  --text-tertiary:rgba(255,255,255,0.35);
+  --accent-cyan:#6ee7f0;
+  --accent-pink:#f472b6;
+  --accent-violet:#a78bfa;
+  --accent-amber:#fbbf24;
+  --gradient-1:linear-gradient(135deg,#6ee7f0,#a78bfa);
+  --gradient-2:linear-gradient(135deg,#f472b6,#fb923c);
+  --gradient-3:linear-gradient(135deg,#a78bfa,#f472b6);
+  --radius-sm:10px;
+  --radius-md:16px;
+  --radius-lg:24px;
+  --radius-xl:32px;
+  --shadow-glass:0 8px 32px rgba(0,0,0,0.25);
+  --shadow-glass-lg:0 16px 48px rgba(0,0,0,0.35);
+  --font-heading:'Outfit',sans-serif;
+  --font-body:'Manrope',sans-serif;
+  --transition:0.3s cubic-bezier(0.4,0,0.2,1);
+}
+
+html{scroll-behavior:smooth;font-size:16px}
+body{
+  font-family:var(--font-body);
+  background:var(--bg-deep);
+  color:var(--text-primary);
+  min-height:100vh;
+  overflow-x:hidden;
+  line-height:1.6;
+}
+
+/* ========== ANIMATED MESH GRADIENT BACKGROUND ========== */
+.mesh-bg{
+  position:fixed;
+  inset:0;
+  z-index:0;
+  overflow:hidden;
+  pointer-events:none;
+}
+.mesh-blob{
+  position:absolute;
+  border-radius:50%;
+  filter:blur(100px);
+  opacity:0.55;
+  will-change:transform;
+}
+.mesh-blob--1{
+  width:55vw;height:55vw;
+  background:radial-gradient(circle,#6ee7f0 0%,transparent 70%);
+  top:-15%;left:-10%;
+  animation:drift1 22s ease-in-out infinite alternate;
+}
+.mesh-blob--2{
+  width:50vw;height:50vw;
+  background:radial-gradient(circle,#a78bfa 0%,transparent 70%);
+  top:20%;right:-15%;
+  animation:drift2 26s ease-in-out infinite alternate;
+}
+.mesh-blob--3{
+  width:45vw;height:45vw;
+  background:radial-gradient(circle,#f472b6 0%,transparent 70%);
+  bottom:-10%;left:20%;
+  animation:drift3 20s ease-in-out infinite alternate;
+}
+.mesh-blob--4{
+  width:35vw;height:35vw;
+  background:radial-gradient(circle,#fbbf24 0%,transparent 70%);
+  top:50%;left:50%;
+  animation:drift4 24s ease-in-out infinite alternate;
+}
+.mesh-blob--5{
+  width:40vw;height:40vw;
+  background:radial-gradient(circle,#34d399 0%,transparent 70%);
+  bottom:20%;right:10%;
+  animation:drift5 28s ease-in-out infinite alternate;
+}
+
+@keyframes drift1{0%{transform:translate(0,0) scale(1)}50%{transform:translate(12vw,8vh) scale(1.15)}100%{transform:translate(-5vw,15vh) scale(0.95)}}
+@keyframes drift2{0%{transform:translate(0,0) scale(1)}50%{transform:translate(-10vw,12vh) scale(1.1)}100%{transform:translate(8vw,-5vh) scale(1.05)}}
+@keyframes drift3{0%{transform:translate(0,0) scale(1)}50%{transform:translate(8vw,-10vh) scale(1.2)}100%{transform:translate(-12vw,5vh) scale(0.9)}}
+@keyframes drift4{0%{transform:translate(0,0) scale(1)}50%{transform:translate(-15vw,8vh) scale(1.1)}100%{transform:translate(10vw,-12vh) scale(1.15)}}
+@keyframes drift5{0%{transform:translate(0,0) scale(1)}50%{transform:translate(10vw,-8vh) scale(1.15)}100%{transform:translate(-8vw,10vh) scale(1.05)}}
+
+/* ========== GLASS UTILITY ========== */
+.glass{
+  background:var(--glass-bg);
+  backdrop-filter:blur(var(--glass-blur));
+  -webkit-backdrop-filter:blur(var(--glass-blur));
+  border:1px solid var(--glass-border);
+  box-shadow:var(--shadow-glass);
+}
+.glass--strong{
+  background:rgba(255,255,255,0.08);
+  backdrop-filter:blur(var(--glass-blur-strong));
+  -webkit-backdrop-filter:blur(var(--glass-blur-strong));
+  border:1px solid var(--glass-border-strong);
+  box-shadow:var(--shadow-glass-lg);
+}
+
+/* ========== LAYOUT ========== */
+.page-wrap{
+  position:relative;
+  z-index:1;
+}
+
+.container{
+  max-width:1280px;
+  margin:0 auto;
+  padding:0 24px;
+}
+
+/* ========== NAVIGATION ========== */
+.nav{
+  position:fixed;
+  top:0;left:0;right:0;
+  z-index:100;
+  padding:0 24px;
+  transition:var(--transition);
+}
+.nav__inner{
+  max-width:1280px;
+  margin:16px auto 0;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:14px 28px;
+  border-radius:var(--radius-lg);
+  background:rgba(255,255,255,0.05);
+  backdrop-filter:blur(24px);
+  -webkit-backdrop-filter:blur(24px);
+  border:1px solid rgba(255,255,255,0.10);
+  box-shadow:0 8px 32px rgba(0,0,0,0.3);
+  transition:var(--transition);
+}
+.nav.scrolled .nav__inner{
+  margin-top:8px;
+  background:rgba(10,10,26,0.7);
+  border-color:rgba(255,255,255,0.08);
+}
+.nav__brand{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  text-decoration:none;
+  color:var(--text-primary);
+}
+.nav__logo{
+  width:36px;height:36px;
+  border-radius:10px;
+  background:var(--gradient-1);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-heading);
+  font-weight:800;
+  font-size:16px;
+  color:#0a0a1a;
+}
+.nav__title{
+  font-family:var(--font-heading);
+  font-weight:700;
+  font-size:20px;
+  letter-spacing:-0.02em;
+}
+.nav__links{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  list-style:none;
+}
+.nav__link{
+  padding:8px 18px;
+  border-radius:var(--radius-sm);
+  font-size:14px;
+  font-weight:500;
+  color:var(--text-secondary);
+  text-decoration:none;
+  transition:var(--transition);
+  cursor:pointer;
+}
+.nav__link:hover{
+  color:var(--text-primary);
+  background:rgba(255,255,255,0.08);
+}
+.nav__link--active{
+  color:var(--accent-cyan);
+  background:rgba(110,231,240,0.08);
+}
+.nav__cta{
+  padding:8px 22px;
+  border-radius:var(--radius-sm);
+  background:var(--gradient-1);
+  color:#0a0a1a;
+  font-weight:700;
+  font-size:14px;
+  text-decoration:none;
+  transition:var(--transition);
+  border:none;
+  cursor:pointer;
+}
+.nav__cta:hover{
+  transform:translateY(-1px);
+  box-shadow:0 4px 20px rgba(110,231,240,0.35);
+}
+.nav__mobile-toggle{
+  display:none;
+  background:none;border:none;
+  color:var(--text-primary);
+  cursor:pointer;
+  padding:8px;
+}
+
+/* ========== HERO ========== */
+.hero{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:120px 24px 80px;
+  position:relative;
+}
+.hero__content{
+  text-align:center;
+  max-width:780px;
+}
+.hero__badge{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:6px 18px;
+  border-radius:100px;
+  background:rgba(110,231,240,0.08);
+  border:1px solid rgba(110,231,240,0.20);
+  font-size:13px;
+  font-weight:600;
+  color:var(--accent-cyan);
+  margin-bottom:28px;
+  animation:fadeUp 0.8s ease-out both;
+}
+.hero__badge-dot{
+  width:6px;height:6px;
+  border-radius:50%;
+  background:var(--accent-cyan);
+  animation:pulse-dot 2s ease-in-out infinite;
+}
+@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(0.8)}}
+
+.hero__heading{
+  font-family:var(--font-heading);
+  font-size:clamp(40px,7vw,76px);
+  font-weight:900;
+  line-height:1.05;
+  letter-spacing:-0.03em;
+  margin-bottom:20px;
+  animation:fadeUp 0.8s ease-out 0.15s both;
+}
+.hero__heading-gradient{
+  background:linear-gradient(135deg,var(--accent-cyan),var(--accent-violet),var(--accent-pink));
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.hero__sub{
+  font-size:18px;
+  color:var(--text-secondary);
+  max-width:540px;
+  margin:0 auto 40px;
+  line-height:1.7;
+  animation:fadeUp 0.8s ease-out 0.3s both;
+}
+
+/* Search Panel */
+.search-panel{
+  background:rgba(255,255,255,0.06);
+  backdrop-filter:blur(28px);
+  -webkit-backdrop-filter:blur(28px);
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:var(--radius-xl);
+  padding:8px;
+  box-shadow:0 16px 48px rgba(0,0,0,0.3);
+  animation:fadeUp 0.8s ease-out 0.45s both;
+  max-width:640px;
+  margin:0 auto 36px;
+}
+.search-panel__row{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.search-panel__field{
+  flex:1;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:14px 20px;
+  border-radius:var(--radius-lg);
+  background:rgba(255,255,255,0.04);
+  border:1px solid transparent;
+  transition:var(--transition);
+}
+.search-panel__field:focus-within{
+  border-color:rgba(110,231,240,0.3);
+  background:rgba(255,255,255,0.07);
+}
+.search-panel__icon{
+  color:var(--text-tertiary);
+  flex-shrink:0;
+}
+.search-panel__input{
+  flex:1;
+  background:none;
+  border:none;
+  outline:none;
+  color:var(--text-primary);
+  font-family:var(--font-body);
+  font-size:15px;
+}
+.search-panel__input::placeholder{
+  color:var(--text-tertiary);
+}
+.search-panel__btn{
+  padding:14px 32px;
+  border-radius:var(--radius-lg);
+  background:var(--gradient-1);
+  color:#0a0a1a;
+  font-family:var(--font-body);
+  font-weight:700;
+  font-size:15px;
+  border:none;
+  cursor:pointer;
+  transition:var(--transition);
+  white-space:nowrap;
+}
+.search-panel__btn:hover{
+  transform:translateY(-1px);
+  box-shadow:0 4px 24px rgba(110,231,240,0.35);
+}
+.search-panel__tags{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:10px 16px 6px;
+  flex-wrap:wrap;
+}
+.search-panel__tag-label{
+  font-size:12px;
+  color:var(--text-tertiary);
+  font-weight:500;
+}
+.search-panel__tag{
+  padding:4px 12px;
+  border-radius:100px;
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.08);
+  font-size:12px;
+  color:var(--text-secondary);
+  cursor:pointer;
+  transition:var(--transition);
+}
+.search-panel__tag:hover{
+  background:rgba(110,231,240,0.10);
+  border-color:rgba(110,231,240,0.20);
+  color:var(--accent-cyan);
+}
+
+.hero__stats{
+  display:flex;
+  justify-content:center;
+  gap:48px;
+  animation:fadeUp 0.8s ease-out 0.6s both;
+}
+.hero__stat{
+  text-align:center;
+}
+.hero__stat-value{
+  font-family:var(--font-heading);
+  font-size:28px;
+  font-weight:800;
+  background:var(--gradient-1);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.hero__stat-label{
+  font-size:13px;
+  color:var(--text-tertiary);
+  font-weight:500;
+  margin-top:2px;
+}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+
+/* ========== SECTION COMMON ========== */
+.section{
+  padding:100px 24px;
+}
+.section__header{
+  text-align:center;
+  margin-bottom:56px;
+}
+.section__label{
+  display:inline-block;
+  padding:5px 16px;
+  border-radius:100px;
+  background:rgba(167,139,250,0.08);
+  border:1px solid rgba(167,139,250,0.18);
+  font-size:12px;
+  font-weight:700;
+  color:var(--accent-violet);
+  text-transform:uppercase;
+  letter-spacing:0.08em;
+  margin-bottom:16px;
+}
+.section__title{
+  font-family:var(--font-heading);
+  font-size:clamp(28px,4vw,44px);
+  font-weight:800;
+  letter-spacing:-0.02em;
+  margin-bottom:12px;
+}
+.section__desc{
+  font-size:16px;
+  color:var(--text-secondary);
+  max-width:520px;
+  margin:0 auto;
+}
+
+/* ========== FIGURE CARDS ========== */
+.figures-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:24px;
+  max-width:1280px;
+  margin:0 auto;
+}
+.figure-card{
+  border-radius:var(--radius-lg);
+  overflow:hidden;
+  background:rgba(255,255,255,0.04);
+  backdrop-filter:blur(var(--glass-blur));
+  -webkit-backdrop-filter:blur(var(--glass-blur));
+  border:1px solid var(--glass-border);
+  box-shadow:var(--shadow-glass);
+  transition:var(--transition);
+  cursor:pointer;
+  position:relative;
+}
+.figure-card:hover{
+  transform:translateY(-6px);
+  border-color:rgba(255,255,255,0.20);
+  box-shadow:0 20px 60px rgba(0,0,0,0.4);
+}
+.figure-card__img-wrap{
+  position:relative;
+  overflow:hidden;
+  aspect-ratio:4/3;
+}
+.figure-card__img{
+  width:100%;height:100%;
+  object-fit:cover;
+  transition:transform 0.5s ease;
+}
+.figure-card:hover .figure-card__img{
+  transform:scale(1.06);
+}
+.figure-card__img-overlay{
+  position:absolute;
+  inset:0;
+  background:linear-gradient(180deg,transparent 40%,rgba(10,10,26,0.85) 100%);
+}
+.figure-card__scale{
+  position:absolute;
+  top:14px;right:14px;
+  padding:4px 10px;
+  border-radius:8px;
+  background:rgba(10,10,26,0.55);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,0.10);
+  font-size:11px;
+  font-weight:700;
+  color:var(--accent-cyan);
+}
+.figure-card__body{
+  padding:20px;
+}
+.figure-card__series{
+  font-size:11px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:0.06em;
+  color:var(--accent-violet);
+  margin-bottom:6px;
+}
+.figure-card__name{
+  font-family:var(--font-heading);
+  font-size:17px;
+  font-weight:700;
+  line-height:1.3;
+  margin-bottom:10px;
+  letter-spacing:-0.01em;
+}
+.figure-card__meta{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+}
+.figure-card__manufacturer{
+  font-size:13px;
+  color:var(--text-secondary);
+  font-weight:500;
+}
+.figure-card__price{
+  font-family:var(--font-heading);
+  font-size:16px;
+  font-weight:800;
+  color:var(--accent-amber);
+}
+.figure-card__wishlist{
+  position:absolute;
+  top:14px;left:14px;
+  width:34px;height:34px;
+  border-radius:50%;
+  background:rgba(10,10,26,0.45);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,0.10);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;
+  transition:var(--transition);
+  color:var(--text-secondary);
+}
+.figure-card__wishlist:hover{
+  background:rgba(244,114,182,0.25);
+  border-color:rgba(244,114,182,0.40);
+  color:var(--accent-pink);
+}
+
+/* ========== SERIES SECTION ========== */
+.series-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+  gap:20px;
+  max-width:1280px;
+  margin:0 auto;
+}
+.series-card{
+  position:relative;
+  border-radius:var(--radius-lg);
+  overflow:hidden;
+  aspect-ratio:16/10;
+  cursor:pointer;
+  transition:var(--transition);
+}
+.series-card:hover{
+  transform:translateY(-4px);
+}
+.series-card__bg{
+  position:absolute;inset:0;
+  background-size:cover;
+  background-position:center;
+  transition:transform 0.5s ease;
+}
+.series-card:hover .series-card__bg{
+  transform:scale(1.08);
+}
+.series-card__glass{
+  position:absolute;inset:0;
+  background:rgba(10,10,26,0.35);
+  backdrop-filter:blur(4px);
+  -webkit-backdrop-filter:blur(4px);
+  border:1px solid rgba(255,255,255,0.10);
+  border-radius:var(--radius-lg);
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-end;
+  padding:20px;
+  transition:var(--transition);
+}
+.series-card:hover .series-card__glass{
+  background:rgba(10,10,26,0.50);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+}
+.series-card__count{
+  font-size:12px;
+  font-weight:700;
+  color:var(--accent-cyan);
+  margin-bottom:4px;
+}
+.series-card__name{
+  font-family:var(--font-heading);
+  font-size:18px;
+  font-weight:700;
+  letter-spacing:-0.01em;
+}
+
+/* ========== MANUFACTURERS ========== */
+.manufacturers-wrap{
+  max-width:1280px;
+  margin:0 auto;
+  display:flex;
+  flex-wrap:wrap;
+  gap:12px;
+  justify-content:center;
+}
+.manufacturer-tag{
+  padding:10px 24px;
+  border-radius:100px;
+  background:rgba(255,255,255,0.04);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  border:1px solid rgba(255,255,255,0.08);
+  font-size:14px;
+  font-weight:600;
+  color:var(--text-secondary);
+  cursor:pointer;
+  transition:var(--transition);
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.manufacturer-tag:hover{
+  background:rgba(255,255,255,0.10);
+  border-color:rgba(255,255,255,0.18);
+  color:var(--text-primary);
+  transform:translateY(-2px);
+}
+.manufacturer-tag__count{
+  font-size:11px;
+  font-weight:700;
+  padding:2px 8px;
+  border-radius:100px;
+  background:rgba(167,139,250,0.12);
+  color:var(--accent-violet);
+}
+
+/* ========== FEATURED / HIGHLIGHT ========== */
+.highlight{
+  max-width:1280px;
+  margin:0 auto;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:32px;
+  align-items:center;
+}
+.highlight__visual{
+  border-radius:var(--radius-xl);
+  overflow:hidden;
+  position:relative;
+  aspect-ratio:4/3;
+  background:rgba(255,255,255,0.04);
+  backdrop-filter:blur(var(--glass-blur));
+  -webkit-backdrop-filter:blur(var(--glass-blur));
+  border:1px solid var(--glass-border);
+  box-shadow:var(--shadow-glass-lg);
+}
+.highlight__visual img{
+  width:100%;height:100%;
+  object-fit:cover;
+}
+.highlight__visual-glass{
+  position:absolute;
+  bottom:20px;left:20px;right:20px;
+  padding:16px 20px;
+  border-radius:var(--radius-md);
+  background:rgba(10,10,26,0.50);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border:1px solid rgba(255,255,255,0.10);
+}
+.highlight__visual-label{
+  font-size:11px;
+  font-weight:700;
+  color:var(--accent-pink);
+  text-transform:uppercase;
+  letter-spacing:0.06em;
+}
+.highlight__visual-name{
+  font-family:var(--font-heading);
+  font-size:16px;
+  font-weight:700;
+  margin-top:2px;
+}
+.highlight__info{
+  padding:20px 0;
+}
+.highlight__label{
+  display:inline-block;
+  padding:5px 14px;
+  border-radius:100px;
+  background:rgba(244,114,182,0.08);
+  border:1px solid rgba(244,114,182,0.18);
+  font-size:12px;
+  font-weight:700;
+  color:var(--accent-pink);
+  text-transform:uppercase;
+  letter-spacing:0.06em;
+  margin-bottom:20px;
+}
+.highlight__title{
+  font-family:var(--font-heading);
+  font-size:clamp(28px,3.5vw,40px);
+  font-weight:800;
+  letter-spacing:-0.02em;
+  line-height:1.15;
+  margin-bottom:16px;
+}
+.highlight__desc{
+  font-size:15px;
+  color:var(--text-secondary);
+  line-height:1.7;
+  margin-bottom:28px;
+  max-width:460px;
+}
+.highlight__details{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+  margin-bottom:32px;
+}
+.highlight__detail{
+  padding:14px 18px;
+  border-radius:var(--radius-md);
+  background:rgba(255,255,255,0.04);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,0.06);
+}
+.highlight__detail-label{
+  font-size:11px;
+  font-weight:600;
+  color:var(--text-tertiary);
+  text-transform:uppercase;
+  letter-spacing:0.05em;
+  margin-bottom:4px;
+}
+.highlight__detail-value{
+  font-family:var(--font-heading);
+  font-size:15px;
+  font-weight:700;
+}
+.highlight__btn{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:14px 32px;
+  border-radius:var(--radius-md);
+  background:var(--gradient-2);
+  color:#fff;
+  font-family:var(--font-body);
+  font-weight:700;
+  font-size:15px;
+  border:none;
+  cursor:pointer;
+  transition:var(--transition);
+  text-decoration:none;
+}
+.highlight__btn:hover{
+  transform:translateY(-2px);
+  box-shadow:0 6px 28px rgba(244,114,182,0.35);
+}
+
+/* ========== FOOTER ========== */
+.footer{
+  padding:60px 24px 40px;
+  position:relative;
+}
+.footer__inner{
+  max-width:1280px;
+  margin:0 auto;
+  padding:40px;
+  border-radius:var(--radius-xl);
+  background:rgba(255,255,255,0.03);
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  border:1px solid rgba(255,255,255,0.06);
+}
+.footer__top{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:40px;
+  margin-bottom:40px;
+  flex-wrap:wrap;
+}
+.footer__brand{
+  max-width:300px;
+}
+.footer__brand-name{
+  font-family:var(--font-heading);
+  font-size:22px;
+  font-weight:800;
+  margin-bottom:10px;
+}
+.footer__brand-desc{
+  font-size:14px;
+  color:var(--text-secondary);
+  line-height:1.6;
+}
+.footer__cols{
+  display:flex;
+  gap:48px;
+  flex-wrap:wrap;
+}
+.footer__col-title{
+  font-family:var(--font-heading);
+  font-size:13px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:0.06em;
+  color:var(--text-tertiary);
+  margin-bottom:14px;
+}
+.footer__col-links{
+  list-style:none;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.footer__col-link{
+  font-size:14px;
+  color:var(--text-secondary);
+  text-decoration:none;
+  transition:var(--transition);
+}
+.footer__col-link:hover{
+  color:var(--accent-cyan);
+}
+.footer__divider{
+  height:1px;
+  background:rgba(255,255,255,0.06);
+  margin-bottom:24px;
+}
+.footer__bottom{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:12px;
+}
+.footer__copy{
+  font-size:13px;
+  color:var(--text-tertiary);
+}
+.footer__bottom-links{
+  display:flex;
+  gap:20px;
+}
+.footer__bottom-link{
+  font-size:13px;
+  color:var(--text-tertiary);
+  text-decoration:none;
+  transition:var(--transition);
+}
+.footer__bottom-link:hover{
+  color:var(--text-secondary);
+}
+
+/* ========== SCROLL REVEAL ========== */
+.reveal{
+  opacity:0;
+  transform:translateY(30px);
+  transition:opacity 0.7s ease, transform 0.7s ease;
+}
+.reveal.visible{
+  opacity:1;
+  transform:translateY(0);
+}
+
+/* ========== RESPONSIVE ========== */
+@media(max-width:1024px){
+  .highlight{
+    grid-template-columns:1fr;
+  }
+  .highlight__visual{
+    max-height:400px;
+  }
+}
+@media(max-width:768px){
+  .nav__links{display:none}
+  .nav__cta{display:none}
+  .nav__mobile-toggle{display:flex}
+  .hero__stats{gap:24px;flex-wrap:wrap;justify-content:center}
+  .hero__stat-value{font-size:22px}
+  .search-panel__row{flex-direction:column}
+  .search-panel__btn{width:100%;text-align:center}
+  .figures-grid{grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
+  .series-grid{grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
+  .highlight__details{grid-template-columns:1fr}
+  .footer__inner{padding:28px 20px}
+  .footer__top{flex-direction:column;gap:28px}
+  .footer__cols{gap:32px}
+}
+@media(max-width:480px){
+  .figures-grid{grid-template-columns:1fr}
+  .series-grid{grid-template-columns:1fr 1fr}
+  .hero__heading{font-size:32px}
+}
+
+/* ========== MOBILE NAV ========== */
+.mobile-nav{
+  position:fixed;
+  inset:0;
+  z-index:200;
+  pointer-events:none;
+  opacity:0;
+  transition:opacity 0.3s ease;
+}
+.mobile-nav.open{
+  pointer-events:auto;
+  opacity:1;
+}
+.mobile-nav__backdrop{
+  position:absolute;inset:0;
+  background:rgba(10,10,26,0.7);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+}
+.mobile-nav__panel{
+  position:absolute;
+  top:0;right:0;
+  width:min(320px,85vw);
+  height:100%;
+  padding:24px;
+  background:rgba(20,20,40,0.85);
+  backdrop-filter:blur(32px);
+  -webkit-backdrop-filter:blur(32px);
+  border-left:1px solid rgba(255,255,255,0.08);
+  transform:translateX(100%);
+  transition:transform 0.35s cubic-bezier(0.4,0,0.2,1);
+  display:flex;
+  flex-direction:column;
+}
+.mobile-nav.open .mobile-nav__panel{
+  transform:translateX(0);
+}
+.mobile-nav__close{
+  align-self:flex-end;
+  background:none;border:none;
+  color:var(--text-secondary);
+  cursor:pointer;
+  padding:8px;
+  margin-bottom:24px;
+}
+.mobile-nav__links{
+  list-style:none;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+.mobile-nav__link{
+  display:block;
+  padding:14px 18px;
+  border-radius:var(--radius-sm);
+  font-size:16px;
+  font-weight:600;
+  color:var(--text-secondary);
+  text-decoration:none;
+  transition:var(--transition);
+}
+.mobile-nav__link:hover{
+  background:rgba(255,255,255,0.06);
+  color:var(--text-primary);
+}
+</style>
+</head>
+<body>
+
+<!-- Animated Mesh Gradient Background -->
+<div class="mesh-bg">
+  <div class="mesh-blob mesh-blob--1"></div>
+  <div class="mesh-blob mesh-blob--2"></div>
+  <div class="mesh-blob mesh-blob--3"></div>
+  <div class="mesh-blob mesh-blob--4"></div>
+  <div class="mesh-blob mesh-blob--5"></div>
+</div>
+
+<!-- Mobile Nav -->
+<div class="mobile-nav" id="mobileNav">
+  <div class="mobile-nav__backdrop" onclick="closeMobileNav()"></div>
+  <div class="mobile-nav__panel">
+    <button class="mobile-nav__close" onclick="closeMobileNav()">
+      <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+    <ul class="mobile-nav__links">
+      <li><a class="mobile-nav__link" href="#figures" onclick="closeMobileNav()">Figures</a></li>
+      <li><a class="mobile-nav__link" href="#series" onclick="closeMobileNav()">Series</a></li>
+      <li><a class="mobile-nav__link" href="#manufacturers" onclick="closeMobileNav()">Manufacturers</a></li>
+      <li><a class="mobile-nav__link" href="#featured" onclick="closeMobileNav()">Featured</a></li>
+    </ul>
+  </div>
+</div>
+
+<div class="page-wrap">
+
+  <!-- Navigation -->
+  <nav class="nav" id="nav">
+    <div class="nav__inner">
+      <a href="#" class="nav__brand">
+        <div class="nav__logo">M</div>
+        <span class="nav__title">ModelWiki</span>
+      </a>
+      <ul class="nav__links">
+        <li><a class="nav__link nav__link--active" href="#figures">Figures</a></li>
+        <li><a class="nav__link" href="#series">Series</a></li>
+        <li><a class="nav__link" href="#manufacturers">Manufacturers</a></li>
+        <li><a class="nav__link" href="#featured">Featured</a></li>
+      </ul>
+      <button class="nav__cta">Sign In</button>
+      <button class="nav__mobile-toggle" onclick="openMobileNav()">
+        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero__content">
+      <div class="hero__badge">
+        <span class="hero__badge-dot"></span>
+        12,480+ figures cataloged
+      </div>
+      <h1 class="hero__heading">
+        Your Ultimate<br>
+        <span class="hero__heading-gradient">Anime Figure</span><br>
+        Encyclopedia
+      </h1>
+      <p class="hero__sub">
+        Explore, discover, and catalog anime figures from every series and manufacturer. Your complete database for scale figures, nendoroids, and more.
+      </p>
+      <div class="search-panel">
+        <div class="search-panel__row">
+          <div class="search-panel__field">
+            <svg class="search-panel__icon" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="9" r="7"/><path d="M16 16l-3.5-3.5"/></svg>
+            <input class="search-panel__input" type="text" placeholder="Search figures, series, manufacturers...">
+          </div>
+          <button class="search-panel__btn">Search</button>
+        </div>
+        <div class="search-panel__tags">
+          <span class="search-panel__tag-label">Popular:</span>
+          <span class="search-panel__tag">Rem Wedding Ver.</span>
+          <span class="search-panel__tag">1/7 Scale</span>
+          <span class="search-panel__tag">Good Smile</span>
+          <span class="search-panel__tag">Nendoroid</span>
+        </div>
+      </div>
+      <div class="hero__stats">
+        <div class="hero__stat">
+          <div class="hero__stat-value">12,480</div>
+          <div class="hero__stat-label">Figures</div>
+        </div>
+        <div class="hero__stat">
+          <div class="hero__stat-value">860</div>
+          <div class="hero__stat-label">Series</div>
+        </div>
+        <div class="hero__stat">
+          <div class="hero__stat-value">145</div>
+          <div class="hero__stat-label">Manufacturers</div>
+        </div>
+        <div class="hero__stat">
+          <div class="hero__stat-value">3.2M</div>
+          <div class="hero__stat-label">Community</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Figures Section -->
+  <section class="section" id="figures">
+    <div class="section__header reveal">
+      <span class="section__label">Collection</span>
+      <h2 class="section__title">Trending Figures</h2>
+      <p class="section__desc">The most sought-after figures this season, curated from community favorites and new releases.</p>
+    </div>
+    <div class="figures-grid" id="figuresGrid"></div>
+  </section>
+
+  <!-- Series Section -->
+  <section class="section" id="series">
+    <div class="section__header reveal">
+      <span class="section__label">Browse</span>
+      <h2 class="section__title">Popular Series</h2>
+      <p class="section__desc">Dive into your favorite anime universes and find figures from the series you love.</p>
+    </div>
+    <div class="series-grid" id="seriesGrid"></div>
+  </section>
+
+  <!-- Manufacturers Section -->
+  <section class="section" id="manufacturers">
+    <div class="section__header reveal">
+      <span class="section__label">Creators</span>
+      <h2 class="section__title">Manufacturers</h2>
+      <p class="section__desc">From legendary studios to rising artisans, explore the makers behind every figure.</p>
+    </div>
+    <div class="manufacturers-wrap" id="manufacturersWrap"></div>
+  </section>
+
+  <!-- Featured Highlight -->
+  <section class="section" id="featured">
+    <div class="highlight reveal">
+      <div class="highlight__visual">
+        <img src="http://141.253.114.69/api/v1/figures/images/3" alt="Featured Figure" loading="lazy">
+        <div class="highlight__visual-glass">
+          <div class="highlight__visual-label">Figure of the Month</div>
+          <div class="highlight__visual-name">Hatsune Miku - World is Mine 2024 Ver.</div>
+        </div>
+      </div>
+      <div class="highlight__info">
+        <span class="highlight__label">Featured</span>
+        <h3 class="highlight__title">Hatsune Miku<br>World is Mine 2024 Ver.</h3>
+        <p class="highlight__desc">
+          A stunning 1/7 scale figure capturing Hatsune Miku in her iconic World is Mine outfit. Meticulously sculpted with flowing twintails and intricate costume details, this piece is a crown jewel for any Vocaloid collector.
+        </p>
+        <div class="highlight__details">
+          <div class="highlight__detail">
+            <div class="highlight__detail-label">Manufacturer</div>
+            <div class="highlight__detail-value">Good Smile Company</div>
+          </div>
+          <div class="highlight__detail">
+            <div class="highlight__detail-label">Scale</div>
+            <div class="highlight__detail-value">1/7</div>
+          </div>
+          <div class="highlight__detail">
+            <div class="highlight__detail-label">Price</div>
+            <div class="highlight__detail-value">JPY 25,273</div>
+          </div>
+          <div class="highlight__detail">
+            <div class="highlight__detail-label">Release</div>
+            <div class="highlight__detail-value">2026 Q4</div>
+          </div>
+        </div>
+        <a href="#" class="highlight__btn">
+          View Details
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer__inner">
+      <div class="footer__top">
+        <div class="footer__brand">
+          <div class="footer__brand-name">ModelWiki</div>
+          <p class="footer__brand-desc">The most comprehensive anime figure encyclopedia. Built by collectors, for collectors.</p>
+        </div>
+        <div class="footer__cols">
+          <div>
+            <div class="footer__col-title">Explore</div>
+            <ul class="footer__col-links">
+              <li><a class="footer__col-link" href="#">Figures</a></li>
+              <li><a class="footer__col-link" href="#">Series</a></li>
+              <li><a class="footer__col-link" href="#">Manufacturers</a></li>
+              <li><a class="footer__col-link" href="#">New Releases</a></li>
+            </ul>
+          </div>
+          <div>
+            <div class="footer__col-title">Community</div>
+            <ul class="footer__col-links">
+              <li><a class="footer__col-link" href="#">Collections</a></li>
+              <li><a class="footer__col-link" href="#">Reviews</a></li>
+              <li><a class="footer__col-link" href="#">Forums</a></li>
+              <li><a class="footer__col-link" href="#">Discord</a></li>
+            </ul>
+          </div>
+          <div>
+            <div class="footer__col-title">Company</div>
+            <ul class="footer__col-links">
+              <li><a class="footer__col-link" href="#">About</a></li>
+              <li><a class="footer__col-link" href="#">Blog</a></li>
+              <li><a class="footer__col-link" href="#">Careers</a></li>
+              <li><a class="footer__col-link" href="#">Contact</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="footer__divider"></div>
+      <div class="footer__bottom">
+        <span class="footer__copy">2025 ModelWiki. All rights reserved.</span>
+        <div class="footer__bottom-links">
+          <a class="footer__bottom-link" href="#">Privacy</a>
+          <a class="footer__bottom-link" href="#">Terms</a>
+          <a class="footer__bottom-link" href="#">Cookies</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+// ========== DATA ==========
+const figuresData = [
+  {
+    name: "Hatsune Miku - World is Mine 2024 Ver.",
+    series: "Vocaloid",
+    manufacturer: "Good Smile Company",
+    scale: "1/7",
+    price: "JPY 25,273",
+    imageId: 3
+  },
+  {
+    name: "Rem - Graceful Beauty 2024 New Year Ver.",
+    series: "Re:Zero",
+    manufacturer: "Kadokawa",
+    scale: "1/7",
+    price: "JPY 19,600",
+    imageId: 121
+  },
+  {
+    name: "Emilia - Graceful Beauty 2024 New Year Ver.",
+    series: "Re:Zero",
+    manufacturer: "Kadokawa",
+    scale: "1/7",
+    price: "JPY 21,600",
+    imageId: 112
+  },
+  {
+    name: "Hatsune Miku - Racing 2025 Ver.",
+    series: "Good Smile Racing",
+    manufacturer: "Good Smile Company",
+    scale: "1/7",
+    price: "JPY 20,000",
+    imageId: 298
+  },
+  {
+    name: "Megurine Luka - Symphony 2024 Ver.",
+    series: "Vocaloid",
+    manufacturer: "Good Smile Company",
+    scale: "Nendoroid",
+    price: "JPY 6,818",
+    imageId: 12
+  },
+  {
+    name: "Hatsune Miku - Figma Racing 2024 Ver.",
+    series: "Good Smile Racing",
+    manufacturer: "Max Factory",
+    scale: "figma",
+    price: "JPY 12,545",
+    imageId: 103
+  },
+  {
+    name: "Gojo Satoru - Badge",
+    series: "Jujutsu Kaisen",
+    manufacturer: "Aniplex",
+    scale: "Badge",
+    price: "JPY 550",
+    imageId: 202
+  },
+  {
+    name: "Hatsune Miku - Pop Up Parade Cafe Ver.",
+    series: "Vocaloid",
+    manufacturer: "Good Smile Company",
+    scale: "Pop Up Parade",
+    price: "JPY 800",
+    imageId: 265
+  }
+];
+
+const seriesData = [
+  { name: "Vocaloid", count: 312, imageId: 3 },
+  { name: "Re:Zero", count: 142, imageId: 121 },
+  { name: "Good Smile Racing", count: 198, imageId: 298 },
+  { name: "Fate/Grand Order", count: 267, imageId: 109 },
+  { name: "Jujutsu Kaisen", count: 134, imageId: 202 },
+  { name: "One Piece", count: 156, imageId: 130 }
+];
+
+const manufacturersData = [
+  { name: "Good Smile Company", count: 1240 },
+  { name: "Kotobukiya", count: 890 },
+  { name: "Alter", count: 645 },
+  { name: "Max Factory", count: 780 },
+  { name: "Aniplex", count: 520 },
+  { name: "MegaHouse", count: 430 },
+  { name: "FREEing", count: 380 },
+  { name: "Phat! Company", count: 310 },
+  { name: "Stronger", count: 275 },
+  { name: "eStream", count: 190 },
+  { name: "Myethos", count: 245 },
+  { name: "SHIBUYA SCRAMBLE FIGURE", count: 165 },
+  { name: "Orange Rouge", count: 210 },
+  { name: "Aquamarine", count: 155 },
+  { name: "Skytube", count: 180 },
+  { name: "Native", count: 130 }
+];
+
+// ========== RENDER FIGURES ==========
+const figuresGrid = document.getElementById('figuresGrid');
+figuresData.forEach((fig, i) => {
+  const card = document.createElement('div');
+  card.className = 'figure-card reveal';
+  card.style.transitionDelay = `${i * 0.08}s`;
+  card.innerHTML = `
+    <div class="figure-card__img-wrap">
+      <img class="figure-card__img" src="http://141.253.114.69/api/v1/figures/images/${fig.imageId}" alt="${fig.name}" loading="lazy">
+      <div class="figure-card__img-overlay"></div>
+      <span class="figure-card__scale">${fig.scale}</span>
+      <button class="figure-card__wishlist" aria-label="Add to wishlist">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 14s-5.5-3.5-5.5-7A3 3 0 018 4.5 3 3 0 0113.5 7C13.5 10.5 8 14 8 14z"/></svg>
+      </button>
+    </div>
+    <div class="figure-card__body">
+      <div class="figure-card__series">${fig.series}</div>
+      <div class="figure-card__name">${fig.name}</div>
+      <div class="figure-card__meta">
+        <span class="figure-card__manufacturer">${fig.manufacturer}</span>
+        <span class="figure-card__price">${fig.price}</span>
+      </div>
+    </div>
+  `;
+  figuresGrid.appendChild(card);
+});
+
+// ========== RENDER SERIES ==========
+const seriesGrid = document.getElementById('seriesGrid');
+seriesData.forEach((s, i) => {
+  const card = document.createElement('div');
+  card.className = 'series-card reveal';
+  card.style.transitionDelay = `${i * 0.08}s`;
+  card.innerHTML = `
+    <div class="series-card__bg" style="background-image:url('http://141.253.114.69/api/v1/figures/images/${s.imageId}')"></div>
+    <div class="series-card__glass">
+      <div class="series-card__count">${s.count} figures</div>
+      <div class="series-card__name">${s.name}</div>
+    </div>
+  `;
+  seriesGrid.appendChild(card);
+});
+
+// ========== RENDER MANUFACTURERS ==========
+const manufacturersWrap = document.getElementById('manufacturersWrap');
+manufacturersData.forEach((m, i) => {
+  const tag = document.createElement('button');
+  tag.className = 'manufacturer-tag reveal';
+  tag.style.transitionDelay = `${i * 0.04}s`;
+  tag.innerHTML = `${m.name}<span class="manufacturer-tag__count">${m.count}</span>`;
+  manufacturersWrap.appendChild(tag);
+});
+
+// ========== SCROLL REVEAL ==========
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+// ========== NAV SCROLL EFFECT ==========
+const nav = document.getElementById('nav');
+let lastScroll = 0;
+window.addEventListener('scroll', () => {
+  const scrollY = window.scrollY;
+  if (scrollY > 60) {
+    nav.classList.add('scrolled');
+  } else {
+    nav.classList.remove('scrolled');
+  }
+  lastScroll = scrollY;
+}, { passive: true });
+
+// ========== MOBILE NAV ==========
+function openMobileNav() {
+  document.getElementById('mobileNav').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeMobileNav() {
+  document.getElementById('mobileNav').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// ========== SEARCH TAG CLICK ==========
+document.querySelectorAll('.search-panel__tag').forEach(tag => {
+  tag.addEventListener('click', () => {
+    document.querySelector('.search-panel__input').value = tag.textContent;
+    document.querySelector('.search-panel__input').focus();
+  });
+});
+
+// ========== WISHLIST TOGGLE ==========
+document.querySelectorAll('.figure-card__wishlist').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const svg = btn.querySelector('svg path');
+    const isActive = btn.classList.toggle('active');
+    if (isActive) {
+      btn.style.background = 'rgba(244,114,182,0.25)';
+      btn.style.borderColor = 'rgba(244,114,182,0.40)';
+      btn.style.color = 'var(--accent-pink)';
+      svg.setAttribute('fill', 'currentColor');
+    } else {
+      btn.style.background = '';
+      btn.style.borderColor = '';
+      btn.style.color = '';
+      svg.setAttribute('fill', 'none');
+    }
+  });
+});
+</script>
+</body>
+</html>
