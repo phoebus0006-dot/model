@@ -7,8 +7,18 @@ export async function adminApplyRoute(app: FastifyInstance) {
 
   app.post("/review/items/:id/apply", async (req: any, reply: any) => {
     try {
-      const result = await applyService.apply({ reviewItemId: String(req.params.id) });
-      return reply.send({ success: true, data: result });
+      const actor = {
+        userId: String(req.user?.userId || req.user?.id || ""),
+        displayName: String(req.user?.displayName || req.user?.username || "system"),
+      };
+      const body = req.body || {};
+      const action = String(body.action || "");
+      const result = await applyService.apply({
+        reviewItemId: String(req.params.id),
+        actor,
+        body,
+      });
+      return reply.send({ success: true, data: result.data, actor, action });
     } catch (e: any) {
       if (e instanceof ReviewNotFound) return reply.status(404).send({ success: false, error: { code: e.code, message: e.message } });
       if (e instanceof InvalidReviewState) return reply.status(409).send({ success: false, error: { code: e.code, message: e.message } });

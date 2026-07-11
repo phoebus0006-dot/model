@@ -4,14 +4,9 @@ export const APPLY_STAGES = [
 ] as const;
 export type ApplyStage = (typeof APPLY_STAGES)[number];
 
-export interface ApplyInput {
-  reviewItemId: string;
-  actorUserId?: string;
-  requestId?: string;
-}
-
 export interface ApplyResult {
   success: boolean;
+  data?: { applied: any };
   stage?: ApplyStage;
   error?: string;
   code?: string;
