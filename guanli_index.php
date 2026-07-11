@@ -419,11 +419,11 @@ h1{font-size:2rem}h3{font-size:1.25rem}
         closeMobileSidebar();
     }
 
-    function loadStats(){ setLoading('stats',true); api('/admin/stats').then(function(r){ if(r.success) state.stats = r.data; }).catch(function(){}).then(function(){ setLoading('stats', false); }); }
+    function loadStats(){ setLoading('stats',true); api('/admin/stats').then(function(r){ if(r.success) state.stats = r.data; }).catch(function(){ addAlert('error','统计加载失败'); }).then(function(){ setLoading('stats', false); }); }
     function loadFigures(){
         setLoading('figures',true); var params = '?page='+state.figuresPage+'&perPage=20';
         if(state.figuresSearch) params += '&search=' + encodeURIComponent(state.figuresSearch);
-        api('/figures' + params, 'GET', null, false).then(function(r){ if(r.success){ state.figures = r.data || []; state.figuresMeta = r.meta || null; } }).catch(function(){}).then(function(){ setLoading('figures', false); });
+        api('/figures' + params, 'GET', null, false).then(function(r){ if(r.success){ state.figures = r.data || []; state.figuresMeta = r.meta || null; } }).catch(function(){ addAlert('error','作品加载失败'); }).then(function(){ setLoading('figures', false); });
     }
     function loadReviewItems(){
         setLoading('review', true);
@@ -445,7 +445,7 @@ h1{font-size:2rem}h3{font-size:1.25rem}
             } else addAlert('error', getErrorMessage(r, '复核队列加载失败'));
         }).catch(function(){ addAlert('error','复核队列加载失败'); }).then(function(){ setLoading('review', false); });
     }
-    function loadUsers(){ setLoading('users',true); api('/admin/users').then(function(r){ if(r.success) state.users = r.data || []; }).catch(function(){}).then(function(){ setLoading('users', false); }); }
+    function loadUsers(){ setLoading('users',true); api('/admin/users').then(function(r){ if(r.success) state.users = r.data || []; }).catch(function(){ addAlert('error','用户列表加载失败'); }).then(function(){ setLoading('users', false); }); }
     function loadEntity(section){
         var cfg = ENTITY_CONFIG[section]; if(!cfg) return;
         var page = state.entityPage[section] || 1;

@@ -1,5 +1,6 @@
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
+import { scanKeys } from "../shared/cache/scan-keys.js";
 import { processAndStoreImage, upsertFigureImageRecord } from "./images.js";
 
 const listQuery = z.object({
@@ -228,10 +229,30 @@ function publicImage(image: any): any {
   };
 }
 
+function firstText(...values: any[]): string | null {
+  for (const value of values) {
+    if (typeof value === "string" && value.trim() !== "") return value;
+  }
+  return null;
+}
+
+function publicEntityName(entity: any): string | null {
+  return firstText(entity?.nameEn, entity?.name, entity?.nameJp);
+}
+
 function publicFigure(figure: any): any {
   if (!figure) return figure;
   const originalImage = figure.image;
   const originalImages = figure.images;
+  const localized = Array.isArray(figure.localized) ? figure.localized[0] : null;
+  const featuredCharacter = Array.isArray(figure.characters)
+    ? figure.characters.find((item: any) => item?.isFeatured)?.character || figure.characters[0]?.character
+    : null;
+  const displayTitle = firstText(localized?.title, figure.nameEn, figure.name, figure.nameJp, figure.slug) || "";
+  const originalTitle = firstText(figure.nameJp, figure.name, figure.nameEn, displayTitle) || displayTitle;
+  const displayOrigin = firstText(localized?.origin, publicEntityName(figure.series));
+  const displayCharacter = firstText(localized?.character, publicEntityName(featuredCharacter));
+  const displayDescription = firstText(localized?.description, figure.description);
   const rest = { ...figure };
   const hiddenKeys = [
     String.fromCharCode(109, 102, 99, 73, 100),
@@ -245,6 +266,11 @@ function publicFigure(figure: any): any {
   return {
     ...rest,
     slug: publicSlug(figure.slug),
+    displayTitle,
+    originalTitle,
+    displayOrigin,
+    displayCharacter,
+    displayDescription,
     image: originalImage ? publicImage(originalImage) : originalImage,
     images: Array.isArray(originalImages) ? originalImages.map(publicImage) : originalImages,
   };
@@ -258,17 +284,15 @@ async function invalidateFigureCache(app: FastifyInstance, slug?: string) {
   if (slug) {
     await app.redis.del(`figures:detail:${slug}`);
   }
-  const detailKeys = await app.redis.keys("figures:detail:*");
-  if (detailKeys.length > 0) await app.redis.del(...detailKeys);
-  const listKeys = await app.redis.keys("figures:list:*");
-  if (listKeys.length > 0) await app.redis.del(...listKeys);
+  await scanKeys(app.redis, "figures:detail:*");
+  await scanKeys(app.redis, "figures:list:*");
 }
 
 export async function figureRoutes(app: FastifyInstance) {
   // GET / - List figures
   app.get("/", async (req: any) => {
     const raw = listQuery.parse(req.query);
-    const query = { ...raw, minPrice: raw.minPrice ?? raw.priceMin, maxPrice: raw.maxPrice ?? raw.priceMax };
+    const query = { ...raw, lang: raw.lang || "fr", minPrice: raw.minPrice ?? raw.priceMin, maxPrice: raw.maxPrice ?? raw.priceMax };
     const cacheKey = `figures:list:${JSON.stringify(query)}`;
 
     const cached = await app.redis.get(cacheKey);
@@ -309,11 +333,13 @@ export async function figureRoutes(app: FastifyInstance) {
         orderBy: stableOrderBy,
         include: {
           manufacturer: { select: { id: true, slug: true, name: true, nameEn: true } },
-          series: { select: { id: true, slug: true, name: true, nameEn: true } },
+          series: { select: { id: true, slug: true, name: true, nameJp: true, nameEn: true } },
+          characters: { include: { character: { select: { id: true, slug: true, name: true, nameJp: true, nameEn: true } } } },
           sculptors: { include: { sculptor: { select: { id: true, slug: true, name: true, nameEn: true } } } },
           categories: { include: { category: { select: { id: true, slug: true, name: true } } } },
           localized: {
-            where: query.lang ? { language: query.lang } : undefined,
+            where: { language: query.lang },
+            orderBy: { id: "asc" },
           },
           images: {
             orderBy: [{ sortOrder: "asc" }, { id: "asc" }],
@@ -363,7 +389,8 @@ export async function figureRoutes(app: FastifyInstance) {
   app.get("/:slug", async (req: any, reply: any) => {
     const { slug } = req.params as { slug: string };
     const rawQuery = detailQuery.parse(req.query || {});
-    const cacheKey = `figures:detail:${slug}:${rawQuery.lang || "all"}`;
+    const lang = rawQuery.lang || "fr";
+    const cacheKey = `figures:detail:${slug}:${lang}`;
 
     const cached = await app.redis.get(cacheKey);
     if (cached) return JSON.parse(cached);
@@ -377,7 +404,8 @@ export async function figureRoutes(app: FastifyInstance) {
         sculptors: { include: { sculptor: { select: { id: true, slug: true, name: true, nameJp: true, nameEn: true } } } },
         categories: { include: { category: { select: { id: true, slug: true, name: true } } } },
         localized: {
-          where: rawQuery.lang ? { language: rawQuery.lang } : undefined,
+          where: { language: lang },
+          orderBy: { id: "asc" },
         },
         releases: {
           orderBy: { releaseDate: "asc" },

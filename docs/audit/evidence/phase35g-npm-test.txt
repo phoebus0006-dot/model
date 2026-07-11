@@ -1,0 +1,271 @@
+﻿
+> modelwiki-api@1.0.0 test
+> vitest run --reporter verbose
+
+
+[1m[46m RUN [49m[22m [36mv3.2.7 [39m[90mD:/model wiki/mw-backend[39m
+
+ [32m鉁?[39m src/test/migration-dto-parse.test.ts[2m > [22mRedis review JSON 鈫?Migration DTO[2m > [22mparses a minimal valid item[32m 3[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-dto-parse.test.ts[2m > [22mRedis review JSON 鈫?Migration DTO[2m > [22mparses a full item from real format[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-dto-parse.test.ts[2m > [22mRedis review JSON 鈫?Migration DTO[2m > [22mpreserves unknown status[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-dto-parse.test.ts[2m > [22mRedis review JSON 鈫?Migration DTO[2m > [22mhandles missing updatedAt by falling back to createdAt[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-dto-parse.test.ts[2m > [22mRedis review JSON 鈫?Migration DTO[2m > [22mhandles null reviewer[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-dto-parse.test.ts[2m > [22mRedis review JSON 鈫?Migration DTO[2m > [22mhandles numeric figureId[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-dto-parse.test.ts[2m > [22mRedis review JSON 鈫?Migration DTO[2m > [22mhandles missing figureId[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-dto-parse.test.ts[2m > [22mRedis review JSON 鈫?Migration DTO[2m > [22mhandles BigInt-safe figureId strings[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-dto-parse.test.ts[2m > [22mRedis review JSON 鈫?Migration DTO[2m > [22mhandles notes with audit trail[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-dto-parse.test.ts[2m > [22mRedis review JSON 鈫?Migration DTO[2m > [22mrejects invalid JSON[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-dto-parse.test.ts[2m > [22mRedis review JSON 鈫?Migration DTO[2m > [22mhandles empty payload[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-dto-parse.test.ts[2m > [22mRedis review JSON 鈫?Migration DTO[2m > [22mpreserves evidence fingerprint exact value[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-dto-parse.test.ts[2m > [22mRedis review JSON 鈫?Migration DTO[2m > [22msets default priority when missing[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-safety.test.ts[2m > [22mMigration SQL safety check[2m > [22mmigration directory exists[32m 2[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-safety.test.ts[2m > [22mMigration SQL safety check[2m > [22mmigration.sql file exists[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-safety.test.ts[2m > [22mMigration SQL safety check[2m > [22mdoes not contain DROP TABLE[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-safety.test.ts[2m > [22mMigration SQL safety check[2m > [22mdoes not contain DROP COLUMN[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-safety.test.ts[2m > [22mMigration SQL safety check[2m > [22mdoes not contain TRUNCATE[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-safety.test.ts[2m > [22mMigration SQL safety check[2m > [22mdoes not contain ALTER COLUMN[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-safety.test.ts[2m > [22mMigration SQL safety check[2m > [22mdoes not contain DELETE FROM[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-safety.test.ts[2m > [22mMigration SQL safety check[2m > [22mcontains CREATE TABLE for review_items[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-safety.test.ts[2m > [22mMigration SQL safety check[2m > [22mcontains CREATE TABLE for review_events[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-safety.test.ts[2m > [22mMigration SQL safety check[2m > [22mcontains foreign key constraint[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-safety.test.ts[2m > [22mMigration SQL safety check[2m > [22mcontains unique index on public_id[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-safety.test.ts[2m > [22mMigration SQL safety check[2m > [22mcontains unique index on original_redis_key[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-safety.test.ts[2m > [22mMigration SQL safety check[2m > [22mis purely additive (only CREATE, ALTER TABLE ADD)[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-store-mode.test.ts[2m > [22mReviewStoreMode selection[2m > [22mdefaults to redis when env is not set[32m 2[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-store-mode.test.ts[2m > [22mReviewStoreMode selection[2m > [22mdefaults to redis when env is empty[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-store-mode.test.ts[2m > [22mReviewStoreMode selection[2m > [22maccepts 'redis'[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-store-mode.test.ts[2m > [22mReviewStoreMode selection[2m > [22maccepts 'dual'[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-store-mode.test.ts[2m > [22mReviewStoreMode selection[2m > [22maccepts 'postgres'[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-store-mode.test.ts[2m > [22mReviewStoreMode selection[2m > [22maccepts case-insensitive input[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-store-mode.test.ts[2m > [22mReviewStoreMode selection[2m > [22mtrims whitespace[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-store-mode.test.ts[2m > [22mReviewStoreMode selection[2m > [22mthrows on invalid mode[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-store-mode.test.ts[2m > [22mReviewStoreMode selection[2m > [22mthrows on nullish values with string type[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-store-mode.test.ts[2m > [22mReviewStoreMode selection[2m > [22mall valid modes are in the const array[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/postgres-review-store.test.ts[2m > [22mPostgresReviewStore[2m > [22mgetById[2m > [22mreturns null when item not found[32m 4[2mms[22m[39m
+ [32m鉁?[39m src/test/postgres-review-store.test.ts[2m > [22mPostgresReviewStore[2m > [22mgetById[2m > [22mreturns DTO when item found[32m 2[2mms[22m[39m
+ [32m鉁?[39m src/test/postgres-review-store.test.ts[2m > [22mPostgresReviewStore[2m > [22mcreate[2m > [22mcreates a review item with generated ID[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/postgres-review-store.test.ts[2m > [22mPostgresReviewStore[2m > [22mtransition with optimistic concurrency[2m > [22msucceeds when version matches[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/postgres-review-store.test.ts[2m > [22mPostgresReviewStore[2m > [22mtransition with optimistic concurrency[2m > [22mreturns NOT_FOUND when item missing[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/postgres-review-store.test.ts[2m > [22mPostgresReviewStore[2m > [22mtransition with optimistic concurrency[2m > [22mreturns CONFLICT on version mismatch[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/postgres-review-store.test.ts[2m > [22mPostgresReviewStore[2m > [22mtransition with optimistic concurrency[2m > [22msucceeds even without expectedStatus (allows any status)[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/postgres-review-store.test.ts[2m > [22mPostgresReviewStore[2m > [22mtransition with optimistic concurrency[2m > [22mreturns STATUS_CONFLICT when current status does not match expected[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/postgres-review-store.test.ts[2m > [22mPostgresReviewStore[2m > [22mlist[2m > [22mreturns paginated results[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/postgres-review-store.test.ts[2m > [22mPostgresReviewStore[2m > [22mlist[2m > [22mfilters by status when provided[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-full.test.ts[2m > [22mRedis review parser[2m > [22mparses a minimal pending item[32m 3[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-full.test.ts[2m > [22mRedis review parser[2m > [22mparses a full approved item with BigInt figureId[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-full.test.ts[2m > [22mRedis review parser[2m > [22mpreserves unknown status[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-full.test.ts[2m > [22mRedis review parser[2m > [22mfalls back updatedAt to createdAt when missing[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-full.test.ts[2m > [22mRedis review parser[2m > [22muses system actor when reviewer missing[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-full.test.ts[2m > [22mRedis review parser[2m > [22mrejects invalid JSON[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-full.test.ts[2m > [22mRedis review parser[2m > [22mrejects non-object JSON[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-full.test.ts[2m > [22mRedis review parser[2m > [22mhandles numeric figureId from Redis[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-full.test.ts[2m > [22mRedis review parser[2m > [22mhandles null figureId gracefully[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-full.test.ts[2m > [22mRedis review parser[2m > [22mstores original Redis key[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-full.test.ts[2m > [22mRedis review parser[2m > [22mdoes not lose precision on BigInt figureId[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-full.test.ts[2m > [22mRedis review parser[2m > [22mreports warnings for unknown status[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-full.test.ts[2m > [22mRedis review parser[2m > [22mreports warnings for missing actor[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-full.test.ts[2m > [22mRedis review parser[2m > [22mpreserves evidence fingerprint exactly[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-full.test.ts[2m > [22mRedis decision parser[2m > [22mparses a suppression decision[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-full.test.ts[2m > [22mRedis decision parser[2m > [22mreturns null on invalid JSON[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-full.test.ts[2m > [22mReconciliation[2m > [22mreports full match when all keys match[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-full.test.ts[2m > [22mReconciliation[2m > [22mreports missing keys in PG[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-full.test.ts[2m > [22mReconciliation[2m > [22mreports status mismatches[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-full.test.ts[2m > [22mReconciliation[2m > [22mcalculates match rate correctly[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/cache-service.test.ts[2m > [22mscanKeys[2m > [22mreturns empty result when no keys match[32m 2[2mms[22m[39m
+ [32m鉁?[39m src/test/cache-service.test.ts[2m > [22mscanKeys[2m > [22mscans and deletes matching keys[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/cache-service.test.ts[2m > [22mscanKeys[2m > [22mdeduplicates keys across scan iterations[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/cache-service.test.ts[2m > [22mscanKeys[2m > [22mhandles abort signal[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/cache-service.test.ts[2m > [22mscanKeys[2m > [22mhandles unlink failure gracefully[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/cache-service.test.ts[2m > [22mCacheService[2m > [22misAllowedPattern allows known namespaces[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/cache-service.test.ts[2m > [22mCacheService[2m > [22misAllowedPattern rejects arbitrary patterns[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/cache-service.test.ts[2m > [22mCacheService[2m > [22mvalidatePatterns returns invalid patterns[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/cache-service.test.ts[2m > [22mCacheService[2m > [22minvalidateByPattern throws on disallowed pattern[32m 2[2mms[22m[39m
+ [32m鉁?[39m src/test/cache-service.test.ts[2m > [22mCacheService[2m > [22minvalidateByPattern calls scan+unlink for allowed pattern[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/cache-service.test.ts[2m > [22mCacheService[2m > [22minvalidateByPatterns aggregates multiple patterns[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/lifecycle.test.ts[2m > [22mPrisma lifecycle[2m > [22mPrismaClient constructor can be called without throwing[32m 57[2mms[22m[39m
+ [32m鉁?[39m src/test/lifecycle.test.ts[2m > [22mPrisma lifecycle[2m > [22mprisma.$disconnect can be called multiple times without error[32m 21[2mms[22m[39m
+ [32m鉁?[39m src/test/lifecycle.test.ts[2m > [22mRedis lifecycle[2m > [22mioredis constructor creates a client[32m 124[2mms[22m[39m
+ [32m鉁?[39m src/test/lifecycle.test.ts[2m > [22mRedis lifecycle[2m > [22mredis.quit can be called multiple times[32m 5[2mms[22m[39m
+ [32m鉁?[39m src/test/review-update-security.test.ts[2m > [22mReview PUT state machine bypass fix[2m > [22mForbidden field detection[2m > [22mdetects status as forbidden[32m 2[2mms[22m[39m
+ [32m鉁?[39m src/test/review-update-security.test.ts[2m > [22mReview PUT state machine bypass fix[2m > [22mForbidden field detection[2m > [22mdetects decisionReason as forbidden[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/review-update-security.test.ts[2m > [22mReview PUT state machine bypass fix[2m > [22mForbidden field detection[2m > [22mdetects reviewer as forbidden[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/review-update-security.test.ts[2m > [22mReview PUT state machine bypass fix[2m > [22mForbidden field detection[2m > [22mdetects multiple forbidden fields[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/review-update-security.test.ts[2m > [22mReview PUT state machine bypass fix[2m > [22mForbidden field detection[2m > [22mallows legitimate editable fields[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/review-update-security.test.ts[2m > [22mReview PUT state machine bypass fix[2m > [22mForbidden field detection[2m > [22mdetects action as forbidden[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/review-update-security.test.ts[2m > [22mReview PUT state machine bypass fix[2m > [22mForbidden field detection[2m > [22mdetects createdAt as forbidden[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/review-update-security.test.ts[2m > [22mReview PUT state machine bypass fix[2m > [22mForbidden field detection[2m > [22mreturns empty for empty body[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/review-update-security.test.ts[2m > [22mReview PUT state machine bypass fix[2m > [22mExisting reviewUpdateSchema remains backward compatible[2m > [22mstill accepts status (schema unchanged)[32m 2[2mms[22m[39m
+ [32m鉁?[39m src/test/review-update-security.test.ts[2m > [22mReview PUT state machine bypass fix[2m > [22mExisting reviewUpdateSchema remains backward compatible[2m > [22mstill accepts all fields[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-dual-write.test.ts[2m > [22mDual-write failure matrix[2m > [22mPG=true Redis=true 鈫?success[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-dual-write.test.ts[2m > [22mDual-write failure matrix[2m > [22mPG=true Redis=false 鈫?degraded[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-dual-write.test.ts[2m > [22mDual-write failure matrix[2m > [22mPG=false Redis=true 鈫?retry[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-dual-write.test.ts[2m > [22mDual-write failure matrix[2m > [22mPG=false Redis=false 鈫?failed[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/bigint-contract.test.ts[2m > [22mBigInt serialization 鈥?contract compatibility[2m > [22mAPI response with BigInt IDs returns string IDs[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/bigint-contract.test.ts[2m > [22mBigInt serialization 鈥?contract compatibility[2m > [22minternal db id 1n serializes as '1'[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/bigint-contract.test.ts[2m > [22mBigInt serialization 鈥?contract compatibility[2m > [22mnested BigInt in related entities[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/bigint.test.ts[2m > [22mBigInt serialization[2m > [22mserializes BigInt to string, not number[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/bigint.test.ts[2m > [22mBigInt serialization[2m > [22mdoes not lose precision for values > Number.MAX_SAFE_INTEGER[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/bigint.test.ts[2m > [22mBigInt serialization[2m > [22mhandles BigInt zero correctly[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/bigint.test.ts[2m > [22mBigInt serialization[2m > [22mhandles negative BigInt[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/bigint.test.ts[2m > [22mBigInt serialization[2m > [22mserializes BigInt in nested objects[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/bigint.test.ts[2m > [22mBigInt serialization[2m > [22mserializes BigInt in arrays[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/bigint.test.ts[2m > [22mBigInt serialization[2m > [22mdoes not affect non-BigInt JSON serialization[32m 0[2mms[22m[39m
+{"level":30,"time":1783778022882,"pid":98748,"hostname":"DESKTOP-OOPKE09","reqId":"req-1","req":{"method":"GET","url":"/api/v1/admin/stats","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022895,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-1","req":{"method":"GET","url":"/api/v1/admin/review/items","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022901,"pid":102380,"hostname":"DESKTOP-OOPKE09","reqId":"req-1","req":{"method":"GET","url":"/health","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022915,"pid":102380,"hostname":"DESKTOP-OOPKE09","reqId":"req-1","res":{"statusCode":200},"responseTime":9.229299999999967,"msg":"request completed"}
+{"level":30,"time":1783778022917,"pid":102380,"hostname":"DESKTOP-OOPKE09","reqId":"req-2","req":{"method":"GET","url":"/nonexistent","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022918,"pid":102380,"hostname":"DESKTOP-OOPKE09","reqId":"req-2","msg":"Route GET:/nonexistent not found"}
+{"level":30,"time":1783778022918,"pid":102380,"hostname":"DESKTOP-OOPKE09","reqId":"req-2","res":{"statusCode":404},"responseTime":0.9828000000002248,"msg":"request completed"}
+{"level":30,"time":1783778022919,"pid":102380,"hostname":"DESKTOP-OOPKE09","reqId":"req-3","req":{"method":"GET","url":"/api/v1/admin/stats","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022919,"pid":102380,"hostname":"DESKTOP-OOPKE09","reqId":"req-3","res":{"statusCode":401},"responseTime":0.38499999999976353,"msg":"request completed"}
+{"level":30,"time":1783778022920,"pid":102380,"hostname":"DESKTOP-OOPKE09","reqId":"req-4","req":{"method":"GET","url":"/api/v1/admin/stats","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022921,"pid":102380,"hostname":"DESKTOP-OOPKE09","reqId":"req-4","res":{"statusCode":401},"responseTime":0.35950000000002547,"msg":"request completed"}
+{"level":30,"time":1783778022921,"pid":102380,"hostname":"DESKTOP-OOPKE09","reqId":"req-5","req":{"method":"GET","url":"/api/v1/figures","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+node.exe : [90mstderr[2m | src/test/app-contract.test.ts[2m > [22m[2mApp contract tests (skipLifecycle 鈥?no DB)[2
+m > [22m[2mfigures list returns with standard response shape
+所在位置 行:1 字符: 1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([90mstderr[2m... response shape:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[22m[39m[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1142:49)
+    at afterConnectMultiple (node:net:1723:7)
+
+ [32m鉁?[39m src/test/admin-contract.test.ts[2m > [22mAdmin API 鈥?auth contract (skipLifecycle, no DB)[2m > [22mrejects unauthenticated requests with 401[32m 49[2mms[22m[39m
+ [32m鉁?[39m src/test/admin-contract.test.ts[2m > [22mAdmin API 鈥?auth contract (skipLifecycle, no DB)[2m > [22mrejects requests with malformed authorization header[32m 2[2mms[22m[39m
+ [32m鉁?[39m src/test/admin-contract.test.ts[2m > [22mAdmin API 鈥?auth contract (skipLifecycle, no DB)[2m > [22mrejects all admin routes without valid auth[32m 19[2mms[22m[39m
+ [32m鉁?[39m src/test/admin-contract.test.ts[2m > [22mAdmin API 鈥?auth contract (skipLifecycle, no DB)[2m > [22merror shape is consistent across all unauthenticated admin routes[32m 2[2mms[22m[39m
+{"level":30,"time":1783778022950,"pid":98748,"hostname":"DESKTOP-OOPKE09","reqId":"req-1","req":{"method":"GET","url":"/api/v1/admin/stats","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022906,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-1","res":{"statusCode":401},"responseTime":6.5309000000002015,"msg":"request completed"}
+{"level":30,"time":1783778022907,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-2","req":{"method":"GET","url":"/api/v1/admin/review/decisions","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022908,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-2","res":{"statusCode":401},"responseTime":0.8913000000002285,"msg":"request completed"}
+{"level":30,"time":1783778022909,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-3","req":{"method":"GET","url":"/api/v1/admin/review/stats","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022910,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-3","res":{"statusCode":401},"responseTime":0.7563999999997577,"msg":"request completed"}
+{"level":30,"time":1783778022911,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-4","req":{"method":"POST","url":"/api/v1/admin/review/items","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022911,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-4","res":{"statusCode":401},"responseTime":0.5087000000003172,"msg":"request completed"}
+{"level":30,"time":1783778022912,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-5","req":{"method":"PUT","url":"/api/v1/admin/review/items/test-123","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022912,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-5","res":{"statusCode":401},"responseTime":0.44000000000005457,"msg":"request completed"}
+{"level":30,"time":1783778022913,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-6","req":{"method":"POST","url":"/api/v1/admin/review/items/test-123/recheck","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022913,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-6","res":{"statusCode":401},"responseTime":0.3307999999997264,"msg":"request completed"}
+{"level":30,"time":1783778022914,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-7","req":{"method":"POST","url":"/api/v1/admin/review/items/test-123/action","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022914,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-7","res":{"statusCode":401},"responseTime":0.26050000000032014,"msg":"request completed"}
+{"level":30,"time":1783778022915,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-8","req":{"method":"POST","url":"/api/v1/admin/review/items/test-123/apply","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022916,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-8","res":{"statusCode":401},"responseTime":0.5625,"msg":"request completed"}
+{"level":30,"time":1783778022916,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-9","req":{"method":"POST","url":"/api/v1/admin/review/items/bulk/cleanup","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022917,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-9","res":{"statusCode":401},"responseTime":0.8302000000003318,"msg":"request completed"}
+{"level":30,"time":1783778022918,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-a","req":{"method":"GET","url":"/api/v1/admin/review/image-proxy","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022921,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-a","res":{"statusCode":401},"responseTime":2.4774999999999636,"msg":"request completed"}
+{"level":30,"time":1783778022922,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-b","req":{"method":"POST","url":"/api/v1/admin/review/cache-candidate","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022922,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-b","res":{"statusCode":401},"responseTime":0.35659999999961656,"msg":"request completed"}
+{"level":30,"time":1783778022922,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-c","req":{"method":"POST","url":"/api/v1/admin/review/items","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022923,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-c","res":{"statusCode":401},"responseTime":0.23540000000002692,"msg":"request completed"}
+{"level":30,"time":1783778022923,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-d","req":{"method":"POST","url":"/api/v1/admin/review/items/bulk/cleanup","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022923,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-d","res":{"statusCode":401},"responseTime":0.25540000000000873,"msg":"request completed"}
+{"level":30,"time":1783778022924,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-e","req":{"method":"POST","url":"/api/v1/admin/review/items/test-123/action","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022924,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-e","res":{"statusCode":401},"responseTime":0.25030000000015207,"msg":"request completed"}
+{"level":30,"time":1783778022927,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-f","req":{"method":"POST","url":"/api/v1/admin/review/cache-candidate","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022929,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-f","res":{"statusCode":401},"responseTime":1.4638999999997395,"msg":"request completed"}
+{"level":30,"time":1783778022930,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-g","req":{"method":"GET","url":"/api/v1/admin/review/image-proxy?url=https://example.com/img.jpg","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022930,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-g","res":{"statusCode":401},"responseTime":0.265400000000227,"msg":"request completed"}
+{"level":30,"time":1783778022934,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-h","req":{"method":"GET","url":"/api/v1/admin/review/items","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022934,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-h","res":{"statusCode":401},"responseTime":0.3546000000001186,"msg":"request completed"}
+{"level":30,"time":1783778022935,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-i","req":{"method":"GET","url":"/api/v1/admin/review/decisions","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022935,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-i","res":{"statusCode":401},"responseTime":0.25929999999971187,"msg":"request completed"}
+{"level":30,"time":1783778022935,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-j","req":{"method":"GET","url":"/api/v1/admin/review/stats","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022936,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-j","res":{"statusCode":401},"responseTime":0.24279999999998836,"msg":"request completed"}
+{"level":30,"time":1783778022936,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-k","req":{"method":"POST","url":"/api/v1/admin/review/items","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022936,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-k","res":{"statusCode":401},"responseTime":0.24759999999969295,"msg":"request completed"}
+{"level":30,"time":1783778022937,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-l","req":{"method":"PUT","url":"/api/v1/admin/review/items/test-123","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022937,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-l","res":{"statusCode":401},"responseTime":0.24659999999994398,"msg":"request completed"}
+{"level":30,"time":1783778022937,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-m","req":{"method":"POST","url":"/api/v1/admin/review/items/test-123/recheck","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022937,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-m","res":{"statusCode":401},"responseTime":0.193000000000211,"msg":"request completed"}
+{"level":30,"time":1783778022938,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-n","req":{"method":"POST","url":"/api/v1/admin/review/items/test-123/action","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022938,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-n","res":{"statusCode":401},"responseTime":0.1873000000000502,"msg":"request completed"}
+{"level":30,"time":1783778022938,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-o","req":{"method":"POST","url":"/api/v1/admin/review/items/test-123/apply","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022938,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-o","res":{"statusCode":401},"responseTime":0.18870000000015352,"msg":"request completed"}
+{"level":30,"time":1783778022938,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-p","req":{"method":"POST","url":"/api/v1/admin/review/items/bulk/cleanup","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022939,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-p","res":{"statusCode":401},"responseTime":0.18020000000024083,"msg":"request completed"}
+{"level":30,"time":1783778022939,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-q","req":{"method":"GET","url":"/api/v1/admin/review/image-proxy","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022939,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-q","res":{"statusCode":401},"responseTime":0.24090000000023792,"msg":"request completed"}
+{"level":30,"time":1783778022939,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-r","req":{"method":"POST","url":"/api/v1/admin/review/cache-candidate","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022940,"pid":67948,"hostname":"DESKTOP-OOPKE09","reqId":"req-r","res":{"statusCode":401},"responseTime":0.20699999999987995,"msg":"request completed"}
+ [32m鉁?[39m src/test/review-contract.test.ts[2m > [22mReview routes 鈥?contract (skipLifecycle, no DB/Redis)[2m > [22mGET /api/v1/admin/review/items returns 401 without auth[32m 41[2mms[22m[39m
+ [32m鉁?[39m src/test/review-contract.test.ts[2m > [22mReview routes 鈥?contract (skipLifecycle, no DB/Redis)[2m > [22mGET /api/v1/admin/review/decisions returns 401 without auth[32m 2[2mms[22m[39m
+ [32m鉁?[39m src/test/review-contract.test.ts[2m > [22mReview routes 鈥?contract (skipLifecycle, no DB/Redis)[2m > [22mGET /api/v1/admin/review/stats returns 401 without auth[32m 2[2mms[22m[39m
+ [32m鉁?[39m src/test/review-contract.test.ts[2m > [22mReview routes 鈥?contract (skipLifecycle, no DB/Redis)[2m > [22mPOST /api/v1/admin/review/items returns 401 without auth[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/review-contract.test.ts[2m > [22mReview routes 鈥?contract (skipLifecycle, no DB/Redis)[2m > [22mPUT /api/v1/admin/review/items/test-123 returns 401 without auth[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/review-contract.test.ts[2m > [22mReview routes 鈥?contract (skipLifecycle, no DB/Redis)[2m > [22mPOST /api/v1/admin/review/items/test-123/recheck returns 401 without auth[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/review-contract.test.ts[2m > [22mReview routes 鈥?contract (skipLifecycle, no DB/Redis)[2m > [22mPOST /api/v1/admin/review/items/test-123/action returns 401 without auth[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/review-contract.test.ts[2m > [22mReview routes 鈥?contract (skipLifecycle, no DB/Redis)[2m > [22mPOST /api/v1/admin/review/items/test-123/apply returns 401 without auth[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/review-contract.test.ts[2m > [22mReview routes 鈥?contract (skipLifecycle, no DB/Redis)[2m > [22mPOST /api/v1/admin/review/items/bulk/cleanup returns 401 without auth[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/review-contract.test.ts[2m > [22mReview routes 鈥?contract (skipLifecycle, no DB/Redis)[2m > [22mGET /api/v1/admin/review/image-proxy returns 401 without auth[32m 4[2mms[22m[39m
+ [32m鉁?[39m src/test/review-contract.test.ts[2m > [22mReview routes 鈥?contract (skipLifecycle, no DB/Redis)[2m > [22mPOST /api/v1/admin/review/cache-candidate returns 401 without auth[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/review-contract.test.ts[2m > [22mReview routes 鈥?contract (skipLifecycle, no DB/Redis)[2m > [22mPOST /review/items returns 401 even with valid-looking body[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/review-contract.test.ts[2m > [22mReview routes 鈥?contract (skipLifecycle, no DB/Redis)[2m > [22mPOST /review/items/bulk/cleanup returns 401 with dryRun=true[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/review-contract.test.ts[2m > [22mReview routes 鈥?contract (skipLifecycle, no DB/Redis)[2m > [22mPOST /review/items/:id/action with valid action returns 401[32m 3[2mms[22m[39m
+ [32m鉁?[39m src/test/review-contract.test.ts[2m > [22mReview routes 鈥?contract (skipLifecycle, no DB/Redis)[2m > [22mPOST /review/cache-candidate returns 401 without auth[32m 2[2mms[22m[39m
+ [32m鉁?[39m src/test/review-contract.test.ts[2m > [22mReview routes 鈥?contract (skipLifecycle, no DB/Redis)[2m > [22mGET /review/image-proxy returns 401 without auth[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/review-contract.test.ts[2m > [22mReview routes 鈥?contract (skipLifecycle, no DB/Redis)[2m > [22mall review routes return consistent error envelope[32m 10[2mms[22m[39m
+ [32m鉁?[39m src/test/review-contract.test.ts[2m > [22mReview schemas 鈥?contract frozen[2m > [22mvalid review statuses match admin.ts definition[32m 4[2mms[22m[39m
+ [32m鉁?[39m src/test/review-contract.test.ts[2m > [22mReview schemas 鈥?contract frozen[2m > [22mvalid review actions match admin.ts definition[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/review-contract.test.ts[2m > [22mReview schemas 鈥?contract frozen[2m > [22mvalid review types match admin.ts definition[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/review-contract.test.ts[2m > [22mReview schemas 鈥?contract frozen[2m > [22mdefault review query has limit=50 offset=0[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/review-contract.test.ts[2m > [22mReview schemas 鈥?contract frozen[2m > [22maction->status map matches admin.ts[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/review-contract.test.ts[2m > [22mReview schemas 鈥?contract frozen[2m > [22misSuppressingReviewDecision matches admin.ts[32m 0[2mms[22m[39m
+{"level":50,"time":1783778022941,"pid":102380,"hostname":"DESKTOP-OOPKE09","err":{"type":"Error","message":"Connection is closed.","stack":"Error: Connection is closed.\n    at close (D:\\model wiki\\mw-backend\\node_modules\\ioredis\\built\\redis\\event_handler.js:214:25)\n    at Socket.<anonymous> (D:\\model wiki\\mw-backend\\node_modules\\ioredis\\built\\redis\\event_handler.js:190:20)\n    at Object.onceWrapper (node:events:623:26)\n    at Socket.emit (node:events:508:28)\n    at TCP.<anonymous> (node:net:346:12)"},"msg":"Connection is closed."}
+{"level":30,"time":1783778022954,"pid":102380,"hostname":"DESKTOP-OOPKE09","reqId":"req-5","res":{"statusCode":500},"responseTime":32.348799999999756,"msg":"request completed"}
+{"level":30,"time":1783778022956,"pid":102380,"hostname":"DESKTOP-OOPKE09","reqId":"req-6","req":{"method":"GET","url":"/api/v1/search?q=test","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+ [32m鉁?[39m src/test/app-contract.test.ts[2m > [22mApp contract tests (skipLifecycle 鈥?no DB)[2m > [22mhealth endpoint returns ok[32m 47[2mms[22m[39m
+ [32m鉁?[39m src/test/app-contract.test.ts[2m > [22mApp contract tests (skipLifecycle 鈥?no DB)[2m > [22munknown route returns 404[32m 2[2mms[22m[39m
+ [32m鉁?[39m src/test/app-contract.test.ts[2m > [22mApp contract tests (skipLifecycle 鈥?no DB)[2m > [22madmin routes return 401 without auth[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/app-contract.test.ts[2m > [22mApp contract tests (skipLifecycle 鈥?no DB)[2m > [22madmin routes have no-store cache header[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/app-contract.test.ts[2m > [22mApp contract tests (skipLifecycle 鈥?no DB)[2m > [22mfigures list returns with standard response shape[32m 35[2mms[22m[39m
+{"level":30,"time":1783778022985,"pid":98748,"hostname":"DESKTOP-OOPKE09","reqId":"req-1","req":{"method":"POST","url":"/api/v1/admin/cache/purge","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022890,"pid":98748,"hostname":"DESKTOP-OOPKE09","reqId":"req-1","res":{"statusCode":401},"responseTime":6.058600000000297,"msg":"request completed"}
+{"level":30,"time":1783778022892,"pid":98748,"hostname":"DESKTOP-OOPKE09","reqId":"req-2","req":{"method":"GET","url":"/api/v1/admin/stats","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022893,"pid":98748,"hostname":"DESKTOP-OOPKE09","reqId":"req-2","res":{"statusCode":401},"responseTime":1.0515000000000327,"msg":"request completed"}
+{"level":30,"time":1783778022893,"pid":98748,"hostname":"DESKTOP-OOPKE09","reqId":"req-3","req":{"method":"GET","url":"/api/v1/admin/stats","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022894,"pid":98748,"hostname":"DESKTOP-OOPKE09","reqId":"req-3","res":{"statusCode":401},"responseTime":0.4074000000000524,"msg":"request completed"}
+{"level":30,"time":1783778022894,"pid":98748,"hostname":"DESKTOP-OOPKE09","reqId":"req-4","req":{"method":"GET","url":"/api/v1/admin/users","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022898,"pid":98748,"hostname":"DESKTOP-OOPKE09","reqId":"req-4","res":{"statusCode":401},"responseTime":3.407600000000002,"msg":"request completed"}
+{"level":30,"time":1783778022899,"pid":98748,"hostname":"DESKTOP-OOPKE09","reqId":"req-5","req":{"method":"GET","url":"/api/v1/admin/review/items","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022904,"pid":98748,"hostname":"DESKTOP-OOPKE09","reqId":"req-5","res":{"statusCode":401},"responseTime":4.587500000000091,"msg":"request completed"}
+{"level":30,"time":1783778022905,"pid":98748,"hostname":"DESKTOP-OOPKE09","reqId":"req-6","req":{"method":"GET","url":"/api/v1/admin/review/stats","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022905,"pid":98748,"hostname":"DESKTOP-OOPKE09","reqId":"req-6","res":{"statusCode":401},"responseTime":0.5210000000001855,"msg":"request completed"}
+{"level":30,"time":1783778022906,"pid":98748,"hostname":"DESKTOP-OOPKE09","reqId":"req-7","req":{"method":"POST","url":"/api/v1/admin/cache/purge","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022906,"pid":98748,"hostname":"DESKTOP-OOPKE09","reqId":"req-7","res":{"statusCode":401},"responseTime":0.33530000000018845,"msg":"request completed"}
+{"level":30,"time":1783778022910,"pid":98748,"hostname":"DESKTOP-OOPKE09","reqId":"req-8","req":{"method":"POST","url":"/api/v1/admin/aigc/generate","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022911,"pid":98748,"hostname":"DESKTOP-OOPKE09","reqId":"req-8","res":{"statusCode":401},"responseTime":0.39789999999993597,"msg":"request completed"}
+{"level":30,"time":1783778022911,"pid":98748,"hostname":"DESKTOP-OOPKE09","reqId":"req-9","req":{"method":"GET","url":"/api/v1/admin/crawler/jobs","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022912,"pid":98748,"hostname":"DESKTOP-OOPKE09","reqId":"req-9","res":{"statusCode":401},"responseTime":0.4257999999999811,"msg":"request completed"}
+{"level":30,"time":1783778022912,"pid":98748,"hostname":"DESKTOP-OOPKE09","reqId":"req-a","req":{"method":"GET","url":"/api/v1/admin/users","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022913,"pid":98748,"hostname":"DESKTOP-OOPKE09","reqId":"req-a","res":{"statusCode":401},"responseTime":0.4636000000000422,"msg":"request completed"}
+{"level":30,"time":1783778022950,"pid":98748,"hostname":"DESKTOP-OOPKE09","reqId":"req-1","res":{"statusCode":401},"responseTime":0.4270000000001346,"msg":"request completed"}
+{"level":30,"time":1783778022951,"pid":98748,"hostname":"DESKTOP-OOPKE09","reqId":"req-2","req":{"method":"GET","url":"/api/v1/admin/users","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022951,"pid":98748,"hostname":"DESKTOP-OOPKE09","reqId":"req-2","res":{"statusCode":401},"responseTime":0.3967999999999847,"msg":"request completed"}
+{"level":30,"time":1783778022986,"pid":98748,"hostname":"DESKTOP-OOPKE09","reqId":"req-1","res":{"statusCode":401},"responseTime":0.4000999999998385,"msg":"request completed"}
+{"level":30,"time":1783778022987,"pid":98748,"hostname":"DESKTOP-OOPKE09","reqId":"req-2","req":{"method":"POST","url":"/api/v1/admin/cache/purge","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022987,"pid":98748,"hostname":"DESKTOP-OOPKE09","reqId":"req-2","res":{"statusCode":401},"responseTime":0.3976999999999862,"msg":"request completed"}
+ [32m鉁?[39m src/test/admin-contract.test.ts[2m > [22mAdmin API 鈥?stats contract (auth gated)[2m > [22mstats endpoint exists and returns 401 without auth[32m 3[2mms[22m[39m
+ [32m鉁?[39m src/test/admin-contract.test.ts[2m > [22mAdmin API 鈥?stats contract (auth gated)[2m > [22musers endpoint exists and returns 401 without auth[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/admin-contract.test.ts[2m > [22mAdmin API 鈥?cache purge contract (auth gated)[2m > [22mcache purge returns 401 without auth[32m 3[2mms[22m[39m
+ [32m鉁?[39m src/test/admin-contract.test.ts[2m > [22mAdmin API 鈥?cache purge contract (auth gated)[2m > [22mcache purge with arbitrary patterns returns 401 without auth[32m 1[2mms[22m[39m
+{"level":50,"time":1783778023020,"pid":102380,"hostname":"DESKTOP-OOPKE09","err":{"type":"PrismaClientInitializationError","message":"\nInvalid `app.prisma.figure.findMany()` invocation in\nD:\\model wiki\\mw-backend\\src\\routes\\search.ts:270:27\n\n  267 } else {\n  268   // \"all\" 鈥?骞惰鎼滅储鎵€鏈?public entity types.\n  269   const [figItems, figCount, serItems, serCount, mfrItems, mfrCount, scItems, scCount, charItems, charCount] = await Promise.all([\n鈫?270     app.prisma.figure.findMany(\nerror: Environment variable not found: DATABASE_URL.\n  -->  schema.prisma:7\n   | \n 6 |   provider = \"postgresql\"\n 7 |   url      = env(\"DATABASE_URL\")\n   | \n\nValidation Error Count: 1","stack":"PrismaClientInitializationError: \nInvalid `app.prisma.figure.findMany()` invocation in\nD:\\model wiki\\mw-backend\\src\\routes\\search.ts:270:27\n\n  267 } else {\n  268   // \"all\" 鈥?骞惰鎼滅储鎵€鏈?public entity types.\n  269   const [figItems, figCount, serItems, serCount, mfrItems, mfrCount, scItems, scCount, charItems, charCount] = await Promise.all([\n鈫?270     app.prisma.figure.findMany(\nerror: Environment variable not found: DATABASE_URL.\n  -->  schema.prisma:7\n   | \n 6 |   provider = \"postgresql\"\n 7 |   url      = env(\"DATABASE_URL\")\n   | \n\nValidation Error Count: 1\n    at ei.handleRequestError (D:\\model wiki\\mw-backend\\node_modules\\@prisma\\client\\src\\runtime\\RequestHandler.ts:242:13)\n    at ei.handleAndLogRequestError (D:\\model wiki\\mw-backend\\node_modules\\@prisma\\client\\src\\runtime\\RequestHandler.ts:174:12)\n    at ei.request (D:\\model wiki\\mw-backend\\node_modules\\@prisma\\client\\src\\runtime\\RequestHandler.ts:143:12)\n    at a (D:\\model wiki\\mw-backend\\node_modules\\@prisma\\client\\src\\runtime\\getPrismaClient.ts:833:24)\n    at async Promise.all (index 0)\n    at Object.<anonymous> (D:\\model wiki\\mw-backend\\src\\routes\\search.ts:269:116)","clientVersion":"6.19.3","name":"PrismaClientInitializationError"},"msg":"\nInvalid `app.prisma.figure.findMany()` invocation in\nD:\\model wiki\\mw-backend\\src\\routes\\search.ts:270:27\n\n  267 } else {\n  268   // \"all\" 鈥?骞惰鎼滅储鎵€鏈?public entity types.\n  269   const [figItems, figCount, serItems, serCount, mfrItems, mfrCount, scItems, scCount, charItems, charCount] = await Promise.all([\n鈫?270     app.prisma.figure.findMany(\nerror: Environment variable not found: DATABASE_URL.\n  -->  schema.prisma:7\n   | \n 6 |   provider = \"postgresql\"\n 7 |   url      = env(\"DATABASE_URL\")\n   | \n\nValidation Error Count: 1"}
+{"level":30,"time":1783778023020,"pid":102380,"hostname":"DESKTOP-OOPKE09","reqId":"req-6","res":{"statusCode":500},"responseTime":64.12170000000015,"msg":"request completed"}
+{"level":30,"time":1783778023021,"pid":102380,"hostname":"DESKTOP-OOPKE09","reqId":"req-7","req":{"method":"POST","url":"/api/v1/auth/login","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778023023,"pid":102380,"hostname":"DESKTOP-OOPKE09","reqId":"req-7","res":{"statusCode":422},"responseTime":1.41150000000016,"msg":"request completed"}
+{"level":30,"time":1783778023023,"pid":102380,"hostname":"DESKTOP-OOPKE09","reqId":"req-8","req":{"method":"GET","url":"/api/v1/categories","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":50,"time":1783778023024,"pid":102380,"hostname":"DESKTOP-OOPKE09","err":{"type":"Error","message":"Connection is closed.","stack":"Error: Connection is closed.\n    at EventEmitter.sendCommand (D:\\model wiki\\mw-backend\\node_modules\\ioredis\\built\\Redis.js:344:28)\n    at EventEmitter.get (D:\\model wiki\\mw-backend\\node_modules\\ioredis\\built\\utils\\Commander.js:90:25)\n    at Object.<anonymous> (D:\\model wiki\\mw-backend\\src\\routes\\categories.ts:60:36)\n    at preHandlerCallbackInner (D:\\model wiki\\mw-backend\\node_modules\\fastify\\lib\\handle-request.js:175:24)\n    at preHandlerCallback (D:\\model wiki\\mw-backend\\node_modules\\fastify\\lib\\handle-request.js:140:5)\n    at validationCompleted (D:\\model wiki\\mw-backend\\node_modules\\fastify\\lib\\handle-request.js:130:5)\n    at preValidationCallback (D:\\model wiki\\mw-backend\\node_modules\\fastify\\lib\\handle-request.js:107:5)\n    at handler (D:\\model wiki\\mw-backend\\node_modules\\fastify\\lib\\handle-request.js:84:7)\n    at Object.handleRequest (D:\\model wiki\\mw-backend\\node_modules\\fastify\\lib\\handle-request.js:32:5)\n    at runPreParsing (D:\\model wiki\\mw-backend\\node_modules\\fastify\\lib\\route.js:657:19)"},"msg":"Connection is closed."}
+{"level":30,"time":1783778023032,"pid":102380,"hostname":"DESKTOP-OOPKE09","reqId":"req-8","res":{"statusCode":500},"responseTime":8.48490000000038,"msg":"request completed"}
+ [32m鉁?[39m src/test/app-contract.test.ts[2m > [22mApp contract tests (skipLifecycle 鈥?no DB)[2m > [22msearch endpoint returns 200[32m 65[2mms[22m[39m
+ [32m鉁?[39m src/test/app-contract.test.ts[2m > [22mApp contract tests (skipLifecycle 鈥?no DB)[2m > [22mauth login route exists and returns validation error for missing body[32m 2[2mms[22m[39m
+ [32m鉁?[39m src/test/app-contract.test.ts[2m > [22mApp contract tests (skipLifecycle 鈥?no DB)[2m > [22mresponses use consistent JSON envelope[32m 9[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m14 passed[39m[22m[90m (14)[39m
+[2m      Tests [22m [1m[32m144 passed[39m[22m[90m (144)[39m
+[2m   Start at [22m 15:53:40
+[2m   Duration [22m 2.93s[2m (transform 3.18s, setup 0ms, collect 3.31s, tests 5.38s, environment 3ms, prepare 3.76s)[22m
+

@@ -1,5 +1,6 @@
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
+import { scanKeys } from "../shared/cache/scan-keys.js";
 
 const listQuery = z.object({
   page: z.coerce.number().min(1).default(1),
@@ -18,14 +19,10 @@ const createSeriesSchema = z.object({
 const updateSeriesSchema = createSeriesSchema.partial();
 
 async function invalidateSeriesCache(app: FastifyInstance, slug?: string) {
-  const keys: string[] = [];
-  const listKeys = await app.redis.keys("series:list:*");
-  keys.push(...listKeys);
   if (slug) {
-    const detailKey = `series:detail:${slug}`;
-    keys.push(detailKey);
+    await app.redis.del(`series:detail:${slug}`);
   }
-  if (keys.length > 0) await app.redis.del(...keys);
+  await scanKeys(app.redis, "series:list:*");
 }
 
 export async function seriesRoutes(app: FastifyInstance) {

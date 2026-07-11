@@ -1,415 +1,87 @@
 # ModelWiki 用户需求
 
-## 1. 用户角色
+## 1. 访客
 
-### 游客
+访客应能以法语完成以下任务：
 
-可以：
+- 通过全局即时搜索查找 Figure、Personnage、Série 或 Fabricant；
+- 从 Figurines、Series、Personnages、Fabricants、Tests & Guides、Communauté 进入浏览；
+- 在 Explorer 中组合筛选并清楚看到结果数、筛选条件、排序和重置操作；
+- 在 Figure detail 中阅读可靠图片、关系面包屑、简洁标题、完整原名、分组规格、Studio 内容与社区 Avis；
+- 区分 Dernières fiches ajoutées、Sorties à venir 和 Dernières sorties；
+- 阅读独立的 Test、Unboxing、Comparatif 与 Guide 页面。
 
-- 浏览公开内容
-- 搜索
-- 使用筛选
-- 查看详情、图集、规格、相关推荐
-- 查看点赞数、收藏数、评论数
-- 阅读评测文章
+无图、无评论或数据不足必须诚实呈现。统一 Placeholder、冷启动投稿邀请和数据阈值是体验的一部分，不得以空白、假活跃或单样本榜单替代。
 
-不能：
+注册用户可登录/退出、修改自己的密码，并管理自己的 Collection、Wishlist、Avis、个人资料和相应可见性。除有明确后续阶段的内容互动外，用户不得修改他人资料、评分、审核项或目录资料。编辑者可在授权范围内维护 Figure 的描述、规格和 Category/Series/Personnage/Fabricant/生产角色关系，并创建、预览、发布和更新 Studio 内容。审核者可处理被分配的审核项但不能伪造用户行为或提升自己的角色。管理员可管理账号状态、角色、内容可见性、审核策略、缓存与小样本 crawler 触发，并查看系统审计；密码重置走受控流程，管理员永远不可读取明文密码。
 
-- 点赞
-- 收藏
-- 评论
-- 修改内容
+## 2. Figure detail MVP
 
-### 注册用户
+P1 的详情页必须提供：
 
-除游客能力外，还可以：
+- `display_title` 与可展开/可见的 `original_title`/`full_name`；
+- 根据 Series、Personnage、Gamme 等真实关联生成的面包屑；
+- `Photos du Studio`、`Communauté`、`Photos officielles` 分来源 Gallery，标注来源类型并支持主图切换；
+- 当前最佳可用图片与统一 Placeholder；
+- 按 `Informations générales`、`Caractéristiques`、`Sortie`、`Production` 分组的非空规格；
+- 与 Figure 结构化关联的 Phoebus Studio 内容，且与社区 Avis 分栏；
+- Note générale、4 个评分维度和明确样本量；
+- 登录后可用的 Collection、Wishlist、Noter、Avis 操作。
 
-- 登录、退出
-- 修改自己的密码
-- 点赞/取消点赞
-- 收藏/取消收藏
-- 评论
-- 编辑/删除自己的评论
-- 管理收藏状态和分组
-- 记录个人收藏信息
-- 管理公开/私密设置
-
-### 编辑者
-
-可以：
-
-- 修改手办资料
-- 编辑描述
-- 维护分类、系列、角色、厂商、原型师关系
-- 发布和编辑评测文章
-- 处理授权范围内的内容审核
-
-### 管理员
-
-拥有：
-
-- 用户管理
-- 内容管理
-- 审核管理
-- 评论管理
-- crawler job 观察与小样本触发
-- 缓存管理
-- 系统审计查看
-
-管理员账号和权限操作必须受到严格审计。
-
----
-
-## 2. 前台访客需求
-
-### 2.1 首页
-
-首页应至少包含：
-
-- 最新收录
-- 热门收藏
-- 热门点赞
-- 最近评论
-- 最新评测/文章
-- 分类入口
-- 厂商/系列推荐
-
-首页内容展示优先级应考虑“可安全展示的图片”，避免首屏大量 No Image。
-
-### 2.2 列表和筛选
-
-支持：
-
-- Figure 列表
-- Merch 列表
-- 分类筛选
-- 厂商筛选
-- 系列筛选
-- 角色筛选
-- 原型师筛选
-- 发售年份筛选
-- 排序：
-  - 最新收录
-  - 发售日期
-  - 收藏数
-  - 点赞数
-  - 评论数
-
-### 2.3 搜索
-
-至少支持：
-
-- title
-- alias
-- character
-- manufacturer
-- series
-- JAN
-- MFC ID
-- source ID
-- keyword
-
-搜索结果要允许进一步筛选。
-
-### 2.4 Figure 详情页
-
-至少展示：
-
-- 标题
-- 多语言名/别名
-- 主图
-- 图集
-- 厂商
-- 系列
-- 角色
-- 原型师
-- 分类
-- product kind
-- 材质
-- 比例
-- 高度
-- 发售日期
-- 价格
-- JAN
-- 来源链接
-- 描述
-- 规格
-- Like 数
-- Favorite 数
-- 评论数
-- 用户收藏状态入口
-- 评论区
-- 相关推荐
-- 相关评测文章
-
-### 2.5 图片体验
-
-必须满足：
-
-- 主图相关
-- 不允许低质量缩略图长期作为唯一主图
-- 图片可放大
-- 图集顺序合理
-- 404 图片有安全 fallback
-- 玩家房间、展示柜、合集图等不能未经审核成为主图
+详情页不得把完整导入标题硬塞入 H1，不得将 Like、Favorite、Own、Wishlist 作为四个含义重叠的 Figure 操作，也不得把 Studio Review 与用户评论混成一个列表。
 
-### 2.6 相关推荐
+在数据存在时，详情还应展示 Fabricant、Série、Personnage、分类、产品类型、材质、比例、高度、发售日期、价格、JAN、来源链接、描述和可追踪规格。图片应支持放大、合理排序及 404 安全 fallback；未经审核的房间、展示柜、合集图或低质缩略图不得长期作为唯一主图。相关推荐必须排除当前 Figure、按 `figureId` 去重，并可依据同 Personnage、Series、Fabricant 或分类建立关系。
 
-相关推荐应：
+## 3. 注册用户与账户
 
-- 排除当前 Figure 自身
-- 按 figureId 去重
-- 支持同角色
-- 同系列
-- 同厂商
-- 相似分类
-
----
-
-## 3. 注册用户需求
+P2 的账户价值为：
 
-### 3.1 收藏状态
+- Ma collection：拥有的 Figure，可逐步增加数量、备注、购入信息和可见性；
+- Ma wishlist：想要的 Figure；
+- Mes avis：每个用户每个 Figure 一份、可更新的评分与评价；
+- Mes photos：在后续社区阶段开放的实拍管理；
+- Mon profil：头像、名称、简介与真实收藏统计。
 
-支持：
+一个用户对同一 Figure 只能保留一条有效评分记录；更新必须重新计算聚合分数与样本量。收藏、Wishlist、Avis、图片上传和公开资料的可见性必须由账户所有者控制，管理员/审核者只能在明确权限范围内处理违规内容。
 
-- Own / 已拥有
-- Wanted / 想要
-- Ordered / 已预订
-- Sold / 已出售
-- Watch / 关注
+CollectionEntry 至少支持状态、备注、数量、购入价格、购入日期、购入渠道和可见性；P2 首屏以拥有/想要为核心，预订、售出、关注等扩展状态不得重新引入与 Wishlist 重叠的 Figure 操作。账户页应包含个人收藏、Wishlist、Avis、账号设置和可用的统计；估值、再版/价格提醒不属于当前承诺。
 
-### 3.2 收藏记录字段
+## 4. Explorer、搜索与首页
 
-每条用户收藏记录支持：
+P3 的 Explorer 支持 Catégorie、Série、Personnage、Fabricant、Échelle、Année de sortie 等筛选。Series 与 Fabricant 选择器提供录入搜索、热门项列表和分页/异步结果，避免传统超长 <select>。移动端筛选进入抽屉或 Bottom Sheet，而非长页面垂直堆叠。价格可以存在，但不是 Wiki 的高优先级筛选。
 
-- status
-- note
-- quantity
-- purchasePrice
-- purchaseDate
-- purchaseChannel
-- visibility
-
-### 3.3 用户中心
+P4 Home 的模块必须有可配置、可验证的数据来源与阈值：
 
-至少包含：
+- Derniers Tests 只展示已发布内容的封面、类型和页面入口，不批量加载第三方视频 iframe；
+- Derniers avis 仅在达到足够真实、已发布 Avis 数量后出现；
+- Les mieux notées 至少达到约定的最小样本量（产品决定前不得自行假设），并展示样本量；
+- Latest Added、Upcoming、Latest Releases 使用不同的字段和排序；
+- 最新条目保持有限数量并链接到完整 Explorer。
 
-- 我的收藏
-- 我的点赞
-- 我的评论
-- 我的收藏分组
-- 账号设置
+搜索必须支持 title、alias、Personnage、Fabricant、Série、JAN、MFC ID、source ID 和关键字，并允许结果继续筛选。相关推荐、搜索、facet、首页模块和公开列表必须排除隐藏实体及未达发布条件的用户内容。
 
-后续可增加：
+## 5. 编辑、审核者与管理员
 
-- 收藏统计
-- 总估值
-- 月度入手记录
-- 再版提醒
-- 价格提醒
+编辑者负责 Tests & Guides 的内容稿和关系维护；内容类型、发布日期、封面、正文和 Figure/Series/Personnage/Fabricant 关联必须可编辑并可审计。
 
----
+审核者负责图片候选、详情冲突、用户 Avis 和用户图片的人工判断。审核界面必须同时给出原始证据和当前数据库状态，保存 action、reason、reviewer、时间与 evidence fingerprint。审核者可拒绝、隐藏、要求补充或升级处理，但不能绕过权限直接伪造用户行为。
 
-## 4. 社区互动需求
+管理员负责角色、账号状态、内容可见性、审核策略与受控发布。管理员看不到明文密码，也不得将批量数据操作当作普通 UI 操作。
 
-### 点赞
+管理端 Dashboard 应能查看 Figure、图片、用户、Avis/用户内容、pending/needs_changes 审核、crawler queued/running/failed、图片覆盖率和详情完整率。Figure 管理需支持搜索、编辑、查看 id/slug/关系/图片数/详情缺失与审核状态，并可跳至前台和对应审核项。主数据管理至少覆盖 Category、Fabricant、Series、Personnage 和生产角色；社区内容管理必须支持搜索、关联对象查看、隐藏或删除，并留下审计记录。
 
-- 登录用户可点赞/取消点赞
-- 前台展示数量
-- 同一用户对同一 Figure 不得重复点赞
+图片审核界面必须同时提供当前主图、当前图片数、完整图库、candidate 与放大预览、current vs candidate 对比、来源、尺寸、riskType、riskReason、shared candidate warning、Original Evidence 和 Current State。动作只能走 `approve_image`、`reject_image`、`keep_placeholder`、`request_refetch`、`keep_pending` 等受审计路径。详情审核必须展示当前 description、specs、缺失字段、冲突字段、原始证据、当前状态和建议动作，并使用 `mark_detail_ok`、`request_refetch`、`keep_pending`、`mark_needs_manual_edit` 处理。
 
-### 收藏
+## 6. 社区分期
 
-- 登录用户可收藏/取消收藏
-- 收藏状态与个人收藏记录关联
-- 前台展示收藏人数
-
-### 评论
-
-要求：
-
-- 登录后才能评论
-- 支持编辑自己的评论
-- 支持删除自己的评论
-- 管理员可删除/隐藏违规评论
-- 防刷和频率限制
-- 记录创建和修改时间
-
-后续可增加：
+社区不是 P1-P5 前的阻塞性社交网络。顺序为：
 
-- 用户评分
-- 热门收藏榜
-- 最近评论
-- 用户贡献记录
+1. Collection、Wishlist、Rating、Avis；
+2. 用户实拍、Helpful、公开收藏；
+3. 关注、活动流、徽章、排名。
 
----
+每一阶段上线前都要有举报、隐藏、删除、限流和审计路径。不存在足够真实内容时，页面应邀请用户贡献，而不是制造热度。
 
-## 5. 评测与内容发布需求
-
-这是 ModelWiki 稳定期的重要主线。
-
-### 文章类型
-
-包括但不限于：
-
-- 单品评测
-- 开箱
-- 做工/涂装分析
-- 可动性分析
-- 性价比分析
-- 同系列横向对比
-- 新旧版对比
-- 系列盘点
-- 购买建议
-- 再版信息
-- 收藏心得
-
-### 文章与 Figure 的关系
-
-评测文章应能关联：
-
-- 一个 Figure
-- 多个 Figure
-- 一个系列
-- 一个厂商
-- 一个角色
-
-Figure 详情页应能展示关联评测。
-
-### 编辑体验
-
-编辑者需要：
-
-- 草稿
-- 预览
-- 发布
-- 更新
-- 封面图
-- 图集
-- Figure 关联
-- SEO 基础字段
-- 多语言扩展接口（后续）
-
----
-
-## 6. 管理后台需求
-
-### 仪表盘
+## 7. 通用验收
 
-显示：
-
-- Figure 总数
-- 图片总数
-- 用户数
-- 评论数
-- pending review
-- needs_changes review
-- crawler queued/running/failed
-- 图片覆盖率
-- detail 完整率
-
-### Figure 管理
-
-支持：
-
-- 搜索
-- 编辑
-- 查看 title
-- slug/id
-- category
-- manufacturer
-- series
-- characters
-- image count
-- detail missing state
-- pending review state
-- 跳转前台
-- 跳转对应审核项
-
-### 分类主数据管理
-
-支持：
-
-- category
-- manufacturer
-- series
-- character
-- sculptor
-
-### Review 管理
-
-图片审核需要：
-
-- 当前主图
-- 当前图片数
-- candidate
-- candidate 放大
-- current vs candidate 对比
-- source
-- dimensions
-- riskType
-- riskReason
-- sharedCandidateWarning
-- original evidence
-- current state
-
-动作：
-
-- approve
-- reject
-- keep_placeholder
-- request_refetch
-- keep_pending / uncertain
-
-详情审核需要：
-
-- 当前 description
-- 当前 specs
-- missing fields
-- conflict fields
-- original evidence
-- current state
-- suggested action
-
-动作：
-
-- mark_detail_ok
-- request_refetch
-- keep_pending
-- mark_needs_manual_edit
-
-### 用户管理
-
-支持：
-
-- 查看用户
-- 禁用/启用
-- 修改角色
-- 删除测试账号
-- 重置密码流程
-
-涉及密码的操作必须避免管理员看到明文密码。
-
-### 评论管理
-
-支持：
-
-- 列表
-- 搜索
-- 删除
-- 隐藏
-- 查看关联 Figure 和用户
-
----
-
-## 7. 验收原则
-
-任何 UI 功能不能以“按钮存在”为完成标准。
-
-至少验证：
-
-操作前状态
-→ 实际点击
-→ API 返回
-→ 状态变化
-→ 页面刷新后的结果
+任何 UI 功能都不能以按钮存在、HTTP 200 或 mock 响应作为完成标准。验收必须记录操作前状态、实际操作、API 响应、持久化状态、API readback 和页面刷新后的结果；媒体和 crawler 相关操作还需验证媒体可用性或 job 状态及 writeback。未覆盖的路径应标为 `NOT TESTED`，而非默认完成。

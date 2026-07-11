@@ -1,0 +1,166 @@
+﻿
+> modelwiki-api@1.0.0 test:contract
+> vitest run --reporter verbose src/test/app-contract.test.ts src/test/admin-contract.test.ts src/test/review-contract.test.ts
+
+
+[1m[46m RUN [49m[22m [36mv3.2.7 [39m[90mD:/model wiki/mw-backend[39m
+
+{"level":30,"time":1783778022884,"pid":42544,"hostname":"DESKTOP-OOPKE09","reqId":"req-1","req":{"method":"GET","url":"/api/v1/admin/stats","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022889,"pid":106784,"hostname":"DESKTOP-OOPKE09","reqId":"req-1","req":{"method":"GET","url":"/health","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022890,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-1","req":{"method":"GET","url":"/api/v1/admin/review/items","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022903,"pid":106784,"hostname":"DESKTOP-OOPKE09","reqId":"req-1","res":{"statusCode":200},"responseTime":11.595400000000154,"msg":"request completed"}
+{"level":30,"time":1783778022905,"pid":106784,"hostname":"DESKTOP-OOPKE09","reqId":"req-2","req":{"method":"GET","url":"/nonexistent","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022906,"pid":106784,"hostname":"DESKTOP-OOPKE09","reqId":"req-2","msg":"Route GET:/nonexistent not found"}
+{"level":30,"time":1783778022906,"pid":106784,"hostname":"DESKTOP-OOPKE09","reqId":"req-2","res":{"statusCode":404},"responseTime":0.6797000000005937,"msg":"request completed"}
+{"level":30,"time":1783778022907,"pid":106784,"hostname":"DESKTOP-OOPKE09","reqId":"req-3","req":{"method":"GET","url":"/api/v1/admin/stats","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022907,"pid":106784,"hostname":"DESKTOP-OOPKE09","reqId":"req-3","res":{"statusCode":401},"responseTime":0.3787000000002081,"msg":"request completed"}
+{"level":30,"time":1783778022908,"pid":106784,"hostname":"DESKTOP-OOPKE09","reqId":"req-4","req":{"method":"GET","url":"/api/v1/admin/stats","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022909,"pid":106784,"hostname":"DESKTOP-OOPKE09","reqId":"req-4","res":{"statusCode":401},"responseTime":1.0994000000000597,"msg":"request completed"}
+{"level":30,"time":1783778022910,"pid":106784,"hostname":"DESKTOP-OOPKE09","reqId":"req-5","req":{"method":"GET","url":"/api/v1/figures","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+node.exe : [90mstderr[2m | src/test/app-contract.test.ts[2m > [22m[2mApp contract tests (skipLifecycle 鈥?no DB)[2
+m > [22m[2mfigures list returns with standard response shape
+所在位置 行:1 字符: 1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([90mstderr[2m... response shape:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+[22m[39m[ioredis] Unhandled error event: AggregateError: 
+    at internalConnectMultiple (node:net:1142:49)
+    at afterConnectMultiple (node:net:1723:7)
+
+{"level":50,"time":1783778022930,"pid":106784,"hostname":"DESKTOP-OOPKE09","err":{"type":"Error","message":"Connection is closed.","stack":"Error: Connection is closed.\n    at close (D:\\model wiki\\mw-backend\\node_modules\\ioredis\\built\\redis\\event_handler.js:214:25)\n    at Socket.<anonymous> (D:\\model wiki\\mw-backend\\node_modules\\ioredis\\built\\redis\\event_handler.js:190:20)\n    at Object.onceWrapper (node:events:623:26)\n    at Socket.emit (node:events:508:28)\n    at TCP.<anonymous> (node:net:346:12)"},"msg":"Connection is closed."}
+{"level":30,"time":1783778022938,"pid":106784,"hostname":"DESKTOP-OOPKE09","reqId":"req-5","res":{"statusCode":500},"responseTime":28.070300000000316,"msg":"request completed"}
+{"level":30,"time":1783778022940,"pid":106784,"hostname":"DESKTOP-OOPKE09","reqId":"req-6","req":{"method":"GET","url":"/api/v1/search?q=test","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+ [32m鉁?[39m src/test/app-contract.test.ts[2m > [22mApp contract tests (skipLifecycle 鈥?no DB)[2m > [22mhealth endpoint returns ok[32m 42[2mms[22m[39m
+ [32m鉁?[39m src/test/app-contract.test.ts[2m > [22mApp contract tests (skipLifecycle 鈥?no DB)[2m > [22munknown route returns 404[32m 2[2mms[22m[39m
+ [32m鉁?[39m src/test/app-contract.test.ts[2m > [22mApp contract tests (skipLifecycle 鈥?no DB)[2m > [22madmin routes return 401 without auth[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/app-contract.test.ts[2m > [22mApp contract tests (skipLifecycle 鈥?no DB)[2m > [22madmin routes have no-store cache header[32m 2[2mms[22m[39m
+ [32m鉁?[39m src/test/app-contract.test.ts[2m > [22mApp contract tests (skipLifecycle 鈥?no DB)[2m > [22mfigures list returns with standard response shape[32m 30[2mms[22m[39m
+ [32m鉁?[39m src/test/review-contract.test.ts[2m > [22mReview routes 鈥?contract (skipLifecycle, no DB/Redis)[2m > [22mGET /api/v1/admin/review/items returns 401 without auth[32m 56[2mms[22m[39m
+ [32m鉁?[39m src/test/review-contract.test.ts[2m > [22mReview routes 鈥?contract (skipLifecycle, no DB/Redis)[2m > [22mGET /api/v1/admin/review/decisions returns 401 without auth[32m 3[2mms[22m[39m
+ [32m鉁?[39m src/test/review-contract.test.ts[2m > [22mReview routes 鈥?contract (skipLifecycle, no DB/Redis)[2m > [22mGET /api/v1/admin/review/stats returns 401 without auth[32m 4[2mms[22m[39m
+ [32m鉁?[39m src/test/review-contract.test.ts[2m > [22mReview routes 鈥?contract (skipLifecycle, no DB/Redis)[2m > [22mPOST /api/v1/admin/review/items returns 401 without auth[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/review-contract.test.ts[2m > [22mReview routes 鈥?contract (skipLifecycle, no DB/Redis)[2m > [22mPUT /api/v1/admin/review/items/test-123 returns 401 without auth[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/review-contract.test.ts[2m > [22mReview routes 鈥?contract (skipLifecycle, no DB/Redis)[2m > [22mPOST /api/v1/admin/review/items/test-123/recheck returns 401 without auth[32m 2[2mms[22m[39m
+ [32m鉁?[39m src/test/review-contract.test.ts[2m > [22mReview routes 鈥?contract (skipLifecycle, no DB/Redis)[2m > [22mPOST /api/v1/admin/review/items/test-123/action returns 401 without auth[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/review-contract.test.ts[2m > [22mReview routes 鈥?contract (skipLifecycle, no DB/Redis)[2m > [22mPOST /api/v1/admin/review/items/test-123/apply returns 401 without auth[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/review-contract.test.ts[2m > [22mReview routes 鈥?contract (skipLifecycle, no DB/Redis)[2m > [22mPOST /api/v1/admin/review/items/bulk/cleanup returns 401 without auth[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/review-contract.test.ts[2m > [22mReview routes 鈥?contract (skipLifecycle, no DB/Redis)[2m > [22mGET /api/v1/admin/review/image-proxy returns 401 without auth[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/review-contract.test.ts[2m > [22mReview routes 鈥?contract (skipLifecycle, no DB/Redis)[2m > [22mPOST /api/v1/admin/review/cache-candidate returns 401 without auth[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/review-contract.test.ts[2m > [22mReview routes 鈥?contract (skipLifecycle, no DB/Redis)[2m > [22mPOST /review/items returns 401 even with valid-looking body[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/review-contract.test.ts[2m > [22mReview routes 鈥?contract (skipLifecycle, no DB/Redis)[2m > [22mPOST /review/items/bulk/cleanup returns 401 with dryRun=true[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/review-contract.test.ts[2m > [22mReview routes 鈥?contract (skipLifecycle, no DB/Redis)[2m > [22mPOST /review/items/:id/action with valid action returns 401[32m 3[2mms[22m[39m
+ [32m鉁?[39m src/test/review-contract.test.ts[2m > [22mReview routes 鈥?contract (skipLifecycle, no DB/Redis)[2m > [22mPOST /review/cache-candidate returns 401 without auth[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/review-contract.test.ts[2m > [22mReview routes 鈥?contract (skipLifecycle, no DB/Redis)[2m > [22mGET /review/image-proxy returns 401 without auth[32m 4[2mms[22m[39m
+ [32m鉁?[39m src/test/review-contract.test.ts[2m > [22mReview routes 鈥?contract (skipLifecycle, no DB/Redis)[2m > [22mall review routes return consistent error envelope[32m 15[2mms[22m[39m
+{"level":30,"time":1783778022915,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-1","res":{"statusCode":401},"responseTime":21.557299999999486,"msg":"request completed"}
+{"level":30,"time":1783778022922,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-2","req":{"method":"GET","url":"/api/v1/admin/review/decisions","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022924,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-2","res":{"statusCode":401},"responseTime":1.238800000000083,"msg":"request completed"}
+{"level":30,"time":1783778022927,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-3","req":{"method":"GET","url":"/api/v1/admin/review/stats","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022928,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-3","res":{"statusCode":401},"responseTime":0.3758000000007087,"msg":"request completed"}
+{"level":30,"time":1783778022928,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-4","req":{"method":"POST","url":"/api/v1/admin/review/items","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022929,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-4","res":{"statusCode":401},"responseTime":0.4719999999997526,"msg":"request completed"}
+{"level":30,"time":1783778022930,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-5","req":{"method":"PUT","url":"/api/v1/admin/review/items/test-123","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022931,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-5","res":{"statusCode":401},"responseTime":0.7455999999992855,"msg":"request completed"}
+{"level":30,"time":1783778022932,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-6","req":{"method":"POST","url":"/api/v1/admin/review/items/test-123/recheck","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022932,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-6","res":{"statusCode":401},"responseTime":0.4610999999995329,"msg":"request completed"}
+{"level":30,"time":1783778022933,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-7","req":{"method":"POST","url":"/api/v1/admin/review/items/test-123/action","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022933,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-7","res":{"statusCode":401},"responseTime":0.40710000000035507,"msg":"request completed"}
+{"level":30,"time":1783778022934,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-8","req":{"method":"POST","url":"/api/v1/admin/review/items/test-123/apply","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022934,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-8","res":{"statusCode":401},"responseTime":0.29060000000026776,"msg":"request completed"}
+{"level":30,"time":1783778022935,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-9","req":{"method":"POST","url":"/api/v1/admin/review/items/bulk/cleanup","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022935,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-9","res":{"statusCode":401},"responseTime":0.3981000000003405,"msg":"request completed"}
+{"level":30,"time":1783778022936,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-a","req":{"method":"GET","url":"/api/v1/admin/review/image-proxy","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022936,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-a","res":{"statusCode":401},"responseTime":0.4844999999995707,"msg":"request completed"}
+{"level":30,"time":1783778022937,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-b","req":{"method":"POST","url":"/api/v1/admin/review/cache-candidate","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022937,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-b","res":{"statusCode":401},"responseTime":0.2565999999997075,"msg":"request completed"}
+{"level":30,"time":1783778022938,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-c","req":{"method":"POST","url":"/api/v1/admin/review/items","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022938,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-c","res":{"statusCode":401},"responseTime":0.4143999999996595,"msg":"request completed"}
+{"level":30,"time":1783778022938,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-d","req":{"method":"POST","url":"/api/v1/admin/review/items/bulk/cleanup","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022939,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-d","res":{"statusCode":401},"responseTime":0.5205999999998312,"msg":"request completed"}
+{"level":30,"time":1783778022939,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-e","req":{"method":"POST","url":"/api/v1/admin/review/items/test-123/action","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022942,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-e","res":{"statusCode":401},"responseTime":2.2398000000002867,"msg":"request completed"}
+{"level":30,"time":1783778022942,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-f","req":{"method":"POST","url":"/api/v1/admin/review/cache-candidate","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022943,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-f","res":{"statusCode":401},"responseTime":0.3085000000000946,"msg":"request completed"}
+{"level":30,"time":1783778022943,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-g","req":{"method":"GET","url":"/api/v1/admin/review/image-proxy?url=https://example.com/img.jpg","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022947,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-g","res":{"statusCode":401},"responseTime":3.1631999999999607,"msg":"request completed"}
+{"level":30,"time":1783778022947,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-h","req":{"method":"GET","url":"/api/v1/admin/review/items","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022948,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-h","res":{"statusCode":401},"responseTime":0.3658999999997832,"msg":"request completed"}
+{"level":30,"time":1783778022948,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-i","req":{"method":"GET","url":"/api/v1/admin/review/decisions","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022948,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-i","res":{"statusCode":401},"responseTime":0.2430000000003929,"msg":"request completed"}
+{"level":30,"time":1783778022949,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-j","req":{"method":"GET","url":"/api/v1/admin/review/stats","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022949,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-j","res":{"statusCode":401},"responseTime":0.24790000000029977,"msg":"request completed"}
+{"level":30,"time":1783778022953,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-k","req":{"method":"POST","url":"/api/v1/admin/review/items","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022954,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-k","res":{"statusCode":401},"responseTime":0.309200000000601,"msg":"request completed"}
+{"level":30,"time":1783778022954,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-l","req":{"method":"PUT","url":"/api/v1/admin/review/items/test-123","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022954,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-l","res":{"statusCode":401},"responseTime":0.2764999999999418,"msg":"request completed"}
+{"level":30,"time":1783778022955,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-m","req":{"method":"POST","url":"/api/v1/admin/review/items/test-123/recheck","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022955,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-m","res":{"statusCode":401},"responseTime":0.2800999999999476,"msg":"request completed"}
+{"level":30,"time":1783778022955,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-n","req":{"method":"POST","url":"/api/v1/admin/review/items/test-123/action","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022956,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-n","res":{"statusCode":401},"responseTime":1.1390000000001237,"msg":"request completed"}
+{"level":30,"time":1783778022957,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-o","req":{"method":"POST","url":"/api/v1/admin/review/items/test-123/apply","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022957,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-o","res":{"statusCode":401},"responseTime":0.22929999999996653,"msg":"request completed"}
+{"level":30,"time":1783778022960,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-p","req":{"method":"POST","url":"/api/v1/admin/review/items/bulk/cleanup","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022961,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-p","res":{"statusCode":401},"responseTime":0.4201999999995678,"msg":"request completed"}
+{"level":30,"time":1783778022961,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-q","req":{"method":"GET","url":"/api/v1/admin/review/image-proxy","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022961,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-q","res":{"statusCode":401},"responseTime":0.34029999999984284,"msg":"request completed"}
+{"level":30,"time":1783778022962,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-r","req":{"method":"POST","url":"/api/v1/admin/review/cache-candidate","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022962,"pid":70616,"hostname":"DESKTOP-OOPKE09","reqId":"req-r","res":{"statusCode":401},"responseTime":0.2114000000001397,"msg":"request completed"}
+ [32m鉁?[39m src/test/review-contract.test.ts[2m > [22mReview schemas 鈥?contract frozen[2m > [22mvalid review statuses match admin.ts definition[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/review-contract.test.ts[2m > [22mReview schemas 鈥?contract frozen[2m > [22mvalid review actions match admin.ts definition[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/review-contract.test.ts[2m > [22mReview schemas 鈥?contract frozen[2m > [22mvalid review types match admin.ts definition[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/review-contract.test.ts[2m > [22mReview schemas 鈥?contract frozen[2m > [22mdefault review query has limit=50 offset=0[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/review-contract.test.ts[2m > [22mReview schemas 鈥?contract frozen[2m > [22maction->status map matches admin.ts[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/review-contract.test.ts[2m > [22mReview schemas 鈥?contract frozen[2m > [22misSuppressingReviewDecision matches admin.ts[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/admin-contract.test.ts[2m > [22mAdmin API 鈥?auth contract (skipLifecycle, no DB)[2m > [22mrejects unauthenticated requests with 401[32m 33[2mms[22m[39m
+ [32m鉁?[39m src/test/admin-contract.test.ts[2m > [22mAdmin API 鈥?auth contract (skipLifecycle, no DB)[2m > [22mrejects requests with malformed authorization header[32m 2[2mms[22m[39m
+ [32m鉁?[39m src/test/admin-contract.test.ts[2m > [22mAdmin API 鈥?auth contract (skipLifecycle, no DB)[2m > [22mrejects all admin routes without valid auth[32m 6[2mms[22m[39m
+ [32m鉁?[39m src/test/admin-contract.test.ts[2m > [22mAdmin API 鈥?auth contract (skipLifecycle, no DB)[2m > [22merror shape is consistent across all unauthenticated admin routes[32m 4[2mms[22m[39m
+{"level":30,"time":1783778023003,"pid":42544,"hostname":"DESKTOP-OOPKE09","reqId":"req-1","req":{"method":"GET","url":"/api/v1/admin/stats","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":50,"time":1783778023049,"pid":106784,"hostname":"DESKTOP-OOPKE09","err":{"type":"PrismaClientInitializationError","message":"\nInvalid `app.prisma.figure.findMany()` invocation in\nD:\\model wiki\\mw-backend\\src\\routes\\search.ts:270:27\n\n  267 } else {\n  268   // \"all\" 鈥?骞惰鎼滅储鎵€鏈?public entity types.\n  269   const [figItems, figCount, serItems, serCount, mfrItems, mfrCount, scItems, scCount, charItems, charCount] = await Promise.all([\n鈫?270     app.prisma.figure.findMany(\nerror: Environment variable not found: DATABASE_URL.\n  -->  schema.prisma:7\n   | \n 6 |   provider = \"postgresql\"\n 7 |   url      = env(\"DATABASE_URL\")\n   | \n\nValidation Error Count: 1","stack":"PrismaClientInitializationError: \nInvalid `app.prisma.figure.findMany()` invocation in\nD:\\model wiki\\mw-backend\\src\\routes\\search.ts:270:27\n\n  267 } else {\n  268   // \"all\" 鈥?骞惰鎼滅储鎵€鏈?public entity types.\n  269   const [figItems, figCount, serItems, serCount, mfrItems, mfrCount, scItems, scCount, charItems, charCount] = await Promise.all([\n鈫?270     app.prisma.figure.findMany(\nerror: Environment variable not found: DATABASE_URL.\n  -->  schema.prisma:7\n   | \n 6 |   provider = \"postgresql\"\n 7 |   url      = env(\"DATABASE_URL\")\n   | \n\nValidation Error Count: 1\n    at ei.handleRequestError (D:\\model wiki\\mw-backend\\node_modules\\@prisma\\client\\src\\runtime\\RequestHandler.ts:242:13)\n    at ei.handleAndLogRequestError (D:\\model wiki\\mw-backend\\node_modules\\@prisma\\client\\src\\runtime\\RequestHandler.ts:174:12)\n    at ei.request (D:\\model wiki\\mw-backend\\node_modules\\@prisma\\client\\src\\runtime\\RequestHandler.ts:143:12)\n    at a (D:\\model wiki\\mw-backend\\node_modules\\@prisma\\client\\src\\runtime\\getPrismaClient.ts:833:24)\n    at async Promise.all (index 0)\n    at Object.<anonymous> (D:\\model wiki\\mw-backend\\src\\routes\\search.ts:269:116)","clientVersion":"6.19.3","name":"PrismaClientInitializationError"},"msg":"\nInvalid `app.prisma.figure.findMany()` invocation in\nD:\\model wiki\\mw-backend\\src\\routes\\search.ts:270:27\n\n  267 } else {\n  268   // \"all\" 鈥?骞惰鎼滅储鎵€鏈?public entity types.\n  269   const [figItems, figCount, serItems, serCount, mfrItems, mfrCount, scItems, scCount, charItems, charCount] = await Promise.all([\n鈫?270     app.prisma.figure.findMany(\nerror: Environment variable not found: DATABASE_URL.\n  -->  schema.prisma:7\n   | \n 6 |   provider = \"postgresql\"\n 7 |   url      = env(\"DATABASE_URL\")\n   | \n\nValidation Error Count: 1"}
+{"level":30,"time":1783778023055,"pid":42544,"hostname":"DESKTOP-OOPKE09","reqId":"req-1","req":{"method":"POST","url":"/api/v1/admin/cache/purge","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022893,"pid":42544,"hostname":"DESKTOP-OOPKE09","reqId":"req-1","res":{"statusCode":401},"responseTime":6.723400000000765,"msg":"request completed"}
+{"level":30,"time":1783778022894,"pid":42544,"hostname":"DESKTOP-OOPKE09","reqId":"req-2","req":{"method":"GET","url":"/api/v1/admin/stats","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022895,"pid":42544,"hostname":"DESKTOP-OOPKE09","reqId":"req-2","res":{"statusCode":401},"responseTime":1.160399999999754,"msg":"request completed"}
+{"level":30,"time":1783778022896,"pid":42544,"hostname":"DESKTOP-OOPKE09","reqId":"req-3","req":{"method":"GET","url":"/api/v1/admin/stats","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022896,"pid":42544,"hostname":"DESKTOP-OOPKE09","reqId":"req-3","res":{"statusCode":401},"responseTime":0.34569999999985157,"msg":"request completed"}
+{"level":30,"time":1783778022897,"pid":42544,"hostname":"DESKTOP-OOPKE09","reqId":"req-4","req":{"method":"GET","url":"/api/v1/admin/users","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022897,"pid":42544,"hostname":"DESKTOP-OOPKE09","reqId":"req-4","res":{"statusCode":401},"responseTime":0.34180000000014843,"msg":"request completed"}
+{"level":30,"time":1783778022898,"pid":42544,"hostname":"DESKTOP-OOPKE09","reqId":"req-5","req":{"method":"GET","url":"/api/v1/admin/review/items","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022898,"pid":42544,"hostname":"DESKTOP-OOPKE09","reqId":"req-5","res":{"statusCode":401},"responseTime":0.34389999999984866,"msg":"request completed"}
+{"level":30,"time":1783778022898,"pid":42544,"hostname":"DESKTOP-OOPKE09","reqId":"req-6","req":{"method":"GET","url":"/api/v1/admin/review/stats","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022899,"pid":42544,"hostname":"DESKTOP-OOPKE09","reqId":"req-6","res":{"statusCode":401},"responseTime":0.26310000000012224,"msg":"request completed"}
+{"level":30,"time":1783778022899,"pid":42544,"hostname":"DESKTOP-OOPKE09","reqId":"req-7","req":{"method":"POST","url":"/api/v1/admin/cache/purge","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022900,"pid":42544,"hostname":"DESKTOP-OOPKE09","reqId":"req-7","res":{"statusCode":401},"responseTime":0.6835000000000946,"msg":"request completed"}
+{"level":30,"time":1783778022900,"pid":42544,"hostname":"DESKTOP-OOPKE09","reqId":"req-8","req":{"method":"POST","url":"/api/v1/admin/aigc/generate","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022901,"pid":42544,"hostname":"DESKTOP-OOPKE09","reqId":"req-8","res":{"statusCode":401},"responseTime":0.29169999999976426,"msg":"request completed"}
+{"level":30,"time":1783778022901,"pid":42544,"hostname":"DESKTOP-OOPKE09","reqId":"req-9","req":{"method":"GET","url":"/api/v1/admin/crawler/jobs","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022902,"pid":42544,"hostname":"DESKTOP-OOPKE09","reqId":"req-9","res":{"statusCode":401},"responseTime":0.3702000000002954,"msg":"request completed"}
+{"level":30,"time":1783778022903,"pid":42544,"hostname":"DESKTOP-OOPKE09","reqId":"req-a","req":{"method":"GET","url":"/api/v1/admin/users","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778022905,"pid":42544,"hostname":"DESKTOP-OOPKE09","reqId":"req-a","res":{"statusCode":401},"responseTime":2.3125,"msg":"request completed"}
+{"level":30,"time":1783778023004,"pid":42544,"hostname":"DESKTOP-OOPKE09","reqId":"req-1","res":{"statusCode":401},"responseTime":0.4212999999999738,"msg":"request completed"}
+{"level":30,"time":1783778023008,"pid":42544,"hostname":"DESKTOP-OOPKE09","reqId":"req-2","req":{"method":"GET","url":"/api/v1/admin/users","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778023009,"pid":42544,"hostname":"DESKTOP-OOPKE09","reqId":"req-2","res":{"statusCode":401},"responseTime":1.0022999999991953,"msg":"request completed"}
+{"level":30,"time":1783778023056,"pid":42544,"hostname":"DESKTOP-OOPKE09","reqId":"req-1","res":{"statusCode":401},"responseTime":0.4305000000003929,"msg":"request completed"}
+{"level":30,"time":1783778023056,"pid":42544,"hostname":"DESKTOP-OOPKE09","reqId":"req-2","req":{"method":"POST","url":"/api/v1/admin/cache/purge","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778023057,"pid":42544,"hostname":"DESKTOP-OOPKE09","reqId":"req-2","res":{"statusCode":401},"responseTime":0.2735000000002401,"msg":"request completed"}
+ [32m鉁?[39m src/test/admin-contract.test.ts[2m > [22mAdmin API 鈥?stats contract (auth gated)[2m > [22mstats endpoint exists and returns 401 without auth[32m 14[2mms[22m[39m
+ [32m鉁?[39m src/test/admin-contract.test.ts[2m > [22mAdmin API 鈥?stats contract (auth gated)[2m > [22musers endpoint exists and returns 401 without auth[32m 6[2mms[22m[39m
+ [32m鉁?[39m src/test/admin-contract.test.ts[2m > [22mAdmin API 鈥?cache purge contract (auth gated)[2m > [22mcache purge returns 401 without auth[32m 3[2mms[22m[39m
+ [32m鉁?[39m src/test/admin-contract.test.ts[2m > [22mAdmin API 鈥?cache purge contract (auth gated)[2m > [22mcache purge with arbitrary patterns returns 401 without auth[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/app-contract.test.ts[2m > [22mApp contract tests (skipLifecycle 鈥?no DB)[2m > [22msearch endpoint returns 200[32m 112[2mms[22m[39m
+ [32m鉁?[39m src/test/app-contract.test.ts[2m > [22mApp contract tests (skipLifecycle 鈥?no DB)[2m > [22mauth login route exists and returns validation error for missing body[32m 3[2mms[22m[39m
+ [32m鉁?[39m src/test/app-contract.test.ts[2m > [22mApp contract tests (skipLifecycle 鈥?no DB)[2m > [22mresponses use consistent JSON envelope[32m 11[2mms[22m[39m
+{"level":30,"time":1783778023050,"pid":106784,"hostname":"DESKTOP-OOPKE09","reqId":"req-6","res":{"statusCode":500},"responseTime":110.66319999999996,"msg":"request completed"}
+{"level":30,"time":1783778023052,"pid":106784,"hostname":"DESKTOP-OOPKE09","reqId":"req-7","req":{"method":"POST","url":"/api/v1/auth/login","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":30,"time":1783778023053,"pid":106784,"hostname":"DESKTOP-OOPKE09","reqId":"req-7","res":{"statusCode":422},"responseTime":1.6269000000002052,"msg":"request completed"}
+{"level":30,"time":1783778023054,"pid":106784,"hostname":"DESKTOP-OOPKE09","reqId":"req-8","req":{"method":"GET","url":"/api/v1/categories","host":"localhost:80","remoteAddress":"127.0.0.1"},"msg":"incoming request"}
+{"level":50,"time":1783778023054,"pid":106784,"hostname":"DESKTOP-OOPKE09","err":{"type":"Error","message":"Connection is closed.","stack":"Error: Connection is closed.\n    at EventEmitter.sendCommand (D:\\model wiki\\mw-backend\\node_modules\\ioredis\\built\\Redis.js:344:28)\n    at EventEmitter.get (D:\\model wiki\\mw-backend\\node_modules\\ioredis\\built\\utils\\Commander.js:90:25)\n    at Object.<anonymous> (D:\\model wiki\\mw-backend\\src\\routes\\categories.ts:60:36)\n    at preHandlerCallbackInner (D:\\model wiki\\mw-backend\\node_modules\\fastify\\lib\\handle-request.js:175:24)\n    at preHandlerCallback (D:\\model wiki\\mw-backend\\node_modules\\fastify\\lib\\handle-request.js:140:5)\n    at validationCompleted (D:\\model wiki\\mw-backend\\node_modules\\fastify\\lib\\handle-request.js:130:5)\n    at preValidationCallback (D:\\model wiki\\mw-backend\\node_modules\\fastify\\lib\\handle-request.js:107:5)\n    at handler (D:\\model wiki\\mw-backend\\node_modules\\fastify\\lib\\handle-request.js:84:7)\n    at Object.handleRequest (D:\\model wiki\\mw-backend\\node_modules\\fastify\\lib\\handle-request.js:32:5)\n    at runPreParsing (D:\\model wiki\\mw-backend\\node_modules\\fastify\\lib\\route.js:657:19)"},"msg":"Connection is closed."}
+{"level":30,"time":1783778023064,"pid":106784,"hostname":"DESKTOP-OOPKE09","reqId":"req-8","res":{"statusCode":500},"responseTime":10.03819999999996,"msg":"request completed"}
+
+[2m Test Files [22m [1m[32m3 passed[39m[22m[90m (3)[39m
+[2m      Tests [22m [1m[32m39 passed[39m[22m[90m (39)[39m
+[2m   Start at [22m 15:53:38
+[2m   Duration [22m 4.69s[2m (transform 2.17s, setup 0ms, collect 141ms, tests 12.32s, environment 1ms, prepare 554ms)[22m
+

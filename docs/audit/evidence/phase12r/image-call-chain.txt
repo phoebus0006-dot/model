@@ -1,0 +1,13 @@
+# image-service  
+  
+# image-security  
+mw-backend\src\modules\images\image-service.ts:4:import { validateImageUrl } from "./image-security.js";
+mw-backend\src\test\image-security.test.ts:2:import { validateImageUrl } from "../modules/images/image-security.js";
+  
+# image-storage  
+mw-backend\src\modules\images\image-service.ts:5:import { processAndStoreImageFiles, computeSha256, DOWNLOAD_TIMEOUT, MAX_RESPONSE_SIZE, MAX_REDIRECTS, type ImageRecordData } from "./image-storage.js";
+  
+# image-repository  
+mw-backend\src\modules\images\image-service.ts:6:import { upsertFigureImageRecord, type UpsertFigureImageInput } from "./image-repository.js";
+  
+# apply-dependencies  

@@ -112,3 +112,9 @@ m6fix_*.sh
 m6fix_*.sql
 p_*.py
 p_*.sql
+
+# IDE metadata (Trae)
+.codex-trae/
+
+# Phase 12R review artifacts
+phase12r-*

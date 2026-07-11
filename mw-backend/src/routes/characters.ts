@@ -1,9 +1,11 @@
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
+import { scanKeys } from "../shared/cache/scan-keys.js";
 
 const listQuery = z.object({
   page: z.coerce.number().min(1).default(1),
   perPage: z.coerce.number().min(1).max(100).default(50),
+  lang: z.string().optional(),
 });
 
 const createCharacterSchema = z.object({
@@ -18,14 +20,37 @@ const createCharacterSchema = z.object({
 const updateCharacterSchema = createCharacterSchema.partial();
 
 async function invalidateCharacterCache(app: FastifyInstance, slug?: string) {
-  const keys: string[] = [];
-  const listKeys = await app.redis.keys("characters:list:*");
-  keys.push(...listKeys);
   if (slug) {
-    const detailKey = `characters:detail:${slug}`;
-    keys.push(detailKey);
+    await app.redis.del(`characters:detail:${slug}`);
   }
-  if (keys.length > 0) await app.redis.del(...keys);
+  await scanKeys(app.redis, "characters:list:*");
+}
+
+function publicSlug(slug?: string | null): string {
+  return String(slug || "")
+    .replace(/-+$/g, "");
+}
+
+function firstText(...values: any[]): string | null {
+  for (const value of values) {
+    if (typeof value === "string" && value.trim() !== "") return value;
+  }
+  return null;
+}
+
+function publicFigureCard(figure: any): any {
+  const localized = Array.isArray(figure.localized) ? figure.localized[0] : null;
+  const displayTitle = firstText(localized?.title, figure.nameEn, figure.name, figure.nameJp, figure.slug) || "";
+  const originalTitle = firstText(figure.nameJp, figure.name, figure.nameEn, displayTitle) || displayTitle;
+  const displayDescription = firstText(localized?.description, figure.description);
+
+  return {
+    ...figure,
+    slug: publicSlug(figure.slug),
+    displayTitle,
+    originalTitle,
+    displayDescription,
+  };
 }
 
 export async function characterRoutes(app: FastifyInstance) {
@@ -70,6 +95,7 @@ export async function characterRoutes(app: FastifyInstance) {
   app.get("/:slug/figures", async (req: any) => {
     const { slug } = req.params as { slug: string };
     const query = listQuery.parse(req.query);
+    const lang = query.lang || "fr";
     const character = await app.prisma.character.findUnique({ where: { slug }, select: { id: true } });
     if (!character) return { success: true, data: [], meta: { page: 1, perPage: 24, total: 0, totalPages: 0 } };
 
@@ -81,7 +107,8 @@ export async function characterRoutes(app: FastifyInstance) {
         orderBy: { releaseDate: "desc" },
         include: {
           manufacturer: { select: { id: true, slug: true, name: true, nameEn: true } },
-          series: { select: { id: true, slug: true, name: true, nameEn: true } },
+          series: { select: { id: true, slug: true, name: true, nameJp: true, nameEn: true } },
+          localized: { where: { language: lang }, orderBy: { id: "asc" } },
           images: { orderBy: { sortOrder: "asc" }, take: 1, select: { id: true, alt: true, size: true, format: true } },
           categories: { include: { category: { select: { slug: true, name: true } } } },
         },
@@ -89,7 +116,7 @@ export async function characterRoutes(app: FastifyInstance) {
       app.prisma.figure.count({ where: { characters: { some: { characterId: character.id } }, isDeleted: false } }),
     ]);
 
-    return { success: true, data, meta: { page: query.page, perPage: query.perPage, total, totalPages: Math.ceil(total / query.perPage) } };
+    return { success: true, data: data.map(publicFigureCard), meta: { page: query.page, perPage: query.perPage, total, totalPages: Math.ceil(total / query.perPage) } };
   });
 
   app.post("/", async (req: any, reply: any) => {

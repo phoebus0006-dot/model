@@ -30,7 +30,7 @@
 - production guanli provenance
 - production API running build/version
 - NAS agent version
-- crawler queue 状态
+- crawler queue 状态（仅在本次 scope 涉及 crawler、导入或补数写回时作为发布前置检查）
 
 不能继承旧报告中的易变事实。
 
@@ -46,9 +46,18 @@ D. 可信官方/retailer 图片可自动进入正式图库；MFC 用户上传、
 
 E. 可信结构化详情可自动写入；冲突、稀疏、异常进入 detail_review。
 
-## 4. 产品长期方向
+## 4. 产品路线与审查顺序
 
-长期中心是：可信资料库、收藏管理、点赞评论、用户中心、轻量社区、手办评测和编辑内容。Crawler 只做冷启动与辅助补全。
+长期中心是：可信资料库、可浏览的 Figure 详情、Collection/Wishlist、真实 Avis、Phoebus Studio 内容和轻量社区。Crawler 只做冷启动与辅助补全，不能被当作所有发布的强制主线。
+
+Reviewer 按下列顺序审查，且必须将“计划/未验证”与“已实施/已验证”分开报告：
+
+1. `P0 数据质量与法语`：France locale 全字符串，Manufacturer `canonical_name`/`native_name`/`aliases`，Personnage 实体，分类一致性，Latest 的真实排序语义，Figure 与内容实体的关系。
+2. `P1 Figure 详情页`：显示标题与原始标题、真实 breadcrumb、规格展示、Gallery 及来源、Studio 内容与社区 Avis 的边界。
+3. `P2 Collection / Wishlist / Avis`：用户拥有/愿望清单、迁移兼容、评分和 Avis 的权限、一致性和幂等性。
+4. 后续：Explorer/Search、首页、Tests & Guides、用户照片和社区深化。
+
+任何 crawler、导入或批量数据修复变更仍须遵循 `07_CRAWLER_CANARY_PROTOCOL.md` 和 `08_PRODUCTION_CHANGE_SAFETY_PROTOCOL.md`；无关 scope 不要求人为制造 canary。
 
 ## 5. 推荐审查输出格式
 

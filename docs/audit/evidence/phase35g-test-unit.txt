@@ -1,0 +1,81 @@
+﻿
+> modelwiki-api@1.0.0 test:unit
+> vitest run --reporter verbose src/test/bigint.test.ts src/test/lifecycle.test.ts src/test/migration-store-mode.test.ts src/test/migration-dual-write.test.ts src/test/migration-dto-parse.test.ts src/test/migration-full.test.ts src/test/review-update-security.test.ts
+
+
+[1m[46m RUN [49m[22m [36mv3.2.7 [39m[90mD:/model wiki/mw-backend[39m
+
+ [32m鉁?[39m src/test/migration-dual-write.test.ts[2m > [22mDual-write failure matrix[2m > [22mPG=true Redis=true 鈫?success[32m 2[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-dual-write.test.ts[2m > [22mDual-write failure matrix[2m > [22mPG=true Redis=false 鈫?degraded[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-dual-write.test.ts[2m > [22mDual-write failure matrix[2m > [22mPG=false Redis=true 鈫?retry[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-dual-write.test.ts[2m > [22mDual-write failure matrix[2m > [22mPG=false Redis=false 鈫?failed[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-dto-parse.test.ts[2m > [22mRedis review JSON 鈫?Migration DTO[2m > [22mparses a minimal valid item[32m 3[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-dto-parse.test.ts[2m > [22mRedis review JSON 鈫?Migration DTO[2m > [22mparses a full item from real format[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-dto-parse.test.ts[2m > [22mRedis review JSON 鈫?Migration DTO[2m > [22mpreserves unknown status[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-dto-parse.test.ts[2m > [22mRedis review JSON 鈫?Migration DTO[2m > [22mhandles missing updatedAt by falling back to createdAt[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-dto-parse.test.ts[2m > [22mRedis review JSON 鈫?Migration DTO[2m > [22mhandles null reviewer[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-dto-parse.test.ts[2m > [22mRedis review JSON 鈫?Migration DTO[2m > [22mhandles numeric figureId[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-dto-parse.test.ts[2m > [22mRedis review JSON 鈫?Migration DTO[2m > [22mhandles missing figureId[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-dto-parse.test.ts[2m > [22mRedis review JSON 鈫?Migration DTO[2m > [22mhandles BigInt-safe figureId strings[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-dto-parse.test.ts[2m > [22mRedis review JSON 鈫?Migration DTO[2m > [22mhandles notes with audit trail[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-dto-parse.test.ts[2m > [22mRedis review JSON 鈫?Migration DTO[2m > [22mrejects invalid JSON[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-dto-parse.test.ts[2m > [22mRedis review JSON 鈫?Migration DTO[2m > [22mhandles empty payload[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-dto-parse.test.ts[2m > [22mRedis review JSON 鈫?Migration DTO[2m > [22mpreserves evidence fingerprint exact value[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-dto-parse.test.ts[2m > [22mRedis review JSON 鈫?Migration DTO[2m > [22msets default priority when missing[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/bigint.test.ts[2m > [22mBigInt serialization[2m > [22mserializes BigInt to string, not number[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/bigint.test.ts[2m > [22mBigInt serialization[2m > [22mdoes not lose precision for values > Number.MAX_SAFE_INTEGER[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/bigint.test.ts[2m > [22mBigInt serialization[2m > [22mhandles BigInt zero correctly[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/bigint.test.ts[2m > [22mBigInt serialization[2m > [22mhandles negative BigInt[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/bigint.test.ts[2m > [22mBigInt serialization[2m > [22mserializes BigInt in nested objects[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/bigint.test.ts[2m > [22mBigInt serialization[2m > [22mserializes BigInt in arrays[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/bigint.test.ts[2m > [22mBigInt serialization[2m > [22mdoes not affect non-BigInt JSON serialization[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-store-mode.test.ts[2m > [22mReviewStoreMode selection[2m > [22mdefaults to redis when env is not set[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-store-mode.test.ts[2m > [22mReviewStoreMode selection[2m > [22mdefaults to redis when env is empty[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-store-mode.test.ts[2m > [22mReviewStoreMode selection[2m > [22maccepts 'redis'[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-store-mode.test.ts[2m > [22mReviewStoreMode selection[2m > [22maccepts 'dual'[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-store-mode.test.ts[2m > [22mReviewStoreMode selection[2m > [22maccepts 'postgres'[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-store-mode.test.ts[2m > [22mReviewStoreMode selection[2m > [22maccepts case-insensitive input[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-store-mode.test.ts[2m > [22mReviewStoreMode selection[2m > [22mtrims whitespace[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-store-mode.test.ts[2m > [22mReviewStoreMode selection[2m > [22mthrows on invalid mode[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-store-mode.test.ts[2m > [22mReviewStoreMode selection[2m > [22mthrows on nullish values with string type[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-store-mode.test.ts[2m > [22mReviewStoreMode selection[2m > [22mall valid modes are in the const array[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-full.test.ts[2m > [22mRedis review parser[2m > [22mparses a minimal pending item[32m 3[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-full.test.ts[2m > [22mRedis review parser[2m > [22mparses a full approved item with BigInt figureId[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-full.test.ts[2m > [22mRedis review parser[2m > [22mpreserves unknown status[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-full.test.ts[2m > [22mRedis review parser[2m > [22mfalls back updatedAt to createdAt when missing[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-full.test.ts[2m > [22mRedis review parser[2m > [22muses system actor when reviewer missing[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-full.test.ts[2m > [22mRedis review parser[2m > [22mrejects invalid JSON[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-full.test.ts[2m > [22mRedis review parser[2m > [22mrejects non-object JSON[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-full.test.ts[2m > [22mRedis review parser[2m > [22mhandles numeric figureId from Redis[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-full.test.ts[2m > [22mRedis review parser[2m > [22mhandles null figureId gracefully[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-full.test.ts[2m > [22mRedis review parser[2m > [22mstores original Redis key[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-full.test.ts[2m > [22mRedis review parser[2m > [22mdoes not lose precision on BigInt figureId[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-full.test.ts[2m > [22mRedis review parser[2m > [22mreports warnings for unknown status[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-full.test.ts[2m > [22mRedis review parser[2m > [22mreports warnings for missing actor[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-full.test.ts[2m > [22mRedis review parser[2m > [22mpreserves evidence fingerprint exactly[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-full.test.ts[2m > [22mRedis decision parser[2m > [22mparses a suppression decision[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-full.test.ts[2m > [22mRedis decision parser[2m > [22mreturns null on invalid JSON[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-full.test.ts[2m > [22mReconciliation[2m > [22mreports full match when all keys match[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-full.test.ts[2m > [22mReconciliation[2m > [22mreports missing keys in PG[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-full.test.ts[2m > [22mReconciliation[2m > [22mreports status mismatches[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/migration-full.test.ts[2m > [22mReconciliation[2m > [22mcalculates match rate correctly[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/review-update-security.test.ts[2m > [22mReview PUT state machine bypass fix[2m > [22mForbidden field detection[2m > [22mdetects status as forbidden[32m 2[2mms[22m[39m
+ [32m鉁?[39m src/test/review-update-security.test.ts[2m > [22mReview PUT state machine bypass fix[2m > [22mForbidden field detection[2m > [22mdetects decisionReason as forbidden[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/review-update-security.test.ts[2m > [22mReview PUT state machine bypass fix[2m > [22mForbidden field detection[2m > [22mdetects reviewer as forbidden[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/review-update-security.test.ts[2m > [22mReview PUT state machine bypass fix[2m > [22mForbidden field detection[2m > [22mdetects multiple forbidden fields[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/review-update-security.test.ts[2m > [22mReview PUT state machine bypass fix[2m > [22mForbidden field detection[2m > [22mallows legitimate editable fields[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/review-update-security.test.ts[2m > [22mReview PUT state machine bypass fix[2m > [22mForbidden field detection[2m > [22mdetects action as forbidden[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/review-update-security.test.ts[2m > [22mReview PUT state machine bypass fix[2m > [22mForbidden field detection[2m > [22mdetects createdAt as forbidden[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/review-update-security.test.ts[2m > [22mReview PUT state machine bypass fix[2m > [22mForbidden field detection[2m > [22mreturns empty for empty body[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/review-update-security.test.ts[2m > [22mReview PUT state machine bypass fix[2m > [22mExisting reviewUpdateSchema remains backward compatible[2m > [22mstill accepts status (schema unchanged)[32m 1[2mms[22m[39m
+ [32m鉁?[39m src/test/review-update-security.test.ts[2m > [22mReview PUT state machine bypass fix[2m > [22mExisting reviewUpdateSchema remains backward compatible[2m > [22mstill accepts all fields[32m 0[2mms[22m[39m
+ [32m鉁?[39m src/test/lifecycle.test.ts[2m > [22mPrisma lifecycle[2m > [22mPrismaClient constructor can be called without throwing[32m 121[2mms[22m[39m
+ [32m鉁?[39m src/test/lifecycle.test.ts[2m > [22mPrisma lifecycle[2m > [22mprisma.$disconnect can be called multiple times without error[32m 7[2mms[22m[39m
+ [32m鉁?[39m src/test/lifecycle.test.ts[2m > [22mRedis lifecycle[2m > [22mioredis constructor creates a client[32m 169[2mms[22m[39m
+ [32m鉁?[39m src/test/lifecycle.test.ts[2m > [22mRedis lifecycle[2m > [22mredis.quit can be called multiple times[32m 4[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m7 passed[39m[22m[90m (7)[39m
+[2m      Tests [22m [1m[32m68 passed[39m[22m[90m (68)[39m
+[2m   Start at [22m 15:53:37
+[2m   Duration [22m 940ms[2m (transform 493ms, setup 0ms, collect 704ms, tests 342ms, environment 2ms, prepare 1.66s)[22m
+

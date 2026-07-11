@@ -1,0 +1,41 @@
+# review/items/:id/apply 
+mw-backend\src\modules\reviews\apply-handler.ts:185:    app.post("/review/items/:id/apply", async (req: any, reply: any) => {
+mw-backend\src\modules\reviews\apply-handler.ts:639:      if (path === "/review/items/:id/apply") {
+mw-backend\src\modules\reviews\apply-route.ts:8:  app.post("/review/items/:id/apply", async (req: any, reply: any) => {
+mw-backend\src\test\app-startup.test.ts:12:  ["POST", "/api/v1/admin/review/items/:id/apply"],
+  
+# executeApplyLogic  
+mw-backend\src\modules\reviews\apply-handler.ts:629:export async function executeApplyLogic(app: any, id: string): Promise<{ success: boolean; data?: any }> {
+mw-backend\src\modules\reviews\apply-service.ts:28:      const { executeApplyLogic } = await import("./apply-handler.js");
+mw-backend\src\modules\reviews\apply-service.ts:30:      const result = await executeApplyLogic({ redis: this.redis, prisma: this.prisma }, reviewItemId);
+  
+# apply-handler  
+mw-backend\src\modules\reviews\apply-service.ts:28:      const { executeApplyLogic } = await import("./apply-handler.js");
+  
+# apply-service  
+mw-backend\src\modules\reviews\apply-handler.ts:628:// Exported for use by apply-service.ts — executes the apply business logic for a given item
+mw-backend\src\modules\reviews\apply-route.ts:2:import { ReviewApplyService } from "./apply-service.js";
+  
+# apply-lock  
+mw-backend\src\modules\reviews\apply-service.ts:3:import { tryAcquire, type LockLease } from "./apply-lock.js";
+mw-backend\src\test\apply-lock.test.ts:2:import { tryAcquire, lockKey } from "../modules/reviews/apply-lock.js";
+  
+# assertHeld  
+mw-backend\src\modules\reviews\apply-lock.ts:25:  assertHeld(): void;
+mw-backend\src\modules\reviews\apply-lock.ts:65:    assertHeld() {
+mw-backend\src\modules\reviews\apply-service.ts:19:      lease.assertHeld();
+mw-backend\src\modules\reviews\apply-service.ts:26:      lease.assertHeld();
+mw-backend\src\modules\reviews\apply-service.ts:29:      lease.assertHeld();
+mw-backend\src\modules\reviews\apply-service.ts:31:      lease.assertHeld();
+
+# === ANALYSIS ===
+# apply-service: YES. Line 28-30 dynamically imports and calls executeApplyLogic from handler.
+#   The service adds lock (tryAcquire + assertHeld) but delegates all business logic to old handler.
+# executeApplyLogic: YES. Lines 629-655 create mock reply and re-register old adminApplyRoute.
+#   Still uses Prisma/Redis/sharp/fs indirectly via the old handler code.
+# apply-dependencies: DEAD. Interface only (8 lines), no implementation, zero production imports.
+# image-service: DEAD. Full implementation exists but zero production callers import it.
+  
+# isLost  
+mw-backend\src\modules\reviews\apply-lock.ts:24:  isLost(): boolean;
+mw-backend\src\modules\reviews\apply-lock.ts:64:    isLost() { return lost; },

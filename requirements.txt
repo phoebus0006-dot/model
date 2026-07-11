@@ -1,0 +1,17 @@
+# Core crawler dependencies
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+Pillow>=10.0.0
+
+# Playwright-based scraping
+playwright>=1.40.0
+playwright-stealth>=1.0.0
+
+# Additional tools
+flask>=3.0.0
+curl-cffi>=0.7.0
+psycopg2-binary>=2.9.0
+
+# patchright — custom Playwright fork for MFC scraping
+# Install from: https://github.com/khulnasoft/patchright
+# pip install patchright

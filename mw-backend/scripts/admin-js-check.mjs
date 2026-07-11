@@ -11,10 +11,11 @@ const rootDir = join(__dirname, "..", "..");
 
 const php = readFileSync(join(rootDir, "guanli_index.php"), "utf-8");
 const adminTs = readFileSync(join(rootDir, "mw-backend", "src", "routes", "admin.ts"), "utf-8");
+const reviewsTs = readFileSync(join(rootDir, "mw-backend", "src", "modules", "reviews", "routes.ts"), "utf-8");
 
 const checks = [
   ["guanli keep_pending action string", "keep_pending", php],
-  ["admin.ts decisionReason field", "decisionReason", adminTs],
+  ["reviews.ts decisionReason field", "decisionReason", reviewsTs],
 ];
 let allOk = true;
 for (const [name, pattern, content] of checks) {

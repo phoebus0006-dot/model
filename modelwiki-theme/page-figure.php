@@ -3,7 +3,7 @@ $figure = get_query_var('mw_figure_data');
 if (!$figure) {
     $slug = get_query_var('figure_slug');
     if ($slug && function_exists('mw_api_call')) {
-        $figure = mw_api_call('/figures/' . urlencode($slug));
+        $figure = mw_api_call('/figures/' . urlencode($slug), ['lang' => mw_lang()]);
     }
 }
 
@@ -24,6 +24,11 @@ if (!empty($figure['revisions'])) {
     }
 }
 
+$display_title = $figure['displayTitle'] ?? ($figure['name'] ?? '');
+$original_title = $figure['originalTitle'] ?? ($figure['nameJp'] ?? '');
+$display_description = $figure['displayDescription'] ?? ($figure['description'] ?? '');
+$display_origin = $figure['displayOrigin'] ?? ($figure['origin'] ?? '');
+
 get_header();
 ?>
 
@@ -39,7 +44,7 @@ get_header();
             <a href="<?php echo esc_url(add_query_arg('lang', mw_lang(), home_url('/browse/?category=' . urlencode($firstCat['slug'] ?? '')))); ?>"><?php echo esc_html($firstCat['name'] ?? ''); ?></a>
             <?php endif; ?>
             <span class="mw-breadcrumb-sep">/</span>
-            <span><?php echo esc_html($figure['name'] ?? ''); ?></span>
+            <span><?php echo esc_html($display_title); ?></span>
         </nav>
 
         <div class="mw-figure-layout">
@@ -77,7 +82,7 @@ get_header();
                 ?>
                 <div class="<?php echo esc_attr($main_class); ?>">
                     <img src="<?php echo esc_url(mw_image_url($gallery_images[0])); ?>"
-                         alt="<?php echo esc_attr($gallery_images[0]['alt'] ?? ($figure['name'] ?? '')); ?>"
+                         alt="<?php echo esc_attr($gallery_images[0]['alt'] ?? $display_title); ?>"
                          loading="eager"
                          fetchpriority="high"
                          class="<?php echo esc_attr($main_img_class); ?>"
@@ -98,14 +103,14 @@ get_header();
                     <button type="button" class="mw-gallery-thumb <?php echo $i === 0 ? 'active' : ''; ?>"
                             data-gallery-thumb
                             data-full="<?php echo esc_url(mw_image_url($full_src)); ?>"
-                            data-alt="<?php echo esc_attr($img['alt'] ?? ($figure['name'] ?? '')); ?>"
+                            data-alt="<?php echo esc_attr($img['alt'] ?? $display_title); ?>"
                             aria-label="<?php echo esc_attr(sprintf(mw_t('View image %d'), $i + 1)); ?>">
                         <img src="<?php echo esc_url(mw_image_url($thumb_src)); ?>" alt="" loading="lazy">
                     </button>
                     <?php endforeach; ?>
                 </div>
                 <?php endif; ?>
-                <div class="mw-lightbox" id="mw-lightbox" role="dialog" aria-modal="true" aria-label="<?php echo esc_attr($figure['name'] ?? 'Image preview'); ?>">
+                <div class="mw-lightbox" id="mw-lightbox" role="dialog" aria-modal="true" aria-label="<?php echo esc_attr($display_title ?: 'Image preview'); ?>">
                     <button type="button" class="mw-lightbox-close" id="mw-lightbox-close" aria-label="<?php echo esc_attr(mw_t('Close image preview')); ?>">&times;</button>
                     <img src="" alt="" id="mw-lightbox-img">
                 </div>
@@ -117,9 +122,9 @@ get_header();
             </div>
 
             <div class="mw-figure-info">
-                <h1 class="mw-figure-title"><?php echo esc_html($figure['name'] ?? ''); ?></h1>
-                <?php if (!empty($figure['nameJp'])): ?>
-                <p class="mw-figure-name-jp"><?php echo esc_html($figure['nameJp']); ?></p>
+                <h1 class="mw-figure-title"><?php echo esc_html($display_title); ?></h1>
+                <?php if (!empty($original_title) && $original_title !== $display_title): ?>
+                <p class="mw-figure-name-jp"><?php echo esc_html($original_title); ?></p>
                 <?php endif; ?>
 
                 <div class="mw-figure-tags">
@@ -157,7 +162,7 @@ get_header();
                 <?php
                 // Per DATA_CONTRACT.md §1.5: clean description for encyclopedic display.
                 // Strips purchase info, URLs, HTML remnants, excessive whitespace.
-                $cleaned_description = mw_clean_description($figure['description'] ?? '');
+                $cleaned_description = mw_clean_description($display_description);
                 ?>
                 <?php if (!empty($cleaned_description)): ?>
                 <p style="color:var(--mw-text-secondary);font-size:.9375rem;line-height:1.7;margin-bottom:var(--mw-space-5);"><?php echo esc_html($cleaned_description); ?></p>
@@ -172,10 +177,10 @@ get_header();
                 </div>
                 <?php endif; ?>
 
-                <?php if (!empty($figure['origin'])): ?>
+                <?php if (!empty($display_origin)): ?>
                 <div class="mw-meta-card">
                     <span class="mw-meta-card-label"><?php echo esc_html(mw_t('Origin')); ?></span>
-                    <span><?php echo esc_html($figure['origin']); ?></span>
+                    <span><?php echo esc_html($display_origin); ?></span>
                 </div>
                 <?php endif; ?>
 
@@ -212,8 +217,15 @@ get_header();
                     <span class="mw-meta-card-label"><?php echo esc_html(mw_t('Character')); ?></span>
                     <?php foreach ($figure['characters'] as $i => $c): ?>
                         <?php if ($i > 0) echo ', '; ?>
-                        <a href="<?php echo esc_url(home_url('/browse/?search=' . urlencode($c['character']['name'] ?? $c['character']['nameEn'] ?? ''))); ?>">
-                            <?php echo esc_html($c['character']['name'] ?? $c['character']['nameEn'] ?? ''); ?>
+                        <?php
+                        $character = $c['character'] ?? [];
+                        $character_name = mw_display_name($character);
+                        $character_url = !empty($character['slug'])
+                            ? home_url('/character/' . $character['slug'] . '/')
+                            : home_url('/browse/?search=' . urlencode($character_name));
+                        ?>
+                        <a href="<?php echo esc_url(add_query_arg('lang', mw_lang(), $character_url)); ?>">
+                            <?php echo esc_html($character_name); ?>
                         </a>
                     <?php endforeach; ?>
                 </div>
@@ -245,8 +257,8 @@ get_header();
                         <?php if (!empty($figure['priceJpy'])): ?>
                         <div class="mw-specs-item"><span class="mw-specs-label"><?php echo esc_html(mw_t('Price')); ?></span><span class="mw-specs-value">&yen;<?php echo esc_html(number_format($figure['priceJpy'])); ?></span></div>
                         <?php endif; ?>
-                        <?php if (!empty($figure['origin'])): ?>
-                        <div class="mw-specs-item"><span class="mw-specs-label"><?php echo esc_html(mw_t('Origin')); ?></span><span class="mw-specs-value"><?php echo esc_html($figure['origin']); ?></span></div>
+                        <?php if (!empty($display_origin)): ?>
+                        <div class="mw-specs-item"><span class="mw-specs-label"><?php echo esc_html(mw_t('Origin')); ?></span><span class="mw-specs-value"><?php echo esc_html($display_origin); ?></span></div>
                         <?php endif; ?>
                         <?php if (!empty($figure['releaseDate'])): ?>
                         <div class="mw-specs-item"><span class="mw-specs-label"><?php echo esc_html(mw_t('Release Date')); ?></span><span class="mw-specs-value"><?php echo esc_html(date_i18n(get_option('date_format'), strtotime($figure['releaseDate']))); ?></span></div>
@@ -308,7 +320,7 @@ get_header();
                     <?php endforeach; ?>
                 <?php endif; ?>
                 <li class="mw-lineage-item mw-lineage-current">
-                    <strong><?php echo esc_html($figure['name'] ?? ''); ?></strong>
+                    <strong><?php echo esc_html($display_title); ?></strong>
                     <?php if (!empty($figure['releaseDate'])): ?>
                     <span class="mw-lineage-date"><?php echo esc_html(date_i18n('M Y', strtotime($figure['releaseDate']))); ?></span>
                     <?php endif; ?>
@@ -345,7 +357,7 @@ get_header();
         <?php
         $related_figures = [];
         if (function_exists('mw_api_fetch') && !empty($figure['series']['slug'])) {
-            $related_result = mw_api_fetch('/figures', ['series' => $figure['series']['slug'], 'perPage' => 6, 'sort' => 'release_date:desc']);
+            $related_result = mw_api_fetch('/figures', ['series' => $figure['series']['slug'], 'perPage' => 6, 'sort' => 'release_date:desc', 'lang' => mw_lang()]);
             if ($related_result['success'] && is_array($related_result['data'])) {
                 $related_figures = array_filter($related_result['data'], function($f) use ($figure) {
                     return ($f['id'] ?? null) !== ($figure['id'] ?? null);

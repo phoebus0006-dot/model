@@ -61,6 +61,8 @@ add_action('send_headers', 'mw_security_headers');
 
 function mw_add_rewrite_rules() {
     add_rewrite_rule('^figure/([^/]+)/?$', 'index.php?figure_slug=$matches[1]', 'top');
+    add_rewrite_rule('^characters/?$', 'index.php?mw_characters=1', 'top');
+    add_rewrite_rule('^character/([^/]+)/?$', 'index.php?character_slug=$matches[1]', 'top');
     add_rewrite_rule('^series/([^/]+)/?$', 'index.php?series_slug=$matches[1]', 'top');
     add_rewrite_rule('^manufacturer/([^/]+)/?$', 'index.php?manufacturer_slug=$matches[1]', 'top');
     add_rewrite_rule('^sculptor/([^/]+)/?$', 'index.php?sculptor_slug=$matches[1]', 'top');
@@ -70,9 +72,11 @@ add_action('init', 'mw_add_rewrite_rules');
 
 function mw_add_query_vars($vars) {
     $vars[] = 'figure_slug';
+    $vars[] = 'character_slug';
     $vars[] = 'series_slug';
     $vars[] = 'manufacturer_slug';
     $vars[] = 'sculptor_slug';
+    $vars[] = 'mw_characters';
     $vars[] = 'mw_account';
     return $vars;
 }
@@ -82,6 +86,15 @@ function mw_figure_template_include($template) {
     $figure_slug = get_query_var('figure_slug');
     if ($figure_slug) {
         $new_template = locate_template(['page-figure.php']);
+        if ($new_template) return $new_template;
+    }
+    $character_slug = get_query_var('character_slug');
+    if ($character_slug) {
+        $new_template = locate_template(['page-character.php']);
+        if ($new_template) return $new_template;
+    }
+    if (get_query_var('mw_characters')) {
+        $new_template = locate_template(['page-characters.php']);
         if ($new_template) return $new_template;
     }
     $series_slug = get_query_var('series_slug');

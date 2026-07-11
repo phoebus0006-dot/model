@@ -1,5 +1,6 @@
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
+import { scanKeys } from "../shared/cache/scan-keys.js";
 
 const listQuery = z.object({
   page: z.coerce.number().min(1).default(1),
@@ -19,14 +20,10 @@ const createSculptorSchema = z.object({
 const updateSculptorSchema = createSculptorSchema.partial();
 
 async function invalidateSculptorCache(app: FastifyInstance, slug?: string) {
-  const keys: string[] = [];
-  const listKeys = await app.redis.keys("sculptors:list:*");
-  keys.push(...listKeys);
   if (slug) {
-    const detailKey = `sculptors:detail:${slug}`;
-    keys.push(detailKey);
+    await app.redis.del(`sculptors:detail:${slug}`);
   }
-  if (keys.length > 0) await app.redis.del(...keys);
+  await scanKeys(app.redis, "sculptors:list:*");
 }
 
 export async function sculptorRoutes(app: FastifyInstance) {

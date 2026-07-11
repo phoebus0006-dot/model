@@ -1,0 +1,8 @@
+﻿
+> modelwiki-api@1.0.0 admin-js-check
+> node scripts/admin-js-check.mjs
+
+PASS: "guanli keep_pending action string"
+PASS: "admin.ts decisionReason field"
+INFO: JS syntax check best-effort 鈥?PHP+JS interleaving. SyntaxError: Invalid or unexpected token
+admin-js-check: ALL PASS

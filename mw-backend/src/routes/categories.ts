@@ -1,5 +1,6 @@
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
+import { scanKeys } from "../shared/cache/scan-keys.js";
 
 const createCategorySchema = z.object({
   slug: z.string().min(1),
@@ -11,17 +12,13 @@ const createCategorySchema = z.object({
 const updateCategorySchema = createCategorySchema.partial();
 
 async function invalidateCategoryCache(app: FastifyInstance, slug?: string) {
-  const keys: string[] = [];
-  const listKeys = await app.redis.keys("categories:*");
-  keys.push(...listKeys);
   if (slug) {
-    const detailKey = `categories:detail:${slug}`;
-    keys.push(detailKey);
+    await app.redis.del(`categories:detail:${slug}`);
   }
-  if (keys.length > 0) await app.redis.del(...keys);
+  await scanKeys(app.redis, "categories:*");
 }
 
-async function activeFigureCountByCategory(app: FastifyInstance, categoryIds: any[]) {
+async function activeFigureCountByCategory(app: FastifyInstance, categoryIds: any[]): Promise<Map<string, number>> {
   if (!categoryIds.length) return new Map<string, number>();
 
   const rows = await app.prisma.figureCategory.groupBy({
@@ -33,7 +30,7 @@ async function activeFigureCountByCategory(app: FastifyInstance, categoryIds: an
     _count: { figureId: true },
   });
 
-  return new Map(rows.map((row: any) => [String(row.categoryId), row._count.figureId || 0]));
+  return new Map<string, number>(rows.map((row: any) => [String(row.categoryId), row._count.figureId || 0]));
 }
 
 function attachActiveCounts(category: any, counts: Map<string, number>): any {

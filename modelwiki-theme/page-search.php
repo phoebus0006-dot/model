@@ -2,7 +2,7 @@
 get_header();
 
 $query = isset($_GET['q']) ? sanitize_text_field(trim($_GET['q'])) : '';
-$allowedTypes = array('all', 'figure', 'series', 'manufacturer');
+$allowedTypes = array('all', 'figure', 'series', 'manufacturer', 'character');
 $type = isset($_GET['type']) ? sanitize_text_field($_GET['type']) : 'all';
 if (!in_array($type, $allowedTypes, true)) {
     $type = 'all';
@@ -29,10 +29,11 @@ if (!empty($query)) {
         <?php if ($results && isset($results['data'])): ?>
             <?php $searchData = $results['data']; ?>
             <div class="mw-search-tabs">
-                <a href="<?php echo esc_url(add_query_arg(array('q' => $query, 'type' => 'all', 'lang' => mw_lang()))); ?>" class="mw-search-tab<?php echo $type === 'all' ? ' active' : ''; ?>"><?php echo esc_html(sprintf(mw_t('All (%d)'), ($searchData['figures']['total'] ?? 0) + ($searchData['series']['total'] ?? 0) + ($searchData['manufacturers']['total'] ?? 0))); ?></a>
+                <a href="<?php echo esc_url(add_query_arg(array('q' => $query, 'type' => 'all', 'lang' => mw_lang()))); ?>" class="mw-search-tab<?php echo $type === 'all' ? ' active' : ''; ?>"><?php echo esc_html(sprintf(mw_t('All (%d)'), ($searchData['figures']['total'] ?? 0) + ($searchData['series']['total'] ?? 0) + ($searchData['manufacturers']['total'] ?? 0) + ($searchData['characters']['total'] ?? 0))); ?></a>
                 <a href="<?php echo esc_url(add_query_arg(array('q' => $query, 'type' => 'figure', 'lang' => mw_lang()))); ?>" class="mw-search-tab<?php echo $type === 'figure' ? ' active' : ''; ?>"><?php echo esc_html(sprintf(mw_t('Figures (%d)'), $searchData['figures']['total'] ?? 0)); ?></a>
                 <a href="<?php echo esc_url(add_query_arg(array('q' => $query, 'type' => 'series', 'lang' => mw_lang()))); ?>" class="mw-search-tab<?php echo $type === 'series' ? ' active' : ''; ?>"><?php echo esc_html(sprintf(mw_t('Series (%d)'), $searchData['series']['total'] ?? 0)); ?></a>
                 <a href="<?php echo esc_url(add_query_arg(array('q' => $query, 'type' => 'manufacturer', 'lang' => mw_lang()))); ?>" class="mw-search-tab<?php echo $type === 'manufacturer' ? ' active' : ''; ?>"><?php echo esc_html(sprintf(mw_t('Manufacturers (%d)'), $searchData['manufacturers']['total'] ?? 0)); ?></a>
+                <a href="<?php echo esc_url(add_query_arg(array('q' => $query, 'type' => 'character', 'lang' => mw_lang()))); ?>" class="mw-search-tab<?php echo $type === 'character' ? ' active' : ''; ?>"><?php echo esc_html(sprintf(mw_t('Characters (%d)'), $searchData['characters']['total'] ?? 0)); ?></a>
             </div>
 
             <?php if ($type === 'all' || $type === 'figure'): ?>
@@ -83,10 +84,27 @@ if (!empty($query)) {
                 <?php endif; ?>
             <?php endif; ?>
 
+            <?php if ($type === 'all' || $type === 'character'): ?>
+                <?php if (!empty($searchData['characters']['items'])): ?>
+                    <section class="mw-search-section">
+                        <h2><?php echo esc_html(mw_t('Personnages')); ?></h2>
+                        <div class="mw-entity-grid">
+                            <?php foreach ($searchData['characters']['items'] as $item): ?>
+                                <a href="<?php echo esc_url(add_query_arg('lang', mw_lang(), home_url('/character/' . $item['slug'] . '/'))); ?>" class="mw-entity-card">
+                                    <span class="mw-entity-name"><?php echo esc_html(mw_display_name($item)); ?></span>
+                                    <span class="mw-entity-count"><?php echo intval($item['_count']['figures'] ?? 0); ?> <?php echo esc_html(mw_t('figures')); ?></span>
+                                </a>
+                            <?php endforeach; ?>
+                        </div>
+                    </section>
+                <?php endif; ?>
+            <?php endif; ?>
+
             <?php if (
                 empty($searchData['figures']['items']) &&
                 empty($searchData['series']['items']) &&
-                empty($searchData['manufacturers']['items'])
+                empty($searchData['manufacturers']['items']) &&
+                empty($searchData['characters']['items'])
             ): ?>
                 <p class="mw-no-results"><?php echo esc_html(mw_t('No results found for your search.')); ?></p>
             <?php endif; ?>

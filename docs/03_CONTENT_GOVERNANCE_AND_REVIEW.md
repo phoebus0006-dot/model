@@ -1,275 +1,55 @@
 # 内容治理与人工审核
 
-## 1. 原则
+## 1. 角色与原则
 
-机器负责：
+机器负责发现风险、保留证据、建议动作和有限自动补全；人工负责判断可接受性、解决冲突、决定发布或拒绝。人工决定是最终兜底，但必须有理由、身份、时间、当前状态和可复核的证据。
 
-- 发现风险
-- 提供证据
-- 建议操作
-- 少量自动补全
+当前审核治理是新产品的数据基础：它保护 Gallery、规格、Studio 内容和未来用户贡献的可信度。它不意味着新详情页、账户、内容系统或社区已经上线。
 
-人工负责：
+## 2. 图片与详情审核
 
-- 判断内容是否可接受
-- 处理模糊案例
-- 解决来源冲突
-- 决定是否发布
+图片风险包括缺图、低数量、低质量、缩略图、房间/展示柜/合集图、宣传图、不可信来源、共享候选或 candidate mismatch。审核页必须显示 Figure 标识与标题、当前主图和图库、候选放大预览、来源、尺寸、风险理由、原始证据和当前状态。
 
-人工决定是最终兜底。
+允许的人工动作至少包括 `approve_image`、`reject_image`、`keep_placeholder`、`request_refetch`、`keep_pending`。图片少于自动阈值不等于不能发布：一张内容相关、质量足够、来源可信或人工确认且稳定可显示的图片可以被 resolved。
 
----
+详情审核处理 description、规格、分类、Fabricant、发布日期及来源冲突。UI 必须区分 Original Evidence 和 Current State；旧 snapshot 不能长期冒充当前事实。动作包括 `mark_detail_ok`、`request_refetch`、`keep_pending`、`mark_needs_manual_edit`。
 
-## 2. 图片审核
+## 3. 决策记忆与 reopen
 
-### 触发条件
+ReviewItem/Decision 至少保留 figure、risk type、candidate identity、原始证据、当前状态、action、status、reviewer、decision reason、decision time 与 `evidenceFingerprint`。
 
-包括：
+同一 figure + risk type + fingerprint 已有人工 resolved/rejected/keep 决定时，自动扫描不得生成同一审核项。以下情况允许 reopen 或新建项：主图变化、图片集合变化、批准图片删除/失效、候选变化、相关详情字段变化或人工明确 reopen。fingerprint 不得依赖会过期的 signed URL。
 
-- image_missing
-- image_low_count
-- image_low_quality
-- thumbnail_only
-- possible_room_photo
-- possible_display_case
-- possible_collection_photo
-- shared_candidate
-- untrusted_source
-- candidate_mismatch
+## 4. Studio、Avis 与用户图片
 
-### 审核页面必须显示
+Phoebus Studio 的 Test、Unboxing、Comparatif、Guide d'authenticité、Guide collectionneur 和 Customisation & 3D 是编辑内容；社区 Avis 是用户评价，两者必须分开呈现、存储和审核。Customisation & 3D 仅当实际制作过该产品的改装/3D 内容时才显示关联，不得自动生成。Studio 内容与 Figure/Series/Personnage/Fabricant 的关联必须是结构化关系，不能仅留在文章正文。
 
-- 当前 Figure title
-- figureId
-- slug
-- 当前主图
-- 当前图片数
-- 当前图库
-- candidate
-- candidate 放大
-- source
-- dimensions
-- riskType
-- riskReason
-- shared warning
-- original evidence
-- current state
+社区 Avis 可包含一份总体评分、4 个维度、文字和后续实拍。用户对一个 Figure 只有一份可更新的 Avis/Rating。公开前应支持 pending、published、hidden、removed 等明确状态；聚合评分只计算符合发布规则的记录，并显示样本量。
 
-### 人工动作
+用户实拍、Avis、Helpful、公开收藏按社区阶段上线。每类用户贡献必须有举报入口、限流、反垃圾策略、审核/隐藏动作和审计；被隐藏或删除的内容不得继续出现在搜索、详情聚合或首页模块。
 
-- approve_image
-- reject_image
-- keep_placeholder
-- request_refetch
-- keep_pending
+## 5. 内容发布与冷启动
 
-### 允许放宽
+Tests & Guides 的每篇内容（Test、Unboxing、Comparatif、Guide d'authenticité、Guide collectionneur、Customisation & 3D）须拥有独立页面、编辑状态、语言、类型、作者/来源、发布日期、封面和结构化关联。首页只展示已发布且有合法封面的内容，不批量嵌入第三方播放器。
 
-即使 image count 少于机器阈值，只要：
+社区模块和评分榜单需要产品定义的最小真实数据阈值。阈值未达到时显示贡献邀请或隐藏模块；不得以 0/1 条内容、单个评分或测试数据伪装社区活跃。
 
-- 图片内容明确相关
-- 质量足够
-- 来源可信或经人工确认
-- 可稳定显示
+Latest Added、Upcoming 和 Latest Releases 需要由后端明确数据来源和排序语义，审核者可追溯异常条目的状态和来源。
 
-人工可以 resolved。
+## 6. 审计闭环
 
----
+任何审核或发布动作的证据最少为：操作前状态 -> action/API 响应 -> 持久化状态 -> API readback -> 页面刷新结果。涉及图片还需确认媒体 endpoint、HTTP status、content type、尺寸和必要的视觉检查。
 
-## 3. 详情审核
+旧队列不得粗暴清空。先 dry-run 分类为 still exists、already fixed、duplicate review、figure missing 或 insufficient evidence，再记录 before/classification/after 统计并保持总和自洽。
 
-### 触发条件
+## 7. 来源分级、视觉标准与状态证据
 
-- description missing
-- description too short
-- sparse specs
-- invalid field value
-- category conflict
-- manufacturer conflict
-- release date conflict
-- source disagreement
+Tier 1 是官方或明确可信的结构化来源，可自动写入或在基础校验后发布；Tier 2 是可信零售商，可自动补全但在来源冲突时必须进入审核；Tier 3 是社区上传、用户图片和不确定来源，必须以 candidate 进入人工视觉判断。自动规则可偏向召回，例如少于三张图创建风险项；人工接受规则可以更严格或更灵活，但不得被后续扫描反向覆盖。
 
-### UI 必须分开
+视觉审核必须将候选归类为 normal product image、thumbnail、room photo、display case、collection photo、promotional banner、unrelated 或 uncertain。不得只凭 `sourceKind`、宽高、URL 域名或图片数量推断视觉质量。候选媒体必须保持稳定 identity：审核者看到、批准和最终展示的资产完全一致；资产替换需留下审计，并在适用时 reopen。
 
-#### Original Evidence
+证据状态只能标记为 `VERIFIED`、`PARTIAL`、`FAILED`、`NOT TESTED` 或 `INCONSISTENT`。`VERIFIED` 要求代码、运行结果与业务状态一致；其余分别表示闭环不足、真实验证失败、无真实执行证据、或报告/代码/API/DB/统计矛盾。不得把 created/queued、按钮、HTTP 200、payload、sourceType、mock 或手工 DB 状态表述为完成。
 
-问题发现时的证据。
+## 8. Crawler 与发布闭环
 
-#### Current State
-
-当前数据库/API 真实状态。
-
-禁止旧 snapshot 长期冒充当前状态。
-
-### 动作
-
-- mark_detail_ok
-- request_refetch
-- keep_pending
-- mark_needs_manual_edit
-
----
-
-## 4. 可信来源分级
-
-### Tier 1
-
-官方/明确可信结构化来源。
-
-允许：
-
-- 自动写入
-- 基础校验后发布
-
-### Tier 2
-
-可信 retailer。
-
-允许：
-
-- 自动补全
-- 来源冲突时进入 review
-
-### Tier 3
-
-社区上传/用户图片/不确定来源。
-
-必须：
-
-- candidate review
-- 人工视觉判断
-
----
-
-## 5. 自动规则与人工规则
-
-机器规则可以偏召回。
-
-例如：
-
-```text
-0 < imageCount < 3
-→ create image_low_count review
-```
-
-人工接受规则可以更灵活：
-
-```text
-有一张经人工确认的优质主图
-→ allow resolve
-```
-
-因此必须有 suppression。
-
----
-
-## 6. 人工决定抑制重复
-
-必须满足：
-
-同一：
-
-- figureId
-- riskType
-- evidenceFingerprint
-
-如果已有人工 resolved/rejected/keep decision：
-
-→ 后续自动扫描不得重新生成相同审核项。
-
-允许 reopen：
-
-- primary image 改变
-- 图片集合改变
-- approved image 删除
-- approved image 失效
-- candidate 改变
-- detail relevant fields 改变
-- 人工主动 reopen
-
----
-
-## 7. 旧审核队列处理
-
-禁止粗暴清空。
-
-只允许先 dry-run 分类：
-
-- issue_still_exists
-- already_fixed
-- duplicate_review
-- figure_missing
-- insufficient_evidence
-
-处理原则：
-
-- still exists → 保留
-- already fixed → archive
-- duplicate → 保留最有价值的一条，其余 archive
-- figure missing → archive
-- insufficient evidence → 保留
-
-任何 archive 前必须：
-
-- before stats
-- classification stats
-- after stats
-
-分类总和必须自洽。
-
----
-
-## 8. Visual Review 标准
-
-人工视觉审核至少分类为：
-
-- normal product image
-- thumbnail
-- room photo
-- display case
-- collection photo
-- promotional banner
-- unrelated
-- uncertain
-
-不能只根据：
-
-- sourceKind
-- width
-- height
-- URL domain
-
-推断视觉质量。
-
----
-
-## 9. 审核证据要求
-
-任何 action 的完成标准至少是：
-
-before
-→ click/action
-→ API response
-→ storage state
-→ API readback
-→ frontend/admin refreshed result
-
-如果涉及图片：
-
-还需：
-
-- image endpoint
-- HTTP status
-- content type
-- dimensions
-- visual confirmation when required
-
-如果涉及 crawler：
-
-还需：
-
-- queued
-- running
-- completed/failed
-- writeback
-- review state
+Crawler 相关审核还需验证 `queued -> running -> completed/failed/deferred`、结果 writeback 和最终 review state；仅创建 job 或收到 payload 不构成完成。旧队列分类后的处置为：still exists 保留、already fixed archive、duplicate 保留最有价值项并 archive 其余、figure missing archive、insufficient evidence 保留。

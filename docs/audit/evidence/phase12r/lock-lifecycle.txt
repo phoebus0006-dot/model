@@ -1,0 +1,19 @@
+# Lock Lifecycle Evidence
+
+
+# assertHeld() calls in reviews module:
+mw-backend\src\modules\reviews\apply-lock.ts:25:  assertHeld(): void;
+mw-backend\src\modules\reviews\apply-lock.ts:65:    assertHeld() {
+mw-backend\src\modules\reviews\apply-service.ts:19:      lease.assertHeld();
+mw-backend\src\modules\reviews\apply-service.ts:26:      lease.assertHeld();
+mw-backend\src\modules\reviews\apply-service.ts:29:      lease.assertHeld();
+mw-backend\src\modules\reviews\apply-service.ts:31:      lease.assertHeld();
+
+# setInterval / clearInterval in reviews module:
+mw-backend\src\modules\reviews\apply-lock.ts:46:  const renewTimer = setInterval(async () => {
+mw-backend\src\modules\reviews\apply-lock.ts:53:        clearInterval(renewTimer);
+mw-backend\src\modules\reviews\apply-lock.ts:58:      clearInterval(renewTimer);
+mw-backend\src\modules\reviews\apply-lock.ts:70:      clearInterval(renewTimer);
+
+# lease.release in reviews module:
+mw-backend\src\modules\reviews\apply-service.ts:35:      try { await lease.release(); } catch {}

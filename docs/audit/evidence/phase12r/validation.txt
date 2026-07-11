@@ -1,0 +1,71 @@
+# Full Validation Output
+
+
+--- npm run test ---
+
+[2m Test Files [22m [1m[32m17 passed[39m[22m[90m (17)[39m
+[2m      Tests [22m [1m[32m168 passed[39m[22m[90m (168)[39m
+[2m   Duration [22m 1.74s[2m (transform 1.02s, setup 0ms, collect 2.35s, tests 4.06s, environment 3ms, prepare 3.39s)[22m
+
+--- npm run build ---
+
+
+> modelwiki-api@1.0.0 build
+> tsup src/index.ts --format esm --external @prisma/client --external bcryptjs --external sharp
+
+[34mCLI[39m Building entry: src/index.ts
+[34mCLI[39m Using tsconfig: tsconfig.json
+[34mCLI[39m tsup v8.5.1
+[34mCLI[39m Target: es2022
+[34mESM[39m Build start
+[32mESM[39m [1mdist\chunk-ADHUKOOA.js         [22m[32m20.69 KB[39m
+[32mESM[39m [1mdist\apply-handler-N7GSSIG3.js [22m[32m29.28 KB[39m
+[32mESM[39m [1mdist\index.js                  [22m[32m166.48 KB[39m
+[32mESM[39m ⚡️ Build success in 42ms
+
+--- npx tsc --noEmit ---
+
+
+--- npm run admin-js-check ---
+
+
+> modelwiki-api@1.0.0 admin-js-check
+> node scripts/admin-js-check.mjs
+
+PASS: "guanli keep_pending action string"
+PASS: "reviews.ts decisionReason field"
+INFO: JS syntax check best-effort — PHP+JS interleaving. SyntaxError: Invalid or unexpected token
+admin-js-check: ALL PASS
+
+--- npx prisma validate ---
+
+Prisma schema loaded from prisma\schema.prisma
+
+--- Python tests ---
+
+============================= test session starts =============================
+platform win32 -- Python 3.12.10, pytest-9.1.1, pluggy-1.6.0 -- C:\Users\wspho\AppData\Local\Programs\Python\Python312\python.exe
+cachedir: .pytest_cache
+rootdir: D:\model wiki
+plugins: anyio-4.14.1, env-1.6.0
+collecting ... collected 17 items
+
+tests/test_crawler_common.py::TestResolveApiBase::test_raises_without_base_url PASSED [  5%]
+tests/test_crawler_common.py::TestResolveApiBase::test_site_url_preferred_over_env PASSED [ 11%]
+tests/test_crawler_common.py::TestResolveApiBase::test_trailing_slash_stripped PASSED [ 17%]
+tests/test_crawler_common.py::TestResolveApiBase::test_uses_env_var PASSED [ 23%]
+tests/test_crawler_common.py::TestResolveAdminUser::test_raises_without_username PASSED [ 29%]
+tests/test_crawler_common.py::TestResolveAdminUser::test_uses_env_var PASSED [ 35%]
+tests/test_crawler_common.py::TestResolveAdminPassword::test_raises_without_password PASSED [ 41%]
+tests/test_crawler_common.py::TestResolveAdminPassword::test_uses_env_var PASSED [ 47%]
+tests/test_crawler_common.py::TestJsonlReport::test_path_property PASSED [ 52%]
+tests/test_crawler_common.py::TestJsonlReport::test_write_appends_jsonl PASSED [ 58%]
+tests/test_crawler_common.py::TestJsonlReport::test_write_content_format PASSED [ 64%]
+tests/test_crawler_common.py::TestJsonlReport::test_write_creates_file PASSED [ 70%]
+tests/test_crawler_common.py::TestJsonlReport::test_write_handles_non_string_values PASSED [ 76%]
+tests/test_crawler_common.py::TestSubmitReviewItem::test_has_timeout PASSED [ 82%]
+tests/test_crawler_common.py::TestSubmitReviewItem::test_posts_to_correct_url PASSED [ 88%]
+tests/test_crawler_common.py::TestSubmitReviewItem::test_raises_on_non_2xx PASSED [ 94%]
+tests/test_crawler_common.py::TestSubmitReviewItem::test_returns_json PASSED [100%]
+
+============================= 17 passed in 0.21s ==============================

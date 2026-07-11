@@ -125,7 +125,7 @@ async function sendVerificationEmail(to: string, displayName: string, verifyUrl:
 }
 
 export async function authRoutes(app: FastifyInstance) {
-  const prisma = app.prisma as any;
+  const prisma = app.prisma;
 
   app.post("/register", { config: { rateLimit: { max: 3, timeWindow: "15 minutes" } } }, async (req: any, reply: any) => {
     if (process.env.ENABLE_PUBLIC_REGISTRATION === "false") {

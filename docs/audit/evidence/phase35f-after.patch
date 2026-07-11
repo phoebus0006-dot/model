@@ -1,0 +1,4006 @@
+﻿git : warning: in the working copy of 'docs/00_PRODUCT_VISION.md', LF will be replaced by CRLF the next time Git touche
+s it
+所在位置 行:1 字符: 1
++ git diff --no-ext-diff HEAD 2>&1 | Out-File -FilePath "D:\model wiki\ ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (warning: in the... Git touches it:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+warning: in the working copy of 'docs/01_USER_REQUIREMENTS.md', LF will be replaced by CRLF the next time Git touches i
+t
+warning: in the working copy of 'docs/02_SYSTEM_ARCHITECTURE.md', LF will be replaced by CRLF the next time Git touches
+ it
+warning: in the working copy of 'docs/03_CONTENT_GOVERNANCE_AND_REVIEW.md', LF will be replaced by CRLF the next time G
+it touches it
+warning: in the working copy of 'docs/04_SECURITY_AND_ENGINEERING_GUARDRAILS.md', LF will be replaced by CRLF the next 
+time Git touches it
+warning: in the working copy of 'docs/05_ROADMAP_AND_PRIORITIES.md', LF will be replaced by CRLF the next time Git touc
+hes it
+warning: in the working copy of 'docs/README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/reviewer/00_REVIEWER_BOOTSTRAP.md', LF will be replaced by CRLF the next time Git
+ touches it
+warning: in the working copy of 'docs/reviewer/03_GLOBAL_REVIEW_CHECKLIST.md', LF will be replaced by CRLF the next tim
+e Git touches it
+warning: in the working copy of 'docs/reviewer/05_UI_INTERACTION_TEST_BASELINE.md', LF will be replaced by CRLF the nex
+t time Git touches it
+warning: in the working copy of 'docs/reviewer/06_API_CONTRACT_AND_DATA_INTEGRITY_TESTS.md', LF will be replaced by CRL
+F the next time Git touches it
+warning: in the working copy of 'docs/reviewer/09_REGRESSION_AND_RELEASE_GATE.md', LF will be replaced by CRLF the next
+ time Git touches it
+warning: in the working copy of 'docs/reviewer/10_REVIEW_REPORT_TEMPLATE.md', LF will be replaced by CRLF the next time
+ Git touches it
+warning: in the working copy of 'docs/reviewer/11_KNOWN_RISKS_AND_OPEN_QUESTIONS.md', LF will be replaced by CRLF the n
+ext time Git touches it
+warning: in the working copy of 'docs/reviewer/README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/reviewer/REVIEWER_BASELINE_MANIFEST.json', LF will be replaced by CRLF the next t
+ime Git touches it
+warning: in the working copy of 'modelwiki-theme/functions.php', LF will be replaced by CRLF the next time Git touches 
+it
+warning: in the working copy of 'modelwiki-theme/header.php', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'modelwiki-theme/index.php', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'modelwiki-theme/languages.php', LF will be replaced by CRLF the next time Git touches 
+it
+warning: in the working copy of 'modelwiki-theme/page-figure.php', LF will be replaced by CRLF the next time Git touche
+s it
+warning: in the working copy of 'modelwiki-theme/page-search.php', LF will be replaced by CRLF the next time Git touche
+s it
+warning: in the working copy of 'modelwiki-theme/template-parts/figure-card.php', LF will be replaced by CRLF the next 
+time Git touches it
+warning: in the working copy of 'mw-backend/package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'mw-backend/prisma/schema.prisma', LF will be replaced by CRLF the next time Git touche
+s it
+warning: in the working copy of 'mw-backend/src/index.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'mw-backend/src/routes/admin.ts', LF will be replaced by CRLF the next time Git touches
+ it
+warning: in the working copy of 'mw-backend/src/routes/auth.ts', LF will be replaced by CRLF the next time Git touches 
+it
+warning: in the working copy of 'mw-backend/src/routes/categories.ts', LF will be replaced by CRLF the next time Git to
+uches it
+warning: in the working copy of 'mw-backend/src/routes/characters.ts', LF will be replaced by CRLF the next time Git to
+uches it
+warning: in the working copy of 'mw-backend/src/routes/community.ts', LF will be replaced by CRLF the next time Git tou
+ches it
+warning: in the working copy of 'mw-backend/src/routes/figures.ts', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'mw-backend/src/routes/search.ts', LF will be replaced by CRLF the next time Git touche
+s it
+diff --git a/docs/00_PRODUCT_VISION.md b/docs/00_PRODUCT_VISION.md
+index 1e1c088..a5a50dd 100644
+--- a/docs/00_PRODUCT_VISION.md
++++ b/docs/00_PRODUCT_VISION.md
+@@ -1,128 +1,69 @@
+-# ModelWiki 浜у搧鎰挎櫙涓庤竟鐣?+# ModelWiki 浜у搧鎰挎櫙
+ 
+ ## 1. 浜у搧瀹氫綅
+ 
+-ModelWiki 鏄竴涓潰鍚戞墜鍔炪€佹ā鍨嬨€佹嫾瑁呮ā鍨嬨€佹櫙鍝佸拰鏀惰棌绫诲懆杈圭埍濂借€呯殑缃戠珯銆?+ModelWiki 鐨勭洰鏍囨槸浠庢暟鎹簱鍒楄〃鍗囩骇涓哄彲鎺㈢储鐨勬墜鍔炵櫨绉戙€傜敤鎴峰簲鑳戒粠 Figurines銆丼eries銆丳ersonnages銆丗abricants銆佸垎绫诲拰鍐呭鍏ュ彛鎸佺画鍙戠幇锛岃€屼笉鍙寜鍟嗗搧缂栧彿妫€绱€? 
+-瀹冨悓鏃舵壙鎷呭洓绫昏亴璐ｏ細
++姣忎釜 Figure 椤甸潰鍚屾椂鏄敹钘忓喅绛栭〉锛氬畠搴斿府鍔╃敤鎴风悊瑙ｅ疄鐗┿€佺増鏈樊寮傘€佸彲闈犲浘鐗囥€佽鏍笺€丳hoebus Studio 鏄惁娴嬭瘯杩囷紝浠ュ強绀惧尯濡備綍璇勪环銆傛敞鍐岀殑浠峰€煎繀椤绘槑纭細绠＄悊 Collection 鍜?Wishlist銆佽瘎鍒嗐€佸彂甯?Avis銆佸悗缁笂浼犲疄鎷嶅苟褰㈡垚涓汉鏀惰棌涓婚〉銆? 
+-1. **璧勬枡搴?*
+-   - 鏌ヨ鍟嗗搧璧勬枡
+-   - 鏌ョ湅鍥剧墖銆佽鏍笺€佸巶鍟嗐€佺郴鍒椼€佽鑹层€佸彂鍞拰浠锋牸淇℃伅
++浜у搧涓昏瑷€涓烘硶璇€傚畬鏁存湰鍦板寲鏄?P0锛岃€岄潪瑙嗚娑﹁壊锛氬鑸€佺瓫閫夈€佹帓搴忋€佽鏍笺€佽处鎴枫€佽璇併€侀偖浠躲€佹牎楠屼笌閿欒淇℃伅涓嶅緱娣风敤娉曡鍜岃嫳璇€傚叾浠栬瑷€鍙互浣滀负鍚庣画鑳藉姏锛屼絾涓嶈兘鍓婂急娉曡涓讳綋楠屻€? 
+-2. **涓汉鏀惰棌绠＄悊**
+-   - 宸叉嫢鏈?-   - 鎯宠
+-   - 宸查璁?-   - 宸插嚭鍞?-   - 鍏虫敞
+-   - 涓汉澶囨敞銆佷环鏍笺€佹笭閬撱€佹棩鏈熴€佹暟閲忋€侀殣绉佽缃?+## 2. 淇℃伅鏋舵瀯
+ 
+-3. **杞婚噺绀惧尯**
+-   - 鐐硅禐
+-   - 鏀惰棌
+-   - 璇勮
+-   - 璇勫垎锛堝彲閫夛級
+-   - 鐑棬姒滃崟
+-   - 鏈€杩戣瘎璁?-   - 鍏紑鏀惰棌椤碉紙鍙€夛級
++鐩爣妗岄潰瀵艰埅涓猴細
+ 
+-4. **鍐呭涓庤瘎娴嬪钩鍙?*
+-   - 绠＄悊鍛?缂栬緫鑰呭彂甯冩墜鍔炶瘎娴?-   - 璐拱浣撻獙
+-   - 寮€绠?-   - 鍋氬伐銆佹秱瑁呫€佸彲鍔ㄦ€с€佹€т环姣斿垎鏋?-   - 绯诲垪鐩樼偣
+-   - 瀵规瘮璇勬祴
+-   - 鍐嶇増涓庤喘涔板缓璁?+- Figurines
++- Series
++- Personnages
++- Fabricants
++- Tests & Guides
++- Communaut茅
+ 
+-## 2. Crawler 鐨勫畾浣?+鍙充晶鎻愪緵鍏ㄥ眬鍗虫椂鎼滅储銆佽瑷€鍏ュ彛涓庤处鎴峰叆鍙ｏ紱鐐瑰嚮 ModelWiki Logo 杩斿洖 Home锛孒ome 涓嶅崰鐢ㄧ嫭绔嬪鑸」銆? 
+-Crawler 涓嶆槸闀挎湡浜у搧涓績銆?+`Personnages` 鏄寮忓疄浣擄紝鍦?P0 闃舵鍗冲簲寤虹珛鏁版嵁妯″瀷骞堕€氳繃鍏崇郴琛ㄨ繛鎺?Figure銆傚嵆浣挎暟鎹鐩栨垨瀵艰埅绌洪棿涓嶈冻鏃舵殏鏀惧湪 Figurines/Explorer 鍐咃紝鏁版嵁妯″瀷涔熶笉搴旂瓑寰呫€備竴绾у鑸槸鍚﹀睍绀哄彲鎸夋暟鎹垚鐔熷害娓愯繘銆? 
+-瀹冧富瑕佺敤浜庯細
++鎼滅储涓嶆槸涓€涓姝ラ鏂囧瓧瀵艰埅銆傛闈㈢鐢辨悳绱㈠浘鏍囧睍寮€鍏ㄥ眬鎼滅储锛岀Щ鍔ㄧ鎻愪緵鍥哄畾鍏ュ彛锛涙悳绱㈣鐩?Figure銆丳ersonnage銆丼eries 鍜?Fabricant锛屽苟鍦ㄨ緭鍏ユ椂缁欏嚭鍙€夌粨鏋溿€? 
+-- 缃戠珯鍐峰惎鍔紱
+-- 鎵归噺寤虹珛鍩虹璧勬枡搴擄紱
+-- 琛ュ厖缂哄け瀛楁锛?-- 灏戦噺鏉ユ簮鏇存柊锛?-- 绠＄悊鍛樹富鍔ㄨЕ鍙戠殑 refetch锛?-- 鍙戠幇鏄庢樉鏁版嵁椋庨櫓骞舵彁浜や汉宸ュ鏍搞€?+## 3. 椤甸潰鍘熷垯
+ 
+-缃戠珯杩涘叆绋冲畾鏈熷悗锛屼富绾垮簲杞负锛?+### Figure detail
+ 
+-> 浜哄伐缁存姢 + 鐢ㄦ埛鏀惰棌 + 绀惧尯浜掑姩 + 缂栬緫璇勬祴 + 灏忚妯¤嚜鍔ㄨˉ鍏?+璇︽儏椤典紭鍏堜簬棣栭〉锛屾槸鐢ㄦ埛浠庢悳绱€佸唴瀹规垨澶栭儴鐭棰戣繘鍏ュ悗鐨勬牳蹇冭惤鐐广€傚畠浣跨敤绠€娲佺殑 `display_title` 浣滀负瑙嗚鏍囬锛屽苟淇濈暀 `original_title`/`full_name` 浠ュ憟鐜板鍏ョ殑瀹屾暣鍘熷悕銆傞潰鍖呭睉蹇呴』鏉ヨ嚜鐪熷疄鍏崇郴锛屼緥濡?Series -> Personnage -> Figure锛屼笉寰楃敤鐚滄祴鐨勬枃鏈嫾鎺ユ浛浠ｃ€? 
+-绂佹鎶?ModelWiki 閲嶆柊璁捐鎴愨€滀笉鏂墿澶х埇铏妯♀€濈殑椤圭洰銆?+鍥剧墖閲囩敤鈥滃綋鍓嶆渶浣冲彲鐢ㄢ€濈殑浼樺厛绾э細Phoebus Studio 楂樿川閲忓疄鎷嶃€佸彲淇￠珮璐ㄩ噺绀惧尯瀹炴媿銆佸畼鏂逛骇鍝佸浘銆佺粺涓€ Placeholder銆侴allery 鎸夋潵婧愬垎涓?`Photos du Studio`銆乣Communaut茅`銆乣Photos officielles`锛屾瘡涓浘鏍囨敞鏉ユ簮绫诲瀷骞舵敮鎸佷富鍥惧垏鎹紱娌℃湁鍥剧墖鏃舵樉绀虹粺涓€鐨?Placeholder锛圠ogo + "Photo bient么t disponible"锛夛紝鑰屼笉鏄姞杞藉け璐ユ枃鏈€? 
+-## 3. 宸茬‘璁ょ殑鏍稿績涓氬姟鍐崇瓥
++瑙勬牸鎸?`Informations g茅n茅rales`銆乣Caract茅ristiques`銆乣Sortie`銆乣Production` 鍒嗙粍锛屽彧鏄剧ず鐪熷疄瀛樺湪瀛楁锛涚┖缁勪笉鏄剧ず銆係tudio 鐨勬祴璇曘€乁nboxing銆丆omparatif 鎴?Guide 涓庣ぞ鍖?Avis 鍒嗙锛氬墠鑰呮槸缂栬緫鍐呭锛屽悗鑰呮槸鐢ㄦ埛璐＄尞銆? 
+-### A. 浜哄伐鍐冲畾浼樺厛浜庤嚜鍔ㄨ鍒?+Figure 鐨勬牳蹇冭涓烘槸 `Je la poss猫de`锛圕ollection锛夈€乄ishlist銆丯oter 涓?Avis銆傛棫 figure Like/Favorite 涓嶅簲涓庤繖浜涙敹钘忔剰鍥惧苟瀛橈紱杩佺Щ鏃?Favorite 搴旀槧灏勬垨寮曞鍒?Wishlist锛孡ike 淇濈暀缁?Avis 鎴?Studio 鍐呭绛夊彲琚偣璧炵殑鍐呭瀵硅薄銆? 
+-宸茬‘璁わ細**鏄?*銆?+璇勫垎鍒濇湡鍥哄畾涓轰竴浠界敤鎴疯瘎鍒嗭細1 涓?Note g茅n茅rale 鍔?4 涓淮搴︼紙Sculpture銆乂isage銆丳einture銆丷apport qualit茅-prix锛夈€傝仛鍚堣瘎鍒嗗繀椤绘樉绀烘牱鏈噺锛屼笉鑳戒粎鏄剧ず鏁板€笺€? 
+-鏈哄櫒璐熻矗鍙戠幇椋庨櫓锛屼汉宸ヨ礋璐ｆ渶缁堝喅瀹氥€?+### Explorer銆丠ome 涓庡唴瀹? 
+-鑷姩妫€娴嬩笉鑳芥棤鏉′欢瑕嗙洊浜哄伐宸茬粡纭鐨勭粨鏋溿€?+Explorer 鏄祻瑙堢晫闈㈣€岄潪鍚庡彴绛涢€夊櫒銆傛闈㈢浣跨敤宸︿晶绛涢€夈€佺粨鏋?Grid銆佺瓫閫?chips 涓庢帓搴忥紱绉诲姩绔娇鐢?Filters 鎶藉眽鎴?Bottom Sheet銆傚彲绛涢€?Cat茅gorie銆丼茅rie銆丳ersonnage銆丗abricant銆伱塩helle 鍜?Ann茅e de sortie銆係eries 涓?Fabricant 鐨勯€夋嫨鍣ㄥ簲鎻愪緵褰曞叆鎼滅储銆佺儹闂ㄩ」鍜屽垎椤?寮傛缁撴灉锛岃€岄潪浼犵粺瓒呴暱 <select>銆? 
+-### B. 鍥剧墖鏁伴噺灏戯紝浣嗕汉宸ョ‘璁よ川閲忚冻澶燂紝鍏佽閫氳繃
++Home 鐨勯瑕?CTA 鏄叏灞€鎼滅储銆侶ero 鍖哄煙浣跨敤 Phoebus Studio 瀹炴媿褰㈣薄鑰岄潪杩愯惀 Banner锛屽壇鏍囬濡?"Explorez les figurines. Comparez les versions. Partagez votre avis."銆傜洰鏍囨ā鍧椾緷娆′负 Hero + Search銆丒xplorer par cat茅gorie锛堣瑙夊垎绫诲崱鐗囷紝濡?Prize Figures銆丼cale Figures銆丯endoroid銆丄ction Figures銆丷esin & GK锛夈€乁nivers populaires锛堝 One Piece銆丏ragon Ball銆丯aruto銆丏emon Slayer銆丠atsune Miku锛夈€丏erniers Tests par Phoebus锛堝惈 TEST/UNBOXING/COMPARATIF/GUIDE 绫诲瀷鏍囩锛夈€佺ぞ鍖烘ā鍧椼€佹鍗曘€丏erni猫res fiches ajout茅es銆傜ぞ鍖轰笌姒滃崟閮藉繀椤绘弧瓒崇湡瀹炴暟鎹槇鍊硷紱鍐峰惎鍔ㄦ椂浣跨敤璇氬疄鐨勬姇绋块個璇凤紙濡?"Partagez votre exp茅rience 鈥?Vous poss茅dez une figurine ? Notez-la et partagez votre avis avec la communaut茅."锛夛紝涓嶄吉瑁呮椿璺冦€? 
+-宸茬‘璁わ細**鍏佽**銆?+Tests & Guides 鏄暱鏈熷樊寮傚寲鍐呭锛岃€屼笉鏄洿鎺ュ祵鍏ヤ竴鎺掔煭瑙嗛銆傛瘡绡?Test銆乁nboxing銆丆omparatif銆丟uide d'authenticit茅銆丟uide pour collectionneurs銆丆ustomisation & 3D 閮芥湁鐙珛椤甸潰鍜岀粨鏋勫寲鍏宠仈銆侰ustomisation & 3D 浠呭綋 Phoebus Studio 瀹為檯鍒朵綔杩囪浜у搧鐨勬敼瑁呮垨 3D 鍐呭鏃舵墠鏄剧ず锛屼笉寰椾负姣忎釜 Figure 鑷姩鐢熸垚"3D 鎵撳嵃鍙?鍏ュ彛銆傚彧鏈夊疄闄呮祴璇曡繃鐨?Figure 鎵嶆樉绀虹浉鍏?Studio 鍐呭銆? 
+-渚嬪锛?+## 4. 鏁版嵁涓庡唴瀹瑰師鍒? 
+-- 褰撳墠鍙湁 1鈥? 寮犲浘鐗囷紱
+-- 浣嗕汉宸ョ‘璁ゆ湁涓€寮犲彲闈犮€佹竻鏅般€佺浉鍏崇殑鍟嗗搧鍥撅紱
++- Fabricant 浣跨敤 canonical entity銆乻lug銆乶ative name銆乧ountry 鍜?aliases锛涘鍏ユ椂鐢?aliases 褰掑苟锛屼笉鑳借鍚屼竴鍘傚晢鍥犲ぇ灏忓啓銆佽嫳鏂囨垨鏃ユ枃鍚嶇О閲嶅鍑虹幇銆?+- 0 鍟嗗搧瀹炰綋蹇呴』琚殣钘忋€佸悎骞躲€佹爣璁板緟澶勭悊鎴栦粠鍙祻瑙堝叆鍙ｆ帓闄わ紝涓嶈兘姹℃煋瀵艰埅鍜岀瓫閫夈€?+- Category 鍛藉悕鍜屽眰绾х粺涓€锛岄伩鍏嶅悓涔夐噸澶嶃€?+- `Derni猫res fiches ajout茅es`锛堟寜褰曞叆鏃堕棿锛夈€乣Sorties 脿 venir`锛堟湭鏉ュ彂鍞級涓?`Derni猫res sorties`锛堝凡鍙戝敭锛夋槸涓嶅悓璇箟锛孉PI銆佸悗鍙板拰椤甸潰涓嶅緱娣风敤鈥渘ouveaut茅s鈥濄€?+- Personnages銆丼eries銆丗abricants 涓庣紪杈戝唴瀹归兘搴旀槸鍙叧鑱斿疄浣擄紱鍐呭鍏崇郴蹇呴』鍙拷韪紝涓嶈兘鍙緷璧栧瘜鏂囨湰閾炬帴銆? 
+-鍒欏彲浠?resolved銆?+## 5. 浜у搧杈圭晫
+ 
+-鍥犳鏈哄櫒妫€娴嬫潯浠跺拰浜哄伐鎺ュ彈鏍囧噯涓嶈姹傛満姊板绉般€?+ModelWiki 涓嶄互鍟嗗煄銆佸鏉傛帹鑽愮畻娉曟垨瀹屾暣绀句氦缃戠粶涓哄綋鍓嶇洰鏍囥€傜ぞ鍖哄厛鏈嶅姟浜庣湡瀹炴敹钘忋€佽瘎鍒嗗拰 Avis锛屼箣鍚庢墠澧炲姞瀹炴媿銆丠elpful銆佸叕寮€鏀惰棌銆佸叧娉ㄣ€佸姩鎬併€佸窘绔犲拰鎺掕銆? 
+-### C. 浜哄伐宸插鐞嗕笖璇佹嵁娌″彉鍖栵紝绂佹閲嶅鐢熸垚鐩稿悓瀹℃牳椤?+鏁版嵁璐ㄩ噺娌荤悊浠嶆槸浜у搧鍙俊搴︾殑鍓嶆彁锛氭満鍣ㄥ彂鐜伴闄╋紝浜哄伐缁撳悎鍘熷璇佹嵁涓庡綋鍓嶇姸鎬佷綔鍐冲畾銆侰rawler 浠呮槸鍙帶鐨勬暟鎹ˉ鍏ㄥ伐鍏凤紝涓嶆槸鍐呭璐ㄩ噺鐨勬渶缁堟潵婧愩€? 
+-宸茬‘璁わ細**绂佹閲嶅鐢熸垚**銆?+## 6. 鍙俊璧勬枡鐨勫喅绛栬鍒? 
+-蹇呴』閫氳繃锛?-
+-- decision record
+-- evidence fingerprint
+-- suppression/reopen rule
+-
+-淇濊瘉浜哄伐鍐冲畾鍏锋湁绋冲畾鎬с€?-
+-### D. 鍥剧墖鏉ユ簮閲囩敤鍒嗙骇绛栫暐
+-
+-宸茬‘璁わ細
+-
+-- 鍙俊瀹樻柟/闆跺敭鏉ユ簮鍙互鑷姩杩涘叆姝ｅ紡鍥惧簱锛?-- MFC 鐢ㄦ埛涓婁紶銆佹潵婧愪笉纭畾銆佸叡浜€欓€夈€佺枒浼兼埧闂?灞曠ず鏌?鍚堥泦鍥剧瓑楂橀闄╁浘鐗囧繀椤诲厛杩涘叆 candidate review锛?-- 涓嶇‘瀹氭潵婧愯繘鍏?manual銆?-
+-### E. 璇︽儏鏁版嵁閲囩敤鍒嗙骇绛栫暐
+-
+-宸茬‘璁わ細
+-
+-- 鍙俊缁撴瀯鍖栨潵婧愬彲浠ヨ嚜鍔ㄥ啓鍏ワ紱
+-- 鍐茬獊銆佺█鐤忋€佸紓甯稿€艰繘鍏?detail_review锛?-- 浜哄伐纭鍚庡彂甯冿紱
+-- 鑷姩绯荤粺涓嶅緱瑕嗙洊浜哄伐纭鐨勫瓧娈碉紝闄ら潪鏈夋槑纭殑鐗堟湰/鍙樻洿绛栫暐銆?-
+-## 4. 浜у搧鎴愬姛鏍囧噯
+-
+-ModelWiki 鐨勬垚鍔熶笉鏄細
+-
+-- 鎶撲簡澶氬皯椤甸潰锛?-- 鍒涘缓浜嗗灏?crawler job锛?-- 闃熷垪鏈夊灏戞潯锛?-- 鏁版嵁搴撴湁澶氬皯鏉¤褰曘€?-
+-鑰屾槸锛?-
+-- 鐢ㄦ埛鑳藉揩閫熸壘鍒板彲淇¤祫鏂欙紱
+-- 鍥剧墖鐩稿叧銆佹竻鏅般€佸彲鏀惧ぇ锛?-- 鏀惰棌绠＄悊鏈夐暱鏈熶娇鐢ㄤ环鍊硷紱
+-- 璇勮鍜岀ぞ鍖轰俊鍙风湡瀹烇紱
+-- 绠＄悊鍛樿兘绋冲畾瀹℃牳锛?-- 浜哄伐鍐冲畾涓嶄細琚満鍣ㄥ弽澶嶈鐩栵紱
+-- 缂栬緫鑰呭彲浠ユ寔缁彂甯冭瘎娴嬪拰楂樿川閲忓師鍒涘唴瀹癸紱
+-- 鑷姩鍖栭檷浣庣淮鎶ゆ垚鏈紝鑰屼笉鏄埗閫犳洿澶氳剰鏁版嵁銆?+- 鑷姩瑙勫垯璐熻矗鍙戠幇椋庨櫓銆佷繚鐣欐潵婧愬拰鎻愬嚭鍊欓€夛紱浜哄伐璐熻矗鎺ュ彈鎬с€佹潵婧愬啿绐佸拰鍙戝竷鍐冲畾銆傝嚜鍔ㄤ换鍔′笉寰楀湪娌℃湁鏄庣‘鐗堟湰/鍙樻洿绛栫暐鏃惰鐩栦汉宸ョ‘璁ょ殑瀛楁鎴栧獟浣撱€?+- 瀹樻柟鍘傚晢銆佹槑纭彲淇＄殑闆跺敭鍟嗗拰宸查獙璇佺粨鏋勫寲鏉ユ簮鍙湪鍩虹瀹夊叏鏍￠獙鍚庤嚜鍔ㄨˉ鍏紱绀惧尯涓婁紶銆佷笉纭畾鏉ユ簮銆佸叡浜€欓€夈€佺枒浼兼埧闂?灞曠ず鏌?鍚堥泦鍥惧拰瀹ｄ紶妯箙蹇呴』杩涘叆浜哄伐瀹℃牳銆?+- 鍥剧墖鏁伴噺浣庝簬鏈哄櫒闃堝€煎彧琛ㄧず闇€瑕佹鏌ャ€備竴寮犱笌鍟嗗搧鐩稿叧銆佹竻鏅般€佹潵婧愬彲淇℃垨缁忎汉宸ョ‘璁や笖鍙ǔ瀹氭樉绀虹殑鍥剧墖锛屽厑璁镐綔涓哄凡瑙ｅ喅缁撴灉锛涘弽杩囨潵锛屾潵婧愭爣绛俱€佸昂瀵告垨 URL 鍩熷悕閮戒笉鑳藉崟鐙瘉鏄庤瑙夎川閲忋€?+- 鍚屼竴 Figure銆侀闄╃被鍨嬪拰鏈彉鍖栬瘉鎹凡瀛樺湪浜哄伐鍐冲畾鏃讹紝鍚庣画鎵弿蹇呴』鎶戝埗閲嶅椤广€備富鍥炬垨鍥剧墖闆嗗悎鍙樺寲銆佸凡鎵瑰噯濯掍綋鍒犻櫎/澶辨晥銆佸€欓€夊彉鍖栥€佺浉鍏宠鎯呭彉鍖栨垨浜哄伐鏄庣‘ reopen 鏃讹紝鎵嶅彲閲嶆柊杩涘叆瀹℃牳銆?diff --git a/docs/01_USER_REQUIREMENTS.md b/docs/01_USER_REQUIREMENTS.md
+index b88d1fd..91b5728 100644
+--- a/docs/01_USER_REQUIREMENTS.md
++++ b/docs/01_USER_REQUIREMENTS.md
+@@ -1,415 +1,87 @@
+ # ModelWiki 鐢ㄦ埛闇€姹? 
+-## 1. 鐢ㄦ埛瑙掕壊
++## 1. 璁垮
+ 
+-### 娓稿
++璁垮搴旇兘浠ユ硶璇畬鎴愪互涓嬩换鍔★細
+ 
+-鍙互锛?+- 閫氳繃鍏ㄥ眬鍗虫椂鎼滅储鏌ユ壘 Figure銆丳ersonnage銆丼茅rie 鎴?Fabricant锛?+- 浠?Figurines銆丼eries銆丳ersonnages銆丗abricants銆乀ests & Guides銆丆ommunaut茅 杩涘叆娴忚锛?+- 鍦?Explorer 涓粍鍚堢瓫閫夊苟娓呮鐪嬪埌缁撴灉鏁般€佺瓫閫夋潯浠躲€佹帓搴忓拰閲嶇疆鎿嶄綔锛?+- 鍦?Figure detail 涓槄璇诲彲闈犲浘鐗囥€佸叧绯婚潰鍖呭睉銆佺畝娲佹爣棰樸€佸畬鏁村師鍚嶃€佸垎缁勮鏍笺€丼tudio 鍐呭涓庣ぞ鍖?Avis锛?+- 鍖哄垎 Derni猫res fiches ajout茅es銆丼orties 脿 venir 鍜?Derni猫res sorties锛?+- 闃呰鐙珛鐨?Test銆乁nboxing銆丆omparatif 涓?Guide 椤甸潰銆? 
+-- 娴忚鍏紑鍐呭
+-- 鎼滅储
+-- 浣跨敤绛涢€?-- 鏌ョ湅璇︽儏銆佸浘闆嗐€佽鏍笺€佺浉鍏虫帹鑽?-- 鏌ョ湅鐐硅禐鏁般€佹敹钘忔暟銆佽瘎璁烘暟
+-- 闃呰璇勬祴鏂囩珷
++鏃犲浘銆佹棤璇勮鎴栨暟鎹笉瓒冲繀椤昏瘹瀹炲憟鐜般€傜粺涓€ Placeholder銆佸喎鍚姩鎶曠閭€璇峰拰鏁版嵁闃堝€兼槸浣撻獙鐨勪竴閮ㄥ垎锛屼笉寰椾互绌虹櫧銆佸亣娲昏穬鎴栧崟鏍锋湰姒滃崟鏇夸唬銆? 
+-涓嶈兘锛?+娉ㄥ唽鐢ㄦ埛鍙櫥褰?閫€鍑恒€佷慨鏀硅嚜宸辩殑瀵嗙爜锛屽苟绠＄悊鑷繁鐨?Collection銆乄ishlist銆丄vis銆佷釜浜鸿祫鏂欏拰鐩稿簲鍙鎬с€傞櫎鏈夋槑纭悗缁樁娈电殑鍐呭浜掑姩澶栵紝鐢ㄦ埛涓嶅緱淇敼浠栦汉璧勬枡銆佽瘎鍒嗐€佸鏍搁」鎴栫洰褰曡祫鏂欍€傜紪杈戣€呭彲鍦ㄦ巿鏉冭寖鍥村唴缁存姢 Figure 鐨勬弿杩般€佽鏍煎拰 Category/Series/Personnage/Fabricant/鐢熶骇瑙掕壊鍏崇郴锛屽苟鍒涘缓銆侀瑙堛€佸彂甯冨拰鏇存柊 Studio 鍐呭銆傚鏍歌€呭彲澶勭悊琚垎閰嶇殑瀹℃牳椤逛絾涓嶈兘浼€犵敤鎴疯涓烘垨鎻愬崌鑷繁鐨勮鑹层€傜鐞嗗憳鍙鐞嗚处鍙风姸鎬併€佽鑹层€佸唴瀹瑰彲瑙佹€с€佸鏍哥瓥鐣ャ€佺紦瀛樹笌灏忔牱鏈?crawler 瑙﹀彂锛屽苟鏌ョ湅绯荤粺瀹¤锛涘瘑鐮侀噸缃蛋鍙楁帶娴佺▼锛岀鐞嗗憳姘歌繙涓嶅彲璇诲彇鏄庢枃瀵嗙爜銆? 
+-- 鐐硅禐
+-- 鏀惰棌
+-- 璇勮
+-- 淇敼鍐呭
++## 2. Figure detail MVP
+ 
+-### 娉ㄥ唽鐢ㄦ埛
++P1 鐨勮鎯呴〉蹇呴』鎻愪緵锛? 
+-闄ゆ父瀹㈣兘鍔涘锛岃繕鍙互锛?+- `display_title` 涓庡彲灞曞紑/鍙鐨?`original_title`/`full_name`锛?+- 鏍规嵁 Series銆丳ersonnage銆丟amme 绛夌湡瀹炲叧鑱旂敓鎴愮殑闈㈠寘灞戯紱
++- `Photos du Studio`銆乣Communaut茅`銆乣Photos officielles` 鍒嗘潵婧?Gallery锛屾爣娉ㄦ潵婧愮被鍨嬪苟鏀寔涓诲浘鍒囨崲锛?+- 褰撳墠鏈€浣冲彲鐢ㄥ浘鐗囦笌缁熶竴 Placeholder锛?+- 鎸?`Informations g茅n茅rales`銆乣Caract茅ristiques`銆乣Sortie`銆乣Production` 鍒嗙粍鐨勯潪绌鸿鏍硷紱
++- 涓?Figure 缁撴瀯鍖栧叧鑱旂殑 Phoebus Studio 鍐呭锛屼笖涓庣ぞ鍖?Avis 鍒嗘爮锛?+- Note g茅n茅rale銆? 涓瘎鍒嗙淮搴﹀拰鏄庣‘鏍锋湰閲忥紱
++- 鐧诲綍鍚庡彲鐢ㄧ殑 Collection銆乄ishlist銆丯oter銆丄vis 鎿嶄綔銆? 
+-- 鐧诲綍銆侀€€鍑?-- 淇敼鑷繁鐨勫瘑鐮?-- 鐐硅禐/鍙栨秷鐐硅禐
+-- 鏀惰棌/鍙栨秷鏀惰棌
+-- 璇勮
+-- 缂栬緫/鍒犻櫎鑷繁鐨勮瘎璁?-- 绠＄悊鏀惰棌鐘舵€佸拰鍒嗙粍
+-- 璁板綍涓汉鏀惰棌淇℃伅
+-- 绠＄悊鍏紑/绉佸瘑璁剧疆
+-
+-### 缂栬緫鑰?-
+-鍙互锛?-
+-- 淇敼鎵嬪姙璧勬枡
+-- 缂栬緫鎻忚堪
+-- 缁存姢鍒嗙被銆佺郴鍒椼€佽鑹层€佸巶鍟嗐€佸師鍨嬪笀鍏崇郴
+-- 鍙戝竷鍜岀紪杈戣瘎娴嬫枃绔?-- 澶勭悊鎺堟潈鑼冨洿鍐呯殑鍐呭瀹℃牳
+-
+-### 绠＄悊鍛?-
+-鎷ユ湁锛?-
+-- 鐢ㄦ埛绠＄悊
+-- 鍐呭绠＄悊
+-- 瀹℃牳绠＄悊
+-- 璇勮绠＄悊
+-- crawler job 瑙傚療涓庡皬鏍锋湰瑙﹀彂
+-- 缂撳瓨绠＄悊
+-- 绯荤粺瀹¤鏌ョ湅
+-
+-绠＄悊鍛樿处鍙峰拰鏉冮檺鎿嶄綔蹇呴』鍙楀埌涓ユ牸瀹¤銆?-
+----
+-
+-## 2. 鍓嶅彴璁垮闇€姹?-
+-### 2.1 棣栭〉
+-
+-棣栭〉搴旇嚦灏戝寘鍚細
+-
+-- 鏈€鏂版敹褰?-- 鐑棬鏀惰棌
+-- 鐑棬鐐硅禐
+-- 鏈€杩戣瘎璁?-- 鏈€鏂拌瘎娴?鏂囩珷
+-- 鍒嗙被鍏ュ彛
+-- 鍘傚晢/绯诲垪鎺ㄨ崘
+-
+-棣栭〉鍐呭灞曠ず浼樺厛绾у簲鑰冭檻鈥滃彲瀹夊叏灞曠ず鐨勫浘鐗団€濓紝閬垮厤棣栧睆澶ч噺 No Image銆?-
+-### 2.2 鍒楄〃鍜岀瓫閫?-
+-鏀寔锛?-
+-- Figure 鍒楄〃
+-- Merch 鍒楄〃
+-- 鍒嗙被绛涢€?-- 鍘傚晢绛涢€?-- 绯诲垪绛涢€?-- 瑙掕壊绛涢€?-- 鍘熷瀷甯堢瓫閫?-- 鍙戝敭骞翠唤绛涢€?-- 鎺掑簭锛?-  - 鏈€鏂版敹褰?-  - 鍙戝敭鏃ユ湡
+-  - 鏀惰棌鏁?-  - 鐐硅禐鏁?-  - 璇勮鏁?+璇︽儏椤典笉寰楁妸瀹屾暣瀵煎叆鏍囬纭鍏?H1锛屼笉寰楀皢 Like銆丗avorite銆丱wn銆乄ishlist 浣滀负鍥涗釜鍚箟閲嶅彔鐨?Figure 鎿嶄綔锛屼篃涓嶅緱鎶?Studio Review 涓庣敤鎴疯瘎璁烘贩鎴愪竴涓垪琛ㄣ€? 
+-### 2.3 鎼滅储
+-
+-鑷冲皯鏀寔锛?-
+-- title
+-- alias
+-- character
+-- manufacturer
+-- series
+-- JAN
+-- MFC ID
+-- source ID
+-- keyword
+-
+-鎼滅储缁撴灉瑕佸厑璁歌繘涓€姝ョ瓫閫夈€?-
+-### 2.4 Figure 璇︽儏椤?+鍦ㄦ暟鎹瓨鍦ㄦ椂锛岃鎯呰繕搴斿睍绀?Fabricant銆丼茅rie銆丳ersonnage銆佸垎绫汇€佷骇鍝佺被鍨嬨€佹潗璐ㄣ€佹瘮渚嬨€侀珮搴︺€佸彂鍞棩鏈熴€佷环鏍笺€丣AN銆佹潵婧愰摼鎺ャ€佹弿杩板拰鍙拷韪鏍笺€傚浘鐗囧簲鏀寔鏀惧ぇ銆佸悎鐞嗘帓搴忓強 404 瀹夊叏 fallback锛涙湭缁忓鏍哥殑鎴块棿銆佸睍绀烘煖銆佸悎闆嗗浘鎴栦綆璐ㄧ缉鐣ュ浘涓嶅緱闀挎湡浣滀负鍞竴涓诲浘銆傜浉鍏虫帹鑽愬繀椤绘帓闄ゅ綋鍓?Figure銆佹寜 `figureId` 鍘婚噸锛屽苟鍙緷鎹悓 Personnage銆丼eries銆丗abricant 鎴栧垎绫诲缓绔嬪叧绯汇€? 
+-鑷冲皯灞曠ず锛?+## 3. 娉ㄥ唽鐢ㄦ埛涓庤处鎴? 
+-- 鏍囬
+-- 澶氳瑷€鍚?鍒悕
+-- 涓诲浘
+-- 鍥鹃泦
+-- 鍘傚晢
+-- 绯诲垪
+-- 瑙掕壊
+-- 鍘熷瀷甯?-- 鍒嗙被
+-- product kind
+-- 鏉愯川
+-- 姣斾緥
+-- 楂樺害
+-- 鍙戝敭鏃ユ湡
+-- 浠锋牸
+-- JAN
+-- 鏉ユ簮閾炬帴
+-- 鎻忚堪
+-- 瑙勬牸
+-- Like 鏁?-- Favorite 鏁?-- 璇勮鏁?-- 鐢ㄦ埛鏀惰棌鐘舵€佸叆鍙?-- 璇勮鍖?-- 鐩稿叧鎺ㄨ崘
+-- 鐩稿叧璇勬祴鏂囩珷
++P2 鐨勮处鎴蜂环鍊间负锛? 
+-### 2.5 鍥剧墖浣撻獙
++- Ma collection锛氭嫢鏈夌殑 Figure锛屽彲閫愭澧炲姞鏁伴噺銆佸娉ㄣ€佽喘鍏ヤ俊鎭拰鍙鎬э紱
++- Ma wishlist锛氭兂瑕佺殑 Figure锛?+- Mes avis锛氭瘡涓敤鎴锋瘡涓?Figure 涓€浠姐€佸彲鏇存柊鐨勮瘎鍒嗕笌璇勪环锛?+- Mes photos锛氬湪鍚庣画绀惧尯闃舵寮€鏀剧殑瀹炴媿绠＄悊锛?+- Mon profil锛氬ご鍍忋€佸悕绉般€佺畝浠嬩笌鐪熷疄鏀惰棌缁熻銆? 
+-蹇呴』婊¤冻锛?+涓€涓敤鎴峰鍚屼竴 Figure 鍙兘淇濈暀涓€鏉℃湁鏁堣瘎鍒嗚褰曪紱鏇存柊蹇呴』閲嶆柊璁＄畻鑱氬悎鍒嗘暟涓庢牱鏈噺銆傛敹钘忋€乄ishlist銆丄vis銆佸浘鐗囦笂浼犲拰鍏紑璧勬枡鐨勫彲瑙佹€у繀椤荤敱璐︽埛鎵€鏈夎€呮帶鍒讹紝绠＄悊鍛?瀹℃牳鑰呭彧鑳藉湪鏄庣‘鏉冮檺鑼冨洿鍐呭鐞嗚繚瑙勫唴瀹广€? 
+-- 涓诲浘鐩稿叧
+-- 涓嶅厑璁镐綆璐ㄩ噺缂╃暐鍥鹃暱鏈熶綔涓哄敮涓€涓诲浘
+-- 鍥剧墖鍙斁澶?-- 鍥鹃泦椤哄簭鍚堢悊
+-- 404 鍥剧墖鏈夊畨鍏?fallback
+-- 鐜╁鎴块棿銆佸睍绀烘煖銆佸悎闆嗗浘绛変笉鑳芥湭缁忓鏍告垚涓轰富鍥?+CollectionEntry 鑷冲皯鏀寔鐘舵€併€佸娉ㄣ€佹暟閲忋€佽喘鍏ヤ环鏍笺€佽喘鍏ユ棩鏈熴€佽喘鍏ユ笭閬撳拰鍙鎬э紱P2 棣栧睆浠ユ嫢鏈?鎯宠涓烘牳蹇冿紝棰勮銆佸敭鍑恒€佸叧娉ㄧ瓑鎵╁睍鐘舵€佷笉寰楅噸鏂板紩鍏ヤ笌 Wishlist 閲嶅彔鐨?Figure 鎿嶄綔銆傝处鎴烽〉搴斿寘鍚釜浜烘敹钘忋€乄ishlist銆丄vis銆佽处鍙疯缃拰鍙敤鐨勭粺璁★紱浼板€笺€佸啀鐗?浠锋牸鎻愰啋涓嶅睘浜庡綋鍓嶆壙璇恒€? 
+-### 2.6 鐩稿叧鎺ㄨ崘
++## 4. Explorer銆佹悳绱笌棣栭〉
+ 
+-鐩稿叧鎺ㄨ崘搴旓細
++P3 鐨?Explorer 鏀寔 Cat茅gorie銆丼茅rie銆丳ersonnage銆丗abricant銆伱塩helle銆丄nn茅e de sortie 绛夌瓫閫夈€係eries 涓?Fabricant 閫夋嫨鍣ㄦ彁渚涘綍鍏ユ悳绱€佺儹闂ㄩ」鍒楄〃鍜屽垎椤?寮傛缁撴灉锛岄伩鍏嶄紶缁熻秴闀?<select>銆傜Щ鍔ㄧ绛涢€夎繘鍏ユ娊灞夋垨 Bottom Sheet锛岃€岄潪闀块〉闈㈠瀭鐩村爢鍙犮€備环鏍煎彲浠ュ瓨鍦紝浣嗕笉鏄?Wiki 鐨勯珮浼樺厛绾х瓫閫夈€? 
+-- 鎺掗櫎褰撳墠 Figure 鑷韩
+-- 鎸?figureId 鍘婚噸
+-- 鏀寔鍚岃鑹?-- 鍚岀郴鍒?-- 鍚屽巶鍟?-- 鐩镐技鍒嗙被
++P4 Home 鐨勬ā鍧楀繀椤绘湁鍙厤缃€佸彲楠岃瘉鐨勬暟鎹潵婧愪笌闃堝€硷細
+ 
+----
++- Derniers Tests 鍙睍绀哄凡鍙戝竷鍐呭鐨勫皝闈€佺被鍨嬪拰椤甸潰鍏ュ彛锛屼笉鎵归噺鍔犺浇绗笁鏂硅棰?iframe锛?+- Derniers avis 浠呭湪杈惧埌瓒冲鐪熷疄銆佸凡鍙戝竷 Avis 鏁伴噺鍚庡嚭鐜帮紱
++- Les mieux not茅es 鑷冲皯杈惧埌绾﹀畾鐨勬渶灏忔牱鏈噺锛堜骇鍝佸喅瀹氬墠涓嶅緱鑷鍋囪锛夛紝骞跺睍绀烘牱鏈噺锛?+- Latest Added銆乁pcoming銆丩atest Releases 浣跨敤涓嶅悓鐨勫瓧娈靛拰鎺掑簭锛?+- 鏈€鏂版潯鐩繚鎸佹湁闄愭暟閲忓苟閾炬帴鍒板畬鏁?Explorer銆? 
+-## 3. 娉ㄥ唽鐢ㄦ埛闇€姹?+鎼滅储蹇呴』鏀寔 title銆乤lias銆丳ersonnage銆丗abricant銆丼茅rie銆丣AN銆丮FC ID銆乻ource ID 鍜屽叧閿瓧锛屽苟鍏佽缁撴灉缁х画绛涢€夈€傜浉鍏虫帹鑽愩€佹悳绱€乫acet銆侀椤垫ā鍧楀拰鍏紑鍒楄〃蹇呴』鎺掗櫎闅愯棌瀹炰綋鍙婃湭杈惧彂甯冩潯浠剁殑鐢ㄦ埛鍐呭銆? 
+-### 3.1 鏀惰棌鐘舵€?+## 5. 缂栬緫銆佸鏍歌€呬笌绠＄悊鍛? 
+-鏀寔锛?+缂栬緫鑰呰礋璐?Tests & Guides 鐨勫唴瀹圭鍜屽叧绯荤淮鎶わ紱鍐呭绫诲瀷銆佸彂甯冩棩鏈熴€佸皝闈€佹鏂囧拰 Figure/Series/Personnage/Fabricant 鍏宠仈蹇呴』鍙紪杈戝苟鍙璁°€? 
+-- Own / 宸叉嫢鏈?-- Wanted / 鎯宠
+-- Ordered / 宸查璁?-- Sold / 宸插嚭鍞?-- Watch / 鍏虫敞
++瀹℃牳鑰呰礋璐ｅ浘鐗囧€欓€夈€佽鎯呭啿绐併€佺敤鎴?Avis 鍜岀敤鎴峰浘鐗囩殑浜哄伐鍒ゆ柇銆傚鏍哥晫闈㈠繀椤诲悓鏃剁粰鍑哄師濮嬭瘉鎹拰褰撳墠鏁版嵁搴撶姸鎬侊紝淇濆瓨 action銆乺eason銆乺eviewer銆佹椂闂翠笌 evidence fingerprint銆傚鏍歌€呭彲鎷掔粷銆侀殣钘忋€佽姹傝ˉ鍏呮垨鍗囩骇澶勭悊锛屼絾涓嶈兘缁曡繃鏉冮檺鐩存帴浼€犵敤鎴疯涓恒€? 
+-### 3.2 鏀惰棌璁板綍瀛楁
++绠＄悊鍛樿礋璐ｈ鑹层€佽处鍙风姸鎬併€佸唴瀹瑰彲瑙佹€с€佸鏍哥瓥鐣ヤ笌鍙楁帶鍙戝竷銆傜鐞嗗憳鐪嬩笉鍒版槑鏂囧瘑鐮侊紝涔熶笉寰楀皢鎵归噺鏁版嵁鎿嶄綔褰撲綔鏅€?UI 鎿嶄綔銆? 
+-姣忔潯鐢ㄦ埛鏀惰棌璁板綍鏀寔锛?+绠＄悊绔?Dashboard 搴旇兘鏌ョ湅 Figure銆佸浘鐗囥€佺敤鎴枫€丄vis/鐢ㄦ埛鍐呭銆乸ending/needs_changes 瀹℃牳銆乧rawler queued/running/failed銆佸浘鐗囪鐩栫巼鍜岃鎯呭畬鏁寸巼銆侳igure 绠＄悊闇€鏀寔鎼滅储銆佺紪杈戙€佹煡鐪?id/slug/鍏崇郴/鍥剧墖鏁?璇︽儏缂哄け涓庡鏍哥姸鎬侊紝骞跺彲璺宠嚦鍓嶅彴鍜屽搴斿鏍搁」銆備富鏁版嵁绠＄悊鑷冲皯瑕嗙洊 Category銆丗abricant銆丼eries銆丳ersonnage 鍜岀敓浜ц鑹诧紱绀惧尯鍐呭绠＄悊蹇呴』鏀寔鎼滅储銆佸叧鑱斿璞℃煡鐪嬨€侀殣钘忔垨鍒犻櫎锛屽苟鐣欎笅瀹¤璁板綍銆? 
+-- status
+-- note
+-- quantity
+-- purchasePrice
+-- purchaseDate
+-- purchaseChannel
+-- visibility
++鍥剧墖瀹℃牳鐣岄潰蹇呴』鍚屾椂鎻愪緵褰撳墠涓诲浘銆佸綋鍓嶅浘鐗囨暟銆佸畬鏁村浘搴撱€乧andidate 涓庢斁澶ч瑙堛€乧urrent vs candidate 瀵规瘮銆佹潵婧愩€佸昂瀵搞€乺iskType銆乺iskReason銆乻hared candidate warning銆丱riginal Evidence 鍜?Current State銆傚姩浣滃彧鑳借蛋 `approve_image`銆乣reject_image`銆乣keep_placeholder`銆乣request_refetch`銆乣keep_pending` 绛夊彈瀹¤璺緞銆傝鎯呭鏍稿繀椤诲睍绀哄綋鍓?description銆乻pecs銆佺己澶卞瓧娈点€佸啿绐佸瓧娈点€佸師濮嬭瘉鎹€佸綋鍓嶇姸鎬佸拰寤鸿鍔ㄤ綔锛屽苟浣跨敤 `mark_detail_ok`銆乣request_refetch`銆乣keep_pending`銆乣mark_needs_manual_edit` 澶勭悊銆? 
+-### 3.3 鐢ㄦ埛涓績
++## 6. 绀惧尯鍒嗘湡
+ 
+-鑷冲皯鍖呭惈锛?+绀惧尯涓嶆槸 P1-P5 鍓嶇殑闃诲鎬хぞ浜ょ綉缁溿€傞『搴忎负锛? 
+-- 鎴戠殑鏀惰棌
+-- 鎴戠殑鐐硅禐
+-- 鎴戠殑璇勮
+-- 鎴戠殑鏀惰棌鍒嗙粍
+-- 璐﹀彿璁剧疆
++1. Collection銆乄ishlist銆丷ating銆丄vis锛?+2. 鐢ㄦ埛瀹炴媿銆丠elpful銆佸叕寮€鏀惰棌锛?+3. 鍏虫敞銆佹椿鍔ㄦ祦銆佸窘绔犮€佹帓鍚嶃€? 
+-鍚庣画鍙鍔狅細
++姣忎竴闃舵涓婄嚎鍓嶉兘瑕佹湁涓炬姤銆侀殣钘忋€佸垹闄ゃ€侀檺娴佸拰瀹¤璺緞銆備笉瀛樺湪瓒冲鐪熷疄鍐呭鏃讹紝椤甸潰搴旈個璇风敤鎴疯础鐚紝鑰屼笉鏄埗閫犵儹搴︺€? 
+-- 鏀惰棌缁熻
+-- 鎬讳及鍊?-- 鏈堝害鍏ユ墜璁板綍
+-- 鍐嶇増鎻愰啋
+-- 浠锋牸鎻愰啋
++## 7. 閫氱敤楠屾敹
+ 
+----
+-
+-## 4. 绀惧尯浜掑姩闇€姹?-
+-### 鐐硅禐
+-
+-- 鐧诲綍鐢ㄦ埛鍙偣璧?鍙栨秷鐐硅禐
+-- 鍓嶅彴灞曠ず鏁伴噺
+-- 鍚屼竴鐢ㄦ埛瀵瑰悓涓€ Figure 涓嶅緱閲嶅鐐硅禐
+-
+-### 鏀惰棌
+-
+-- 鐧诲綍鐢ㄦ埛鍙敹钘?鍙栨秷鏀惰棌
+-- 鏀惰棌鐘舵€佷笌涓汉鏀惰棌璁板綍鍏宠仈
+-- 鍓嶅彴灞曠ず鏀惰棌浜烘暟
+-
+-### 璇勮
+-
+-瑕佹眰锛?-
+-- 鐧诲綍鍚庢墠鑳借瘎璁?-- 鏀寔缂栬緫鑷繁鐨勮瘎璁?-- 鏀寔鍒犻櫎鑷繁鐨勮瘎璁?-- 绠＄悊鍛樺彲鍒犻櫎/闅愯棌杩濊璇勮
+-- 闃插埛鍜岄鐜囬檺鍒?-- 璁板綍鍒涘缓鍜屼慨鏀规椂闂?-
+-鍚庣画鍙鍔狅細
+-
+-- 鐢ㄦ埛璇勫垎
+-- 鐑棬鏀惰棌姒?-- 鏈€杩戣瘎璁?-- 鐢ㄦ埛璐＄尞璁板綍
+-
+----
+-
+-## 5. 璇勬祴涓庡唴瀹瑰彂甯冮渶姹?-
+-杩欐槸 ModelWiki 绋冲畾鏈熺殑閲嶈涓荤嚎銆?-
+-### 鏂囩珷绫诲瀷
+-
+-鍖呮嫭浣嗕笉闄愪簬锛?-
+-- 鍗曞搧璇勬祴
+-- 寮€绠?-- 鍋氬伐/娑傝鍒嗘瀽
+-- 鍙姩鎬у垎鏋?-- 鎬т环姣斿垎鏋?-- 鍚岀郴鍒楁í鍚戝姣?-- 鏂版棫鐗堝姣?-- 绯诲垪鐩樼偣
+-- 璐拱寤鸿
+-- 鍐嶇増淇℃伅
+-- 鏀惰棌蹇冨緱
+-
+-### 鏂囩珷涓?Figure 鐨勫叧绯?-
+-璇勬祴鏂囩珷搴旇兘鍏宠仈锛?-
+-- 涓€涓?Figure
+-- 澶氫釜 Figure
+-- 涓€涓郴鍒?-- 涓€涓巶鍟?-- 涓€涓鑹?-
+-Figure 璇︽儏椤靛簲鑳藉睍绀哄叧鑱旇瘎娴嬨€?-
+-### 缂栬緫浣撻獙
+-
+-缂栬緫鑰呴渶瑕侊細
+-
+-- 鑽夌
+-- 棰勮
+-- 鍙戝竷
+-- 鏇存柊
+-- 灏侀潰鍥?-- 鍥鹃泦
+-- Figure 鍏宠仈
+-- SEO 鍩虹瀛楁
+-- 澶氳瑷€鎵╁睍鎺ュ彛锛堝悗缁級
+-
+----
+-
+-## 6. 绠＄悊鍚庡彴闇€姹?-
+-### 浠〃鐩?-
+-鏄剧ず锛?-
+-- Figure 鎬绘暟
+-- 鍥剧墖鎬绘暟
+-- 鐢ㄦ埛鏁?-- 璇勮鏁?-- pending review
+-- needs_changes review
+-- crawler queued/running/failed
+-- 鍥剧墖瑕嗙洊鐜?-- detail 瀹屾暣鐜?-
+-### Figure 绠＄悊
+-
+-鏀寔锛?-
+-- 鎼滅储
+-- 缂栬緫
+-- 鏌ョ湅 title
+-- slug/id
+-- category
+-- manufacturer
+-- series
+-- characters
+-- image count
+-- detail missing state
+-- pending review state
+-- 璺宠浆鍓嶅彴
+-- 璺宠浆瀵瑰簲瀹℃牳椤?-
+-### 鍒嗙被涓绘暟鎹鐞?-
+-鏀寔锛?-
+-- category
+-- manufacturer
+-- series
+-- character
+-- sculptor
+-
+-### Review 绠＄悊
+-
+-鍥剧墖瀹℃牳闇€瑕侊細
+-
+-- 褰撳墠涓诲浘
+-- 褰撳墠鍥剧墖鏁?-- candidate
+-- candidate 鏀惧ぇ
+-- current vs candidate 瀵规瘮
+-- source
+-- dimensions
+-- riskType
+-- riskReason
+-- sharedCandidateWarning
+-- original evidence
+-- current state
+-
+-鍔ㄤ綔锛?-
+-- approve
+-- reject
+-- keep_placeholder
+-- request_refetch
+-- keep_pending / uncertain
+-
+-璇︽儏瀹℃牳闇€瑕侊細
+-
+-- 褰撳墠 description
+-- 褰撳墠 specs
+-- missing fields
+-- conflict fields
+-- original evidence
+-- current state
+-- suggested action
+-
+-鍔ㄤ綔锛?-
+-- mark_detail_ok
+-- request_refetch
+-- keep_pending
+-- mark_needs_manual_edit
+-
+-### 鐢ㄦ埛绠＄悊
+-
+-鏀寔锛?-
+-- 鏌ョ湅鐢ㄦ埛
+-- 绂佺敤/鍚敤
+-- 淇敼瑙掕壊
+-- 鍒犻櫎娴嬭瘯璐﹀彿
+-- 閲嶇疆瀵嗙爜娴佺▼
+-
+-娑夊強瀵嗙爜鐨勬搷浣滃繀椤婚伩鍏嶇鐞嗗憳鐪嬪埌鏄庢枃瀵嗙爜銆?-
+-### 璇勮绠＄悊
+-
+-鏀寔锛?-
+-- 鍒楄〃
+-- 鎼滅储
+-- 鍒犻櫎
+-- 闅愯棌
+-- 鏌ョ湅鍏宠仈 Figure 鍜岀敤鎴?-
+----
+-
+-## 7. 楠屾敹鍘熷垯
+-
+-浠讳綍 UI 鍔熻兘涓嶈兘浠モ€滄寜閽瓨鍦ㄢ€濅负瀹屾垚鏍囧噯銆?-
+-鑷冲皯楠岃瘉锛?-
+-鎿嶄綔鍓嶇姸鎬?-鈫?瀹為檯鐐瑰嚮
+-鈫?API 杩斿洖
+-鈫?鐘舵€佸彉鍖?-鈫?椤甸潰鍒锋柊鍚庣殑缁撴灉
++浠讳綍 UI 鍔熻兘閮戒笉鑳戒互鎸夐挳瀛樺湪銆丠TTP 200 鎴?mock 鍝嶅簲浣滀负瀹屾垚鏍囧噯銆傞獙鏀跺繀椤昏褰曟搷浣滃墠鐘舵€併€佸疄闄呮搷浣溿€丄PI 鍝嶅簲銆佹寔涔呭寲鐘舵€併€丄PI readback 鍜岄〉闈㈠埛鏂板悗鐨勭粨鏋滐紱濯掍綋鍜?crawler 鐩稿叧鎿嶄綔杩橀渶楠岃瘉濯掍綋鍙敤鎬ф垨 job 鐘舵€佸強 writeback銆傛湭瑕嗙洊鐨勮矾寰勫簲鏍囦负 `NOT TESTED`锛岃€岄潪榛樿瀹屾垚銆?diff --git a/docs/02_SYSTEM_ARCHITECTURE.md b/docs/02_SYSTEM_ARCHITECTURE.md
+index 9694f2d..91caa9a 100644
+--- a/docs/02_SYSTEM_ARCHITECTURE.md
++++ b/docs/02_SYSTEM_ARCHITECTURE.md
+@@ -1,464 +1,107 @@
+ # ModelWiki 绯荤粺鏋舵瀯
+ 
+-## 1. 褰撳墠瀹炵幇鏄犲皠
++## 1. 褰撳墠鍩虹涓庣洰鏍囪竟鐣? 
+-褰撳墠浠撳簱涓昏缁撴瀯瀵瑰簲锛?+褰撳墠浠撳簱鐢?WordPress Theme锛坄modelwiki-theme/`锛夈€佺鐞嗙锛坄guanli_index.php`锛夈€乀ypeScript API锛坄mw-backend/`锛夈€丳ostgreSQL銆丷edis 涓?NAS/Browser Agent 缁勬垚銆傜幇鏈変汉宸ュ鏍搞€佸浘鐗?璇︽儏椋庨櫓銆佸€欓€夎祫浜с€佽瘉鎹笌浜哄伐鍐冲畾鏄暟鎹川閲忓熀纭€锛涘畠浠渶瑕佹寔缁獙璇侊紝涓嶅簲琚〃杩颁负鎵€鏈夌洰鏍囨ā鍨嬪潎宸茶惤鍦般€? 
+-### WordPress Theme / Frontend
++鐩爣鏋舵瀯淇濇寔 WordPress 閫傚悎缂栬緫鍜屽睍绀哄唴瀹圭殑浼樺娍锛岀敱 API/鏁版嵁搴撴壙鎷呯粨鏋勫寲鐩綍銆佽处鎴枫€佹潈闄愩€佽瘎鍒嗐€佹敹钘忋€佸鏍镐笌鍏宠仈鍏崇郴銆侾ostgreSQL 鏄暱鏈熶笟鍔′笌瀹¤浜嬪疄鏉ユ簮锛汻edis 浠呯敤浜?cache銆乺ate limit銆佺煭鏈熼槦鍒楀拰閿侊紝鍏抽敭瀹℃牳鍐冲畾涓嶅緱浠呯暀鍦?Redis銆? 
+-鐩綍锛?+Crawler/NAS Agent 鐢ㄤ簬鍙楁帶鍐峰惎鍔ㄣ€佹槑纭己澶便€佺鐞嗗憳 request_refetch 鍜屽皬瑙勬ā鏉ユ簮鏇存柊銆傚畠涓嶅緱鎴愪负鍓嶅彴涓氬姟涓績锛屼篃涓嶅緱瑕嗙洊浜哄伐纭鏁版嵁銆? 
+-`modelwiki-theme/`
++## 2. 鐩爣棰嗗煙妯″瀷
+ 
+-鑱岃矗锛?+### Catalog 涓庢湰鍦板寲
+ 
+-- 棣栭〉
+-- Browse
+-- Search
+-- Figure detail
+-- Series / Manufacturer / Sculptor 绛夐〉闈?-- 鐢ㄦ埛璐︽埛椤?-- 璇勬祴/鏂囩珷灞曠ず鑳藉姏搴旂户缁熀浜?CMS 浼樺娍鎵╁睍
++鐩爣 Figure 妯″瀷鑷冲皯鍖哄垎锛氱ǔ瀹?id/slug銆乣display_title`銆乣original_title`/`full_name`銆佽瑷€鍖栧睍绀哄瓧娈点€佸彂甯冧俊鎭€佽鏍笺€佺姸鎬佸拰鏉ユ簮銆傚睍绀哄眰浼樺厛浣跨敤娉曡瀛楁/瀛楃涓诧紱瀵煎叆鍘熸枃淇濈暀涓鸿瘉鎹紝涓嶈兘鐢ㄨ嫳鏂囧洖閫€鎮勬倓娣峰叆娉曡鐣岄潰銆? 
+-### 绠＄悊鍚庡彴鍓嶇
++鐩爣瀹炰綋鍖呮嫭 Category銆丼eries銆丳ersonnage銆丗abricant銆丟amme/浜у搧绾夸互鍙婂彲閫夌敓浜ц鑹层€侾ersonnage 鏄?P0 鍗冲簲寤虹珛鐨勬寮忓疄浣擄紝閫氳繃鍏崇郴琛ㄨ繛鎺?Figure锛涘鑸槸鍚﹀睍绀轰笉鏀瑰彉璇ユ暟鎹姹傘€? 
+-鏂囦欢锛?+Fabricant 鐩爣妯″瀷鍖呭惈 canonical record銆乧anonical name銆乶ative name銆乻lug銆乧ountry 鍜?alias records銆傚鍏ャ€佹悳绱㈠拰鍚堝苟浠?canonical id 涓哄噯锛? 鍟嗗搧瀹炰綋闇€瑕佸彲瑙佹€?鐢熷懡鍛ㄦ湡鐘舵€侊紝涓嶈兘榛樿杩涘叆鍏叡鑱氬悎缁撴灉銆侰ategory 涔熷簲鏈夌粺涓€ canonical 鍛藉悕鍜屽叧绯荤害鏉熴€? 
+-`guanli_index.php`
++### Media銆佸唴瀹逛笌鍏崇郴
+ 
+-鑱岃矗锛?+`FigureImage`/濯掍綋妯″瀷闇€瑕佺ǔ瀹氳韩浠姐€佹潵婧愮被鍨嬶紙Photos du Studio / Communaut茅 / Photos officielles锛夈€乭ash銆佸昂瀵搞€佸鏍哥姸鎬併€佹帓搴忎笌瀹夊叏灞曠ず淇℃伅銆侴allery API 鎸夋潵婧愬垎缁勶紝骞朵粠宸插鏍歌祫浜т腑閫夋嫨褰撳墠鏈€浣充富鍥撅紱缂哄浘缁熶竴杩斿洖鍙瘑鍒殑 Placeholder 鐘舵€侊紙Logo + "Photo bient么t disponible"锛夈€? 
+-- 绠＄悊鍛樼櫥褰?-- Dashboard
+-- Figure 绠＄悊
+-- Review 绠＄悊
+-- 鐢ㄦ埛绠＄悊
+-- Job 鏌ョ湅
++缂栬緫鍐呭妯″瀷鑷冲皯鍖呭惈 type锛堝 Test銆乁nboxing銆丆omparatif銆丟uide d'authenticit茅銆丟uide collectionneur銆丆ustomisation & 3D锛夈€佹爣棰樸€佽瑷€銆佺姸鎬併€佸皝闈€佹鏂?澶栭儴瑙嗛寮曠敤銆佷綔鑰呭拰鍙戝竷鏃ユ湡銆傞€氳繃鏄惧紡 relation 琛ㄨ繛鎺?Figure銆丼eries銆丳ersonnage銆丗abricant銆侰ustomisation & 3D 浠呭綋瀹為檯鍒朵綔杩囪浜у搧鐨勬敼瑁?3D 鍐呭鏃舵墠瀛樺湪鍏宠仈锛屼笉寰楄嚜鍔ㄧ敓鎴愩€係tudio 鍐呭涓庣ぞ鍖?Avis 鏄笉鍚屽煙妯″瀷鍜屼笉鍚屽彂甯冭鍒欍€? 
+-闀挎湡搴旈€愭妯″潡鍖栵紝浣嗕笉鑳戒负浜嗛噸鏋勮€岀牬鍧忕ǔ瀹?UI銆?+### 璐︽埛涓庣ぞ鍖? 
+-### API Backend
++鐩爣璐︽埛妯″瀷浠?CollectionEntry銆乄ishlistEntry銆丷ating/Avis銆乁serPhoto 鍜?Profile 涓烘牳蹇冿紝鑰屼笉鏄?Figure Like/Favorite銆俁ating/Avis 瀵?`(userId, figureId)` 鏂藉姞鍞竴绾︽潫锛屽寘鍚暣浣撹瘎鍒嗐€丼culpture銆乂isage銆丳einture銆丷apport qualit茅-prix銆佹枃鏈€佺姸鎬佸拰淇敼鏃堕棿銆傝仛鍚堢粨鏋滀繚瀛樻垨鍙绠椾负鎬诲垎銆佺淮搴﹀潎鍊煎拰鏍锋湰閲忋€? 
+-鐩綍锛?+鏃?Favorite 鍒?Wishlist銆佹棫 Like 鍒板唴瀹?Helpful/Like 鐨勮縼绉诲繀椤绘湁鏄惧紡鏄犲皠銆佸洖婊氭柟妗堝拰鐢ㄦ埛鍙悊瑙ｇ殑缁撴灉锛涗笉鍏佽鏃犺褰曞湴鍒犻櫎鎴栨贩鍚堣涔夈€? 
+-`mw-backend/`
++## 3. API 涓庨〉闈㈠绾? 
+-鎶€鏈亴璐ｏ細
++鍏叡 API 搴旀彁渚涳細
+ 
+-- API
+-- Auth
+-- Figure data
+-- Image serving
+-- Review
+-- Crawler jobs
+-- User/community APIs
+-- Redis cache
+-- PostgreSQL access
++- 鍏ㄥ眬鍗虫椂鎼滅储涓庡缓璁紝瑕嗙洊 Figure銆丼eries銆丳ersonnage銆丗abricant锛?+- Explorer 鐨勭粨鏋勫寲绛涢€夈€佹帓搴忋€佸垎椤点€佺粨鏋滄暟鍜?facet/鍊欓€夊€硷紱
++- Figure detail锛岃繑鍥炲叧绯婚潰鍖呭睉銆乨isplay/original 鏍囬銆佸垎缁?Gallery銆佽鏍笺€丼tudio 鍏宠仈鍜岀ぞ鍖鸿瘎鍒嗘憳瑕侊紱
++- 涓夌鏄庣‘鐨勫垪琛ㄨ涔夛細Latest Added銆乁pcoming銆丩atest Releases锛?+- 鍐呭璇︽儏涓庢寜瀹炰綋鍙嶆煡鐨勫叧鑱斿唴瀹广€? 
+-褰撳墠鍚庣鐩綍鍖呭惈 Prisma schema 鍜?TypeScript source锛屽簲浣滀负缁撴瀯鍖栨暟鎹拰涓氬姟瑙勫垯鐨勪富瑕佹湇鍔″眰銆?+璁よ瘉 API 搴旀彁渚涘箓绛夋垨鍘婚噸鐨?Collection銆乄ishlist銆丷ating/Avis 鎿嶄綔鍙婅处鎴疯鍙栥€傛墍鏈夊啓鎿嶄綔闇€瑕佷細璇濄€佹墍鏈夋潈鏍￠獙銆佽緭鍏ユ牎楠屽拰瀹¤锛涘叕寮€鏀惰棌鍜岀敤鎴峰浘鐗囧彧鍦ㄧ敤鎴烽€夋嫨鍏紑涓旈€氳繃鐩稿簲瀹℃牳鍚庤繑鍥炪€? 
+-### PostgreSQL
++绠＄悊鍛?瀹℃牳 API 闇€瑕佽鑹叉牎楠屻€佹渶灏忓瓧娈垫毚闇层€佸喅绛栧師鍥犮€佽瘉鎹€佸綋鍓嶇姸鎬併€乫ingerprint 鍜?readback銆傛悳绱€佸垪琛ㄥ拰鍏紑璇︽儏涓嶅緱娉勯湶琚殣钘忕殑鐢ㄦ埛鍐呭銆佸唴閮ㄥ鏍歌瘉鎹€佽崏绋挎垨绠＄悊瀛楁銆? 
+-鑱岃矗锛?+## 4. 杩佺Щ涓庡彂甯冪瓥鐣? 
+-- Figure 涓绘暟鎹?-- 鍒嗙被鍏崇郴
+-- 鍥剧墖璁板綍
+-- 鐢ㄦ埛
+-- 鏀惰棌
+-- 鐐硅禐
+-- 璇勮
+-- 璇勬祴鍏宠仈
+-- 闀挎湡瀹¤鏁版嵁
++鏂板妯″瀷椤婚€氳繃鍙洖婊氱殑 schema migration銆佺储寮曘€佹暟鎹?backfill 鍜?feature flag 鍒嗛樁娈靛彂甯冦€傚 title銆乵anufacturer銆乧ategory銆乸ersonnage銆佹敹钘忚涔夊拰鍐呭鍏崇郴鐨勮縼绉诲厛 dry-run 骞惰褰曟槧灏?鍐茬獊/鏈鐞嗛」锛屽啀 canary銆佸皬鎵归噺銆乺eadback锛屾渶鍚庢墿澶с€? 
+-### Redis
++娉曡鏈湴鍖栧簲鏈夊瓧绗︿覆娓呭崟涓庤鐩栨鏌ャ€侶ome銆丒xplorer 鍜屾鍗曠殑闃堝€笺€佹帓搴忓瓧娈靛拰鍙戝竷鏃堕棿鐘舵€佸繀椤诲湪 API 灞傛槑纭紝涓嶅緱鍙潬 Theme 涓存椂鍒ゆ柇銆? 
+-閫傚悎锛?+鍙戝竷鍓嶉渶楠岃瘉锛歮igration 鍙繍琛屻€佸叕寮€ API 濂戠害銆佹潈闄愭嫆缁濊矾寰勩€佸鏍?readback銆佹硶璇叧閿矾寰勩€佺┖鐘舵€?Placeholder銆佺紦瀛樺け鏁堝拰鐩戞帶銆傛湭楠岃瘉鑳藉姏鍙兘鏍囦负鐩爣鎴栧湪寤恒€? 
+-- cache
+-- rate limit
+-- short-lived job queue
+-- ephemeral locks
++## 5. 瀹℃牳涓庢暟鎹祦
+ 
+-涓嶅簲闀挎湡鎶婂叧閿汉宸ュ喅绛栦粎瀛樺湪 Redis銆?+鍥剧墖鍜岃鎯呴闄╄繘鍏?ReviewItem锛屼繚瀛橀闄╃被鍨嬨€佸師濮嬭瘉鎹€佸綋鍓嶇姸鎬佸揩鐓с€乧andidate identity銆乤ction銆乺eviewer銆乺eason銆乼ime 涓?evidence fingerprint銆備汉宸ュ喅瀹氶珮浜庤嚜鍔ㄨ鍒欙紱鍚屼竴 Figure/risk/fingerprint 鐨勫喅瀹氬彲鎶戝埗閲嶅椤癸紝鐘舵€併€佸浘鐗囬泦銆佸€欓€夋垨鐩稿叧璇︽儏鏀瑰彉鏃跺厑璁?reopen銆? 
+-### NAS / Browser Crawler Agent
++鍙椾俊鏉ユ簮鍙互鑷姩琛ュ叏鍚庢帴鍙楀熀纭€鏍￠獙锛涘啿绐併€佷笉纭畾鏉ユ簮銆佺ぞ鍖轰笂浼犲拰鍙枒鍥剧墖蹇呴』杩涘叆浜哄伐瀹℃牳銆備换浣曗€滄壒鍑嗏€濋兘蹇呴』鍙拷婧埌瀹℃牳鑰呭疄闄呯湅鍒板苟纭鐨勫悓涓€濯掍綋韬唤銆? 
+-鏂囦欢锛?+## 6. 褰撳墠瀹炵幇鏄犲皠涓庢湇鍔¤亴璐? 
+-`nas_crawler_agent.py`
++| 灞?| 褰撳墠浣嶇疆/鏈嶅姟 | 蹇呴』鎵挎媴鐨勮亴璐?| 涓嶅簲鎵挎媴鐨勮亴璐?|
++| --- | --- | --- | --- |
++| Public Frontend | `modelwiki-theme/` | Home銆丅rowse/Search銆丗igure 涓庡疄浣撻〉銆佽处鎴烽〉銆丆MS 鍐呭鍛堢幇 | 浠?Theme 涓存椂鍒ゆ柇瀹氫箟涓氬姟鐘舵€併€佹潈闄愭垨鍒楄〃璇箟 |
++| Admin / Reviewer | `guanli_index.php` | 绠＄悊鍛樼櫥褰曘€丏ashboard銆丗igure銆丷eview銆佺敤鎴蜂笌 Job 鏌ョ湅 | 涓洪噸鏋勮€岀牬鍧忕ǔ瀹?UI锛屾垨缁曡繃 API 鐩存帴浼€犱笟鍔＄粨鏋?|
++| API / Domain | `mw-backend/`锛圥risma schema + TypeScript source锛?| Auth銆佺粨鏋勫寲鐩綍銆佸浘鐗囨湇鍔°€佸鏍搞€乧rawler job銆佽处鎴?绀惧尯 API銆佷笟鍔℃牎楠?| 鎶婅闂帶鍒舵垨浜嬪疄鏉ユ簮涓嬫斁缁欏鎴风 |
++| PostgreSQL | 涓氬姟鏁版嵁搴?| Figure 涓绘暟鎹€佸叧绯汇€佸獟浣撱€佺敤鎴枫€佹敹钘忋€丄vis銆佸唴瀹瑰叧鑱斻€佸鏍稿喅瀹氬拰闀挎湡瀹¤ | 琚?Redis 鎴栦复鏃舵枃浠舵浛浠ｄ负鏈€缁堜簨瀹炴潵婧?|
++| Redis | cache銆乺ate limit銆佺煭鏈熼槦鍒椼€佺煭閿?| 鍔犻€熷拰鐭敓鍛藉懆鏈熷崗璋?| 鍗曠嫭淇濆瓨鍏抽敭浜哄伐鍐冲畾鎴栭暱鏈熷璁?|
++| NAS / Browser Agent | `nas_crawler_agent.py` | 娴忚鍣ㄦ姄鍙栥€佸皬瑙勬ā refetch銆佸喎鍚姩閲囬泦銆佸浘鐗囪幏鍙栥€乯ob claim 涓庣粨鏋滃啓鍥?| 浣滀负闀挎湡鍓嶅彴涓氬姟涓績鎴栬鐩栦汉宸ョ‘璁ゆ暟鎹?|
+ 
+-鑱岃矗锛?+## 7. 妯″潡涓庢寔涔呭寲濂戠害
+ 
+-- 娴忚鍣ㄨ兘鍔涙姄鍙?-- 灏忚妯?refetch
+-- 鍐峰惎鍔ㄦ暟鎹噰闆?-- 鍥剧墖鑾峰彇
+-- job claim
+-- job result 鍐欏洖
++Identity & Access 璐熻矗娉ㄥ唽銆佺櫥褰曘€佹敼瀵嗐€佽鑹层€佽处鍙风姸鎬併€乻ession/token 涓庡璁°€傝鑹茶嚦灏戜负 visitor銆乽ser銆乪ditor銆乵oderator/reviewer銆乤dmin锛涙潈闄愬彧鑳界敱 API 鏈嶅姟绔牎楠屻€? 
+-涓嶅簲鎴愪负缃戠珯闀挎湡涓讳笟鍔′腑蹇冦€?+Catalog 闄ょ洰鏍囨ā鍨嬪杩樺簲淇濇寔 aliases銆乸roduct kind銆佸垎绫汇€丗abricant锛堝惈 canonical name銆乶ative name銆乻lug銆乧ountry銆乤lias records锛夈€丼eries銆丳ersonnage銆佺敓浜ц鑹层€佸彂鍞€佷环鏍笺€佹瘮渚?鏉愯川/楂樺害鍜?source identity銆傝鏍兼寜 `Informations g茅n茅rales`銆乣Caract茅ristiques`銆乣Sortie`銆乣Production` 鍒嗙粍銆傛瘡涓柊鏈湴鍖栧瓧娈垫垨鍏崇郴搴旀湁绋冲畾 id銆佹潵婧愬拰鍙樻洿璁板綍锛屼笉鑳戒粎闈犲睍绀烘枃瀛楀缓绔嬩簨瀹炪€? 
+----
+-
+-## 2. 鐩爣閫昏緫鏋舵瀯
+-
+-```text
+-                   鈹屸攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹?-                   鈹? Public Frontend     鈹?-                   鈹? WordPress Theme     鈹?-                   鈹斺攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹?-                              鈹?-                              鈻?-                   鈹屸攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹?-                   鈹?  API / Domain       鈹?-                   鈹?  TypeScript         鈹?-                   鈹斺攢鈹€鈹€鈹€鈹€鈹攢鈹€鈹€鈹€鈹€鈹€鈹€鈹攢鈹€鈹€鈹€鈹€鈹€鈹?-                         鈹?      鈹?-              鈹屸攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹?      鈹斺攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹?-              鈻?                            鈻?-      鈹屸攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹?             鈹屸攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹?-      鈹?PostgreSQL    鈹?             鈹?Redis         鈹?-      鈹?source truth  鈹?             鈹?cache/jobs    鈹?-      鈹斺攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹?             鈹斺攢鈹€鈹€鈹€鈹€鈹€鈹攢鈹€鈹€鈹€鈹€鈹€鈹€鈹?-                                           鈹?-                                           鈻?-                                  鈹屸攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹?-                                  鈹?NAS/Browser Agent鈹?-                                  鈹?cold start/refetch鈹?-                                  鈹斺攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹?-
+-                   鈹屸攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹?-                   鈹?Admin / Reviewer     鈹?-                   鈹?Human decision       鈹?-                   鈹斺攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹攢鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹?-                              鈹?-                              鈻?-                   API / Review workflow
+-```
+-
+----
+-
+-## 3. 妯″潡鍒掑垎
+-
+-### 3.1 Identity & Access
+-
+-璐熻矗锛?-
+-- registration
+-- login
+-- password change
+-- role
+-- account status
+-- token/session
+-- audit
+-
+-瑙掕壊锛?-
+-- visitor
+-- user
+-- editor
+-- admin
+-
+-### 3.2 Figure Catalog
+-
+-璐熻矗锛?-
+-- Figure 涓绘暟鎹?-- aliases
+-- product kind
+-- category
+-- manufacturer
+-- series
+-- character
+-- sculptor
+-- release
+-- price
+-- scale/material/height
+-- source identity
+-
+-### 3.3 Media & Image
+-
+-璐熻矗锛?-
+-- primary image
+-- gallery
+-- source metadata
+-- dimensions
+-- hash
+-- quality flag
+-- safe display
+-- candidate asset
+-- thumbnail/detail derivative
+-
+-### 3.4 Community
+-
+-璐熻矗锛?-
+-- likes
+-- favorites
+-- comments
+-- collection states
+-- personal collection metadata
+-
+-### 3.5 Editorial Content
+-
+-璐熻矗锛?-
+-- review article
+-- guide
+-- comparison
+-- news/update
+-- article 鈫?Figure relation
+-- article 鈫?Series/Manufacturer relation
+-
+-### 3.6 Review Workflow
+-
+-璐熻矗锛?-
+-- risk item
+-- evidence
+-- current state
+-- decision
+-- reviewer
+-- decision time
+-- suppression/reopen
+-
+-### 3.7 Crawler Jobs
+-
+-璐熻矗锛?-
+-- job create
+-- claim
+-- running
+-- completed/failed
+-- result summary
+-- retry/deferred
+-- small canary
+-
+-### 3.8 Search & Discovery
+-
+-璐熻矗锛?-
+-- keyword
+-- structured filters
+-- relevance
+-- recommendations
+-- trending signals
+-
+----
+-
+-## 4. 鏁版嵁婧愪紭鍏堢骇
+-
+-### 鍥剧墖
+-
+-#### 浣庨闄╁彲淇℃潵婧?-
+-渚嬪锛?-
+-- 瀹樻柟鍘傚晢
+-- 鏄庣‘鍙俊 retailer
+-- 宸查獙璇?structured source
+-
+-鍙互鑷姩杩涘叆鍥惧簱锛屼絾浠嶉渶鍩虹瀹夊叏鏍￠獙銆?-
+-#### 楂橀闄╂潵婧?-
+-渚嬪锛?-
+-- MFC user upload
+-- 鍏变韩 candidate
+-- 涓嶇‘瀹氭潵婧?-- 鐤戜技鐜╁鎴块棿
+-- 灞曠ず鏌?-- 鍚堥泦鍥?-- 瀹ｄ紶妯箙
+-
+-蹇呴』杩涘叆 review銆?-
+-### 璇︽儏
+-
+-#### 鍙俊缁撴瀯鍖栨潵婧?-
+-鍙互鑷姩鍐欏叆銆?-
+-#### 鍐茬獊/绋€鐤?寮傚父
+-
+-杩涘叆 detail_review銆?-
+----
+-
+-## 5. Review 鏁版嵁妯″瀷寤鸿
+-
+-ReviewItem 搴旇嚦灏戝寘鍚細
+-
+-- id
+-- figureId
+-- riskType
+-- status
+-- source
+-- riskReason
+-- originalEvidence
+-- currentStateSnapshot
+-- candidateAssetId / candidateImage
+-- createdAt
+-- updatedAt
+-- lastAction
+-- reviewerId
+-- decisionReason
+-- decisionAt
+-- evidenceFingerprint
+-
+-鐘舵€佸缓璁細
+-
+-- pending
+-- needs_changes
+-- resolved
+-- rejected
+-- archived
+-
+-`all` 鍙兘浣滀负鏌ヨ鍙傛暟锛屼笉鑳芥寔涔呭寲銆?-
+----
+-
+-## 6. Human Decision 瑙勫垯
+-
+-### 鏍稿績瑙勫垯
+-
+-浜哄伐鍐冲畾楂樹簬鑷姩瑙勫垯銆?-
+-### 鍥剧墖鏁伴噺瑙勫垯
+-
+-鏈哄櫒鍙洜 `<3 images` 瑙﹀彂 review銆?-
+-浣嗕汉宸ョ‘璁や竴寮犻珮璐ㄩ噺銆佸彲闈犲浘鐗囪冻澶熸椂锛屽彲浠?resolved銆?-
+-### Evidence Fingerprint
+-
+-寤鸿锛?+Media 闇€缁存姢 primary image銆乬allery銆佹潵婧?metadata銆乨imensions銆乭ash銆佽川閲?瀹℃牳 flag銆佸畨鍏ㄥ睍绀轰俊鎭笌缂╃暐鍥?璇︽儏娲剧敓鍥俱€傚€欓€夊獟浣撻摼涓ユ牸涓猴細
+ 
+ ```text
+-hash(
+-  figureId
+-  + riskType
+-  + primaryImageId
+-  + sorted(imageIds)
+-  + candidateAssetHash
+-  + risk-relevant detail fields
+-)
++source URL -> browser/NAS fetch -> review cache -> server validation
++-> candidateAsset identity -> ReviewItem -> preview/lightbox -> approve -> FigureImage
+ ```
+ 
+-瑙勫垯锛?-
+-- 鍚?figure + risk + fingerprint 宸叉湁浜哄伐鍐冲畾 鈫?suppress
+-- fingerprint 鍙樺寲 鈫?鍏佽 reopen/new review
+-- approved image 鍒犻櫎/澶辨晥 鈫?鍏佽 reopen
+-- 褰撳墠鐘舵€佹伓鍖?鈫?鍏佽 reopen
+-
+----
+-
+-## 7. Crawler 鍐峰惎鍔ㄦ灦鏋?-
+-Crawler 鍒嗕袱涓椂鏈熴€?-
+-### 鍐峰惎鍔ㄦ湡
++瀹℃牳鑰呴瑙堢殑 candidate銆佹壒鍑嗙殑 candidate 鍜屾渶缁堝啓鍏ョ殑濯掍綋蹇呴』鏄悓涓€绋冲畾 identity锛岀姝㈠鏍?A 鑰屽睍绀烘垨鍐欏叆 B銆? 
+-鐩爣锛?+ReviewItem 鑷冲皯鎸佷箙鍖?`id`銆乣figureId`銆乣riskType`銆乣status`銆乣source`銆乣riskReason`銆乣originalEvidence`銆乣currentStateSnapshot`銆乣candidateAssetId`/`candidateImage`銆乣createdAt`銆乣updatedAt`銆乣lastAction`銆乣reviewerId`銆乣decisionReason`銆乣decisionAt`銆乣evidenceFingerprint`銆傛寔涔呭寲鐘舵€佸彧鑳芥槸 `pending`銆乣needs_changes`銆乣resolved`銆乣rejected`銆乣archived`锛沗all` 鍙彲浣滀负鏌ヨ鍙傛暟銆? 
+-- 寤哄熀纭€鐩綍
+-- 琛ヤ富瑕佹潵婧?-- 寤哄浘鐗囧拰瑙勬牸
+-- 鍙戠幇椋庨櫓
++## 8. 鏁版嵁鏉ユ簮銆佹寚绾逛笌 crawler 鐘舵€佹満
+ 
+-鐗圭偣锛?+瀹樻柟鍘傚晢銆佸彲淇￠浂鍞晢鍜岄獙璇佽繃鐨勭粨鏋勫寲鏉ユ簮鍙粡鍩虹鏍￠獙鑷姩鍐欏叆锛涚ぞ鍖轰笂浼犮€佷笉纭畾鏉ユ簮銆佸叡浜€欓€夊強鐤戜技鎴块棿銆佸睍绀烘煖銆佸悎闆嗘垨妯箙鍥惧繀椤诲厛瀹℃牳銆傝鎯呯殑鍙俊缁撴瀯鍖栨潵婧愬彲鑷姩鍐欏叆锛屽啿绐併€佺█鐤忔垨寮傚父鍊艰繘鍏?detail review銆? 
+-- 灏忔壒娆?-- 鍙拷韪?-- 楂樺け璐ュ蹇?-- review queue 杈冨
++Fingerprint 搴旂敱 `figureId + riskType + primaryImageId + sorted(imageIds) + candidateAssetHash + 椋庨櫓鐩稿叧璇︽儏瀛楁` 鐨勭ǔ瀹氬搱甯屾瀯鎴愶紝涓斾笉寰椾緷璧栦細杩囨湡鐨?signed URL銆傚悓 Figure銆乺isk 鍜?fingerprint 鐨勬棦鏈変汉宸ュ喅瀹氬繀椤?suppress锛沠ingerprint 鏀瑰彉銆佸凡鎵瑰噯鍥剧墖鍒犻櫎/澶辨晥鎴栧綋鍓嶇姸鎬佹伓鍖栧彲 reopen銆? 
+-### 绋冲畾杩愯惀鏈?-
+-Crawler 閫€灞呰緟鍔╄鑹层€?-
+-涓昏瑙﹀彂锛?-
+-- 绠＄悊鍛?request_refetch
+-- 鏄庣‘缂哄け
+-- 鏉ユ簮鏇存柊
+-- 灏戦噺瀹氭湡楠岃瘉
+-- 鏂板鍟嗗搧瀵煎叆
+-
+-闀挎湡涓嶅簲渚濊禆鈥滃ぇ瑙勬ā鑷姩鐖彇鈥濈淮鎸佸唴瀹硅川閲忋€?-
+----
+-
+-## 8. Crawler 鐘舵€佹満
+-
+-蹇呴』涓ユ牸锛?+Crawler job 蹇呴』涓ユ牸娴佽浆锛? 
+ ```text
+-created
+-鈫?queued
+-鈫?claimed
+-鈫?running
+-鈫?completed | failed | deferred
++created -> queued -> claimed -> running -> completed | failed | deferred
+ ```
+ 
+-绂佹鐘舵€佸伔鎹細
+-
+-- created 鈮?executed
+-- queued 鈮?completed
+-- HTTP 200 鈮?data correct
+-- payload correct 鈮?crawler closure
+-
+----
+-
+-## 9. Candidate Asset Contract
+-
+-鐩爣锛?-
+-```text
+-source URL
+-鈫?browser/NAS fetch
+-鈫?upload review cache
+-鈫?server validation
+-鈫?candidateAsset identity
+-鈫?review item
+-鈫?preview/lightbox
+-鈫?approve
+-鈫?official FigureImage
+-```
+-
+-蹇呴』淇濊瘉锛?-
+-> reviewer 鐪嬪埌鐨?candidate = approve 鐨?candidate = 鏈€缁堝啓鍏ョ殑 image identity
+-
+-绂佹锛?-
+-- review candidate A
+-- agent 涓婁紶 B
+-- 瀹℃牳鍛樼湅鍒?B
+-- approve A
+-
+----
+-
+-## 10. Article / Review Content Architecture
+-
+-寤鸿璇勬祴鏂囩珷缁х画鍒╃敤 WordPress 鍐呭缂栬緫鑳藉姏銆?-
+-API/DB 缁存姢缁撴瀯鍖栧叧鑱旓細
+-
+-- articleId
+-- figureIds
+-- seriesIds
+-- manufacturerIds
+-- characterIds
+-- articleType
++created 涓嶇瓑浜庡凡鎵ц锛宷ueued 涓嶇瓑浜?completed锛孒TTP 200 鎴?payload 姝ｇ‘涓嶇瓑浜庢暟鎹纭垨瀹℃牳闂幆銆傚喎鍚姩涓庣ǔ瀹氳繍钀ラ兘蹇呴』灏忔壒銆佸彲杩借釜锛涚ǔ瀹氭湡鍙敤浜庢柊澧炲鍏ャ€佹槑纭己澶便€佺鐞嗗憳 request_refetch銆佸皯閲忔潵婧愭洿鏂板拰楠岃瘉銆? 
+-Figure detail API 鍙繑鍥?relatedArticles銆?+## 9. 瀹炴柦涓庤鍐欒竟鐣? 
+-杩欐牱锛?+鍏叡璇︽儏銆佹悳绱㈠拰鍒楄〃 API 鍙宸插彂甯冧笖瀵瑰綋鍓嶈姹傝€呭彲瑙佺殑鏁版嵁锛屽苟杩斿洖缁撴瀯鍖栧垎椤点€佺粨鏋滄暟銆乫acet/鍊欓€夊€煎拰鏄庣‘鐨勬帓搴忓瓧娈碉紱璁よ瘉鍐?API 瀵?Collection銆乄ishlist銆丷ating/Avis 浣跨敤浼氳瘽銆佹墍鏈夋潈鏍￠獙銆佽緭鍏ユ牎楠屼笌骞傜瓑/鍘婚噸銆傝瘎鍒嗚仛鍚堝彧璁＄畻绗﹀悎鍙戝竷瑙勫垯鐨勮褰曪紝瀹㈡埛绔笉鑳芥彁浜よ仛鍚堝垎鏁般€佹牱鏈噺銆佸鏍哥姸鎬併€佹墍鏈夎€呮垨瀹炰綋鍏崇郴 id銆? 
+-- WordPress 璐熻矗缂栬緫浣撻獙鍜屾枃绔犲憟鐜?-- Backend 璐熻矗缁撴瀯鍖栧叧鑱斿拰绀惧尯鏁版嵁
++Admin/Review API 浣跨敤瑙掕壊鏍￠獙鍜屾渶灏忓瓧娈垫毚闇诧紝淇濆瓨 action銆乺eason銆乺eviewer銆乼ime銆乪vidence銆乧urrent state銆乫ingerprint锛屽苟鍦ㄥ啓鍏ュ悗鎻愪緵 readback銆傛悳绱€乫acet銆佽嚜鍔ㄥ缓璁€侀椤垫鍗曞拰鍏紑璇︽儏閮戒笉寰楁硠闇查殣钘忕敤鎴峰唴瀹广€佸唴閮ㄥ鏍歌瘉鎹€佽崏绋挎垨绠＄悊瀛楁銆傛柊 schema 涓?backfill 蹇呴』鍖呭惈绱㈠紩銆佹槧灏?鍐茬獊/鏈鐞嗛」鎶ュ憡銆乨ry-run銆乧anary銆乺eadback 涓庡洖婊氭垨琛ユ晳璺緞銆?diff --git a/docs/03_CONTENT_GOVERNANCE_AND_REVIEW.md b/docs/03_CONTENT_GOVERNANCE_AND_REVIEW.md
+index 4b15c3c..72f7ab6 100644
+--- a/docs/03_CONTENT_GOVERNANCE_AND_REVIEW.md
++++ b/docs/03_CONTENT_GOVERNANCE_AND_REVIEW.md
+@@ -1,275 +1,55 @@
+ # 鍐呭娌荤悊涓庝汉宸ュ鏍? 
+-## 1. 鍘熷垯
++## 1. 瑙掕壊涓庡師鍒? 
+-鏈哄櫒璐熻矗锛?+鏈哄櫒璐熻矗鍙戠幇椋庨櫓銆佷繚鐣欒瘉鎹€佸缓璁姩浣滃拰鏈夐檺鑷姩琛ュ叏锛涗汉宸ヨ礋璐ｅ垽鏂彲鎺ュ彈鎬с€佽В鍐冲啿绐併€佸喅瀹氬彂甯冩垨鎷掔粷銆備汉宸ュ喅瀹氭槸鏈€缁堝厹搴曪紝浣嗗繀椤绘湁鐞嗙敱銆佽韩浠姐€佹椂闂淬€佸綋鍓嶇姸鎬佸拰鍙鏍哥殑璇佹嵁銆? 
+-- 鍙戠幇椋庨櫓
+-- 鎻愪緵璇佹嵁
+-- 寤鸿鎿嶄綔
+-- 灏戦噺鑷姩琛ュ叏
++褰撳墠瀹℃牳娌荤悊鏄柊浜у搧鐨勬暟鎹熀纭€锛氬畠淇濇姢 Gallery銆佽鏍笺€丼tudio 鍐呭鍜屾湭鏉ョ敤鎴疯础鐚殑鍙俊搴︺€傚畠涓嶆剰鍛崇潃鏂拌鎯呴〉銆佽处鎴枫€佸唴瀹圭郴缁熸垨绀惧尯宸茬粡涓婄嚎銆? 
+-浜哄伐璐熻矗锛?+## 2. 鍥剧墖涓庤鎯呭鏍? 
+-- 鍒ゆ柇鍐呭鏄惁鍙帴鍙?-- 澶勭悊妯＄硦妗堜緥
+-- 瑙ｅ喅鏉ユ簮鍐茬獊
+-- 鍐冲畾鏄惁鍙戝竷
++鍥剧墖椋庨櫓鍖呮嫭缂哄浘銆佷綆鏁伴噺銆佷綆璐ㄩ噺銆佺缉鐣ュ浘銆佹埧闂?灞曠ず鏌?鍚堥泦鍥俱€佸浼犲浘銆佷笉鍙俊鏉ユ簮銆佸叡浜€欓€夋垨 candidate mismatch銆傚鏍搁〉蹇呴』鏄剧ず Figure 鏍囪瘑涓庢爣棰樸€佸綋鍓嶄富鍥惧拰鍥惧簱銆佸€欓€夋斁澶ч瑙堛€佹潵婧愩€佸昂瀵搞€侀闄╃悊鐢便€佸師濮嬭瘉鎹拰褰撳墠鐘舵€併€? 
+-浜哄伐鍐冲畾鏄渶缁堝厹搴曘€?+鍏佽鐨勪汉宸ュ姩浣滆嚦灏戝寘鎷?`approve_image`銆乣reject_image`銆乣keep_placeholder`銆乣request_refetch`銆乣keep_pending`銆傚浘鐗囧皯浜庤嚜鍔ㄩ槇鍊间笉绛変簬涓嶈兘鍙戝竷锛氫竴寮犲唴瀹圭浉鍏炽€佽川閲忚冻澶熴€佹潵婧愬彲淇℃垨浜哄伐纭涓旂ǔ瀹氬彲鏄剧ず鐨勫浘鐗囧彲浠ヨ resolved銆? 
+----
++璇︽儏瀹℃牳澶勭悊 description銆佽鏍笺€佸垎绫汇€丗abricant銆佸彂甯冩棩鏈熷強鏉ユ簮鍐茬獊銆俇I 蹇呴』鍖哄垎 Original Evidence 鍜?Current State锛涙棫 snapshot 涓嶈兘闀挎湡鍐掑厖褰撳墠浜嬪疄銆傚姩浣滃寘鎷?`mark_detail_ok`銆乣request_refetch`銆乣keep_pending`銆乣mark_needs_manual_edit`銆? 
+-## 2. 鍥剧墖瀹℃牳
++## 3. 鍐崇瓥璁板繂涓?reopen
+ 
+-### 瑙﹀彂鏉′欢
++ReviewItem/Decision 鑷冲皯淇濈暀 figure銆乺isk type銆乧andidate identity銆佸師濮嬭瘉鎹€佸綋鍓嶇姸鎬併€乤ction銆乻tatus銆乺eviewer銆乨ecision reason銆乨ecision time 涓?`evidenceFingerprint`銆? 
+-鍖呮嫭锛?+鍚屼竴 figure + risk type + fingerprint 宸叉湁浜哄伐 resolved/rejected/keep 鍐冲畾鏃讹紝鑷姩鎵弿涓嶅緱鐢熸垚鍚屼竴瀹℃牳椤广€備互涓嬫儏鍐靛厑璁?reopen 鎴栨柊寤洪」锛氫富鍥惧彉鍖栥€佸浘鐗囬泦鍚堝彉鍖栥€佹壒鍑嗗浘鐗囧垹闄?澶辨晥銆佸€欓€夊彉鍖栥€佺浉鍏宠鎯呭瓧娈靛彉鍖栨垨浜哄伐鏄庣‘ reopen銆俧ingerprint 涓嶅緱渚濊禆浼氳繃鏈熺殑 signed URL銆? 
+-- image_missing
+-- image_low_count
+-- image_low_quality
+-- thumbnail_only
+-- possible_room_photo
+-- possible_display_case
+-- possible_collection_photo
+-- shared_candidate
+-- untrusted_source
+-- candidate_mismatch
++## 4. Studio銆丄vis 涓庣敤鎴峰浘鐗? 
+-### 瀹℃牳椤甸潰蹇呴』鏄剧ず
++Phoebus Studio 鐨?Test銆乁nboxing銆丆omparatif銆丟uide d'authenticit茅銆丟uide collectionneur 鍜?Customisation & 3D 鏄紪杈戝唴瀹癸紱绀惧尯 Avis 鏄敤鎴疯瘎浠凤紝涓よ€呭繀椤诲垎寮€鍛堢幇銆佸瓨鍌ㄥ拰瀹℃牳銆侰ustomisation & 3D 浠呭綋瀹為檯鍒朵綔杩囪浜у搧鐨勬敼瑁?3D 鍐呭鏃舵墠鏄剧ず鍏宠仈锛屼笉寰楄嚜鍔ㄧ敓鎴愩€係tudio 鍐呭涓?Figure/Series/Personnage/Fabricant 鐨勫叧鑱斿繀椤绘槸缁撴瀯鍖栧叧绯伙紝涓嶈兘浠呯暀鍦ㄦ枃绔犳鏂囥€? 
+-- 褰撳墠 Figure title
+-- figureId
+-- slug
+-- 褰撳墠涓诲浘
+-- 褰撳墠鍥剧墖鏁?-- 褰撳墠鍥惧簱
+-- candidate
+-- candidate 鏀惧ぇ
+-- source
+-- dimensions
+-- riskType
+-- riskReason
+-- shared warning
+-- original evidence
+-- current state
++绀惧尯 Avis 鍙寘鍚竴浠芥€讳綋璇勫垎銆? 涓淮搴︺€佹枃瀛楀拰鍚庣画瀹炴媿銆傜敤鎴峰涓€涓?Figure 鍙湁涓€浠藉彲鏇存柊鐨?Avis/Rating銆傚叕寮€鍓嶅簲鏀寔 pending銆乸ublished銆乭idden銆乺emoved 绛夋槑纭姸鎬侊紱鑱氬悎璇勫垎鍙绠楃鍚堝彂甯冭鍒欑殑璁板綍锛屽苟鏄剧ず鏍锋湰閲忋€? 
+-### 浜哄伐鍔ㄤ綔
++鐢ㄦ埛瀹炴媿銆丄vis銆丠elpful銆佸叕寮€鏀惰棌鎸夌ぞ鍖洪樁娈典笂绾裤€傛瘡绫荤敤鎴疯础鐚繀椤绘湁涓炬姤鍏ュ彛銆侀檺娴併€佸弽鍨冨溇绛栫暐銆佸鏍?闅愯棌鍔ㄤ綔鍜屽璁★紱琚殣钘忔垨鍒犻櫎鐨勫唴瀹逛笉寰楃户缁嚭鐜板湪鎼滅储銆佽鎯呰仛鍚堟垨棣栭〉妯″潡銆? 
+-- approve_image
+-- reject_image
+-- keep_placeholder
+-- request_refetch
+-- keep_pending
++## 5. 鍐呭鍙戝竷涓庡喎鍚姩
+ 
+-### 鍏佽鏀惧
++Tests & Guides 鐨勬瘡绡囧唴瀹癸紙Test銆乁nboxing銆丆omparatif銆丟uide d'authenticit茅銆丟uide collectionneur銆丆ustomisation & 3D锛夐』鎷ユ湁鐙珛椤甸潰銆佺紪杈戠姸鎬併€佽瑷€銆佺被鍨嬨€佷綔鑰?鏉ユ簮銆佸彂甯冩棩鏈熴€佸皝闈㈠拰缁撴瀯鍖栧叧鑱斻€傞椤靛彧灞曠ず宸插彂甯冧笖鏈夊悎娉曞皝闈㈢殑鍐呭锛屼笉鎵归噺宓屽叆绗笁鏂规挱鏀惧櫒銆? 
+-鍗充娇 image count 灏戜簬鏈哄櫒闃堝€硷紝鍙锛?+绀惧尯妯″潡鍜岃瘎鍒嗘鍗曢渶瑕佷骇鍝佸畾涔夌殑鏈€灏忕湡瀹炴暟鎹槇鍊笺€傞槇鍊兼湭杈惧埌鏃舵樉绀鸿础鐚個璇锋垨闅愯棌妯″潡锛涗笉寰椾互 0/1 鏉″唴瀹广€佸崟涓瘎鍒嗘垨娴嬭瘯鏁版嵁浼绀惧尯娲昏穬銆? 
+-- 鍥剧墖鍐呭鏄庣‘鐩稿叧
+-- 璐ㄩ噺瓒冲
+-- 鏉ユ簮鍙俊鎴栫粡浜哄伐纭
+-- 鍙ǔ瀹氭樉绀?+Latest Added銆乁pcoming 鍜?Latest Releases 闇€瑕佺敱鍚庣鏄庣‘鏁版嵁鏉ユ簮鍜屾帓搴忚涔夛紝瀹℃牳鑰呭彲杩芥函寮傚父鏉＄洰鐨勭姸鎬佸拰鏉ユ簮銆? 
+-浜哄伐鍙互 resolved銆?+## 6. 瀹¤闂幆
+ 
+----
++浠讳綍瀹℃牳鎴栧彂甯冨姩浣滅殑璇佹嵁鏈€灏戜负锛氭搷浣滃墠鐘舵€?-> action/API 鍝嶅簲 -> 鎸佷箙鍖栫姸鎬?-> API readback -> 椤甸潰鍒锋柊缁撴灉銆傛秹鍙婂浘鐗囪繕闇€纭濯掍綋 endpoint銆丠TTP status銆乧ontent type銆佸昂瀵稿拰蹇呰鐨勮瑙夋鏌ャ€? 
+-## 3. 璇︽儏瀹℃牳
++鏃ч槦鍒椾笉寰楃矖鏆存竻绌恒€傚厛 dry-run 鍒嗙被涓?still exists銆乤lready fixed銆乨uplicate review銆乫igure missing 鎴?insufficient evidence锛屽啀璁板綍 before/classification/after 缁熻骞朵繚鎸佹€诲拰鑷唇銆? 
+-### 瑙﹀彂鏉′欢
++## 7. 鏉ユ簮鍒嗙骇銆佽瑙夋爣鍑嗕笌鐘舵€佽瘉鎹? 
+-- description missing
+-- description too short
+-- sparse specs
+-- invalid field value
+-- category conflict
+-- manufacturer conflict
+-- release date conflict
+-- source disagreement
++Tier 1 鏄畼鏂规垨鏄庣‘鍙俊鐨勭粨鏋勫寲鏉ユ簮锛屽彲鑷姩鍐欏叆鎴栧湪鍩虹鏍￠獙鍚庡彂甯冿紱Tier 2 鏄彲淇￠浂鍞晢锛屽彲鑷姩琛ュ叏浣嗗湪鏉ユ簮鍐茬獊鏃跺繀椤昏繘鍏ュ鏍革紱Tier 3 鏄ぞ鍖轰笂浼犮€佺敤鎴峰浘鐗囧拰涓嶇‘瀹氭潵婧愶紝蹇呴』浠?candidate 杩涘叆浜哄伐瑙嗚鍒ゆ柇銆傝嚜鍔ㄨ鍒欏彲鍋忓悜鍙洖锛屼緥濡傚皯浜庝笁寮犲浘鍒涘缓椋庨櫓椤癸紱浜哄伐鎺ュ彈瑙勫垯鍙互鏇翠弗鏍兼垨鏇寸伒娲伙紝浣嗕笉寰楄鍚庣画鎵弿鍙嶅悜瑕嗙洊銆? 
+-### UI 蹇呴』鍒嗗紑
++瑙嗚瀹℃牳蹇呴』灏嗗€欓€夊綊绫讳负 normal product image銆乼humbnail銆乺oom photo銆乨isplay case銆乧ollection photo銆乸romotional banner銆乽nrelated 鎴?uncertain銆備笉寰楀彧鍑?`sourceKind`銆佸楂樸€乁RL 鍩熷悕鎴栧浘鐗囨暟閲忔帹鏂瑙夎川閲忋€傚€欓€夊獟浣撳繀椤讳繚鎸佺ǔ瀹?identity锛氬鏍歌€呯湅鍒般€佹壒鍑嗗拰鏈€缁堝睍绀虹殑璧勪骇瀹屽叏涓€鑷达紱璧勪骇鏇挎崲闇€鐣欎笅瀹¤锛屽苟鍦ㄩ€傜敤鏃?reopen銆? 
+-#### Original Evidence
++璇佹嵁鐘舵€佸彧鑳芥爣璁颁负 `VERIFIED`銆乣PARTIAL`銆乣FAILED`銆乣NOT TESTED` 鎴?`INCONSISTENT`銆俙VERIFIED` 瑕佹眰浠ｇ爜銆佽繍琛岀粨鏋滀笌涓氬姟鐘舵€佷竴鑷达紱鍏朵綑鍒嗗埆琛ㄧず闂幆涓嶈冻銆佺湡瀹為獙璇佸け璐ャ€佹棤鐪熷疄鎵ц璇佹嵁銆佹垨鎶ュ憡/浠ｇ爜/API/DB/缁熻鐭涚浘銆備笉寰楁妸 created/queued銆佹寜閽€丠TTP 200銆乸ayload銆乻ourceType銆乵ock 鎴栨墜宸?DB 鐘舵€佽〃杩颁负瀹屾垚銆? 
+-闂鍙戠幇鏃剁殑璇佹嵁銆?+## 8. Crawler 涓庡彂甯冮棴鐜? 
+-#### Current State
+-
+-褰撳墠鏁版嵁搴?API 鐪熷疄鐘舵€併€?-
+-绂佹鏃?snapshot 闀挎湡鍐掑厖褰撳墠鐘舵€併€?-
+-### 鍔ㄤ綔
+-
+-- mark_detail_ok
+-- request_refetch
+-- keep_pending
+-- mark_needs_manual_edit
+-
+----
+-
+-## 4. 鍙俊鏉ユ簮鍒嗙骇
+-
+-### Tier 1
+-
+-瀹樻柟/鏄庣‘鍙俊缁撴瀯鍖栨潵婧愩€?-
+-鍏佽锛?-
+-- 鑷姩鍐欏叆
+-- 鍩虹鏍￠獙鍚庡彂甯?-
+-### Tier 2
+-
+-鍙俊 retailer銆?-
+-鍏佽锛?-
+-- 鑷姩琛ュ叏
+-- 鏉ユ簮鍐茬獊鏃惰繘鍏?review
+-
+-### Tier 3
+-
+-绀惧尯涓婁紶/鐢ㄦ埛鍥剧墖/涓嶇‘瀹氭潵婧愩€?-
+-蹇呴』锛?-
+-- candidate review
+-- 浜哄伐瑙嗚鍒ゆ柇
+-
+----
+-
+-## 5. 鑷姩瑙勫垯涓庝汉宸ヨ鍒?-
+-鏈哄櫒瑙勫垯鍙互鍋忓彫鍥炪€?-
+-渚嬪锛?-
+-```text
+-0 < imageCount < 3
+-鈫?create image_low_count review
+-```
+-
+-浜哄伐鎺ュ彈瑙勫垯鍙互鏇寸伒娲伙細
+-
+-```text
+-鏈変竴寮犵粡浜哄伐纭鐨勪紭璐ㄤ富鍥?-鈫?allow resolve
+-```
+-
+-鍥犳蹇呴』鏈?suppression銆?-
+----
+-
+-## 6. 浜哄伐鍐冲畾鎶戝埗閲嶅
+-
+-蹇呴』婊¤冻锛?-
+-鍚屼竴锛?-
+-- figureId
+-- riskType
+-- evidenceFingerprint
+-
+-濡傛灉宸叉湁浜哄伐 resolved/rejected/keep decision锛?-
+-鈫?鍚庣画鑷姩鎵弿涓嶅緱閲嶆柊鐢熸垚鐩稿悓瀹℃牳椤广€?-
+-鍏佽 reopen锛?-
+-- primary image 鏀瑰彉
+-- 鍥剧墖闆嗗悎鏀瑰彉
+-- approved image 鍒犻櫎
+-- approved image 澶辨晥
+-- candidate 鏀瑰彉
+-- detail relevant fields 鏀瑰彉
+-- 浜哄伐涓诲姩 reopen
+-
+----
+-
+-## 7. 鏃у鏍搁槦鍒楀鐞?-
+-绂佹绮楁毚娓呯┖銆?-
+-鍙厑璁稿厛 dry-run 鍒嗙被锛?-
+-- issue_still_exists
+-- already_fixed
+-- duplicate_review
+-- figure_missing
+-- insufficient_evidence
+-
+-澶勭悊鍘熷垯锛?-
+-- still exists 鈫?淇濈暀
+-- already fixed 鈫?archive
+-- duplicate 鈫?淇濈暀鏈€鏈変环鍊肩殑涓€鏉★紝鍏朵綑 archive
+-- figure missing 鈫?archive
+-- insufficient evidence 鈫?淇濈暀
+-
+-浠讳綍 archive 鍓嶅繀椤伙細
+-
+-- before stats
+-- classification stats
+-- after stats
+-
+-鍒嗙被鎬诲拰蹇呴』鑷唇銆?-
+----
+-
+-## 8. Visual Review 鏍囧噯
+-
+-浜哄伐瑙嗚瀹℃牳鑷冲皯鍒嗙被涓猴細
+-
+-- normal product image
+-- thumbnail
+-- room photo
+-- display case
+-- collection photo
+-- promotional banner
+-- unrelated
+-- uncertain
+-
+-涓嶈兘鍙牴鎹細
+-
+-- sourceKind
+-- width
+-- height
+-- URL domain
+-
+-鎺ㄦ柇瑙嗚璐ㄩ噺銆?-
+----
+-
+-## 9. 瀹℃牳璇佹嵁瑕佹眰
+-
+-浠讳綍 action 鐨勫畬鎴愭爣鍑嗚嚦灏戞槸锛?-
+-before
+-鈫?click/action
+-鈫?API response
+-鈫?storage state
+-鈫?API readback
+-鈫?frontend/admin refreshed result
+-
+-濡傛灉娑夊強鍥剧墖锛?-
+-杩橀渶锛?-
+-- image endpoint
+-- HTTP status
+-- content type
+-- dimensions
+-- visual confirmation when required
+-
+-濡傛灉娑夊強 crawler锛?-
+-杩橀渶锛?-
+-- queued
+-- running
+-- completed/failed
+-- writeback
+-- review state
++Crawler 鐩稿叧瀹℃牳杩橀渶楠岃瘉 `queued -> running -> completed/failed/deferred`銆佺粨鏋?writeback 鍜屾渶缁?review state锛涗粎鍒涘缓 job 鎴栨敹鍒?payload 涓嶆瀯鎴愬畬鎴愩€傛棫闃熷垪鍒嗙被鍚庣殑澶勭疆涓猴細still exists 淇濈暀銆乤lready fixed archive銆乨uplicate 淇濈暀鏈€鏈変环鍊奸」骞?archive 鍏朵綑銆乫igure missing archive銆乮nsufficient evidence 淇濈暀銆?diff --git a/docs/04_SECURITY_AND_ENGINEERING_GUARDRAILS.md b/docs/04_SECURITY_AND_ENGINEERING_GUARDRAILS.md
+index ee445d8..6016d37 100644
+--- a/docs/04_SECURITY_AND_ENGINEERING_GUARDRAILS.md
++++ b/docs/04_SECURITY_AND_ENGINEERING_GUARDRAILS.md
+@@ -1,208 +1,59 @@
+ # 瀹夊叏涓庡伐绋嬬害鏉? 
+-## 1. 鍑嵁
++## 1. 鍑嵁銆佹潈闄愪笌闅愮
+ 
+-绂佹锛?+绂佹鍦ㄨ亰澶┿€佹姤鍛娿€丟it銆佺ず渚嬫垨娴嬭瘯鍥為€€涓緭鍑?鎻愪氦瀵嗙爜銆乸assword hash銆乼oken銆乧ookie銆丄uthorization header銆丣WT secret銆乣.env`銆丏B dump銆丼SH key 鎴栫湡瀹炰釜浜鸿祫鏂欍€傛墍鏈夊嚟鎹粡鐜鍙橀噺鍜屽畨鍏?secret 绠＄悊銆? 
+-- 鍦ㄨ亰澶╄緭鍑哄瘑鐮?-- 鍦ㄦ姤鍛婅緭鍑哄瘑鐮?hash
+-- 鎻愪氦 token
+-- 鎻愪氦 cookie
+-- 鎻愪氦 Authorization header
+-- 鎻愪氦 JWT secret
+-- 鎻愪氦 .env
+-- 鎻愪氦 DB dump
+-- 鎻愪氦 SSH key
+-- 鍦?example 鏂囦欢涓啓鐪熷疄鍊?-- 鍦?test.sh 浣跨敤鐪熷疄瀵嗙爜 fallback
++瑙掕壊鑷冲皯鍖哄垎 visitor銆乽ser銆乪ditor銆乵oderator/reviewer銆乤dmin銆傚叕寮€璇诲彇銆佹湰浜鸿处鎴峰啓鍏ャ€佺紪杈戝唴瀹广€佸鏍稿喅瀹氬拰绠＄悊鍛橀厤缃繀椤讳娇鐢ㄦ湇鍔＄鏉冮檺鏍￠獙锛屼笉鑳介潬鍓嶇闅愯棌鎸夐挳銆傜鐞嗗憳涓嶅緱鏌ョ湅鏄庢枃瀵嗙爜锛涜处鍙枫€佽鑹层€佸瘑鐮佷笌瀹夊叏閰嶇疆鐨勫彉鏇撮渶瑕佹槑纭巿鏉冨拰瀹¤銆? 
+-鎵€鏈夊嚟鎹€氳繃鐜鍙橀噺鎴栧畨鍏?secret 绠＄悊銆?+Collection銆乄ishlist銆丄vis銆佺敤鎴峰浘鐗囧拰 Profile 榛樿鎸夋墍鏈夎€呬笌鍙鎬ф帶鍒躲€傚叕寮€绔笉寰楁毚闇茬鏈夋敹钘忋€侀殣钘忓唴瀹广€佸唴閮ㄥ鏍歌瘉鎹€佽崏绋裤€両P/璁惧淇℃伅鎴栦笉蹇呰鐨勭敤鎴锋暟鎹€? 
+----
++## 2. 绀惧尯涓庢悳绱㈤槻婊ョ敤
+ 
+-## 2. 绠＄悊鍛樿处鍙风害鏉?+鐧诲綍銆佹敞鍐屻€侀噸缃瘑鐮併€佹悳绱㈠缓璁€佽瘎鍒嗐€丄vis銆丠elpful銆佹敹钘忓啓鍏ャ€佷妇鎶ュ拰涓婁紶閮介渶瑕佹寜鐢ㄦ埛/IP/璧勬簮鐨?rate limit銆佽緭鍏ラ暱搴︿笌鏍煎紡鏍￠獙銆佸箓绛?鍘婚噸浠ュ強 abuse 鏃ュ織銆傚 Avis銆佺敤鎴峰浘鐗囧拰鍏紑璧勬枡闇€鏈変妇鎶ャ€侀殣钘忋€佸垹闄ゃ€佺敵璇?澶嶆牳涓庡璁¤矾寰勩€? 
+-鎵ц鍣ㄤ笉寰楋細
++璇勫垎 API 蹇呴』淇濊瘉 `(userId, figureId)` 鍞竴锛屾洿鏂颁负鍙楁帶 upsert锛涜仛鍚堝彧浣跨敤 published/eligible 璁板綍銆備笉寰楀厑璁稿鎴风鎻愪氦鑱氬悎鍒嗘暟銆佹牱鏈噺銆佸鏍哥姸鎬併€佹墍鏈夎€?id 鎴栧唴瀹瑰叧鑱?id銆? 
+-- 淇敼绠＄悊鍛樼敤鎴峰悕
+-- 鎿呰嚜淇敼绠＄悊鍛樺瘑鐮?-- 鍒涘缓鏇夸唬绠＄悊鍛樼粫杩囬獙璇?-- 淇敼 JWT_SECRET
+-- 杈撳嚭 password hash
++鍏ㄥ眬鎼滅储鍜?Explorer 鐨勬煡璇㈠繀椤诲弬鏁板寲銆佸垎椤点€侀檺鍒跺鏉傚害骞堕伩鍏嶅悜鏈巿鏉冪敤鎴锋硠闇查殣钘忓疄浣撱€侳acet銆佽嚜鍔ㄥ缓璁笌棣栭〉姒滃崟蹇呴』閬靛畧鍚屼竴鍙戝竷/鍙鎬ц鍒欍€? 
+-璐﹀彿瀹夊叏鍙樻洿蹇呴』鐢辩敤鎴锋槑纭巿鏉冦€?+## 3. 澶栭儴濯掍綋涓庝笂浼? 
+----
++澶栭儴鍥剧墖 fetch 浠呭厑璁?http/https锛涙瘡涓噸瀹氬悜 hop 閮借鍋?DNS/IP 妫€鏌ワ紝闃绘 loopback銆佺缃戙€乴ink-local銆乵etadata IP銆両Pv6 ULA 鍜?IPv4-mapped IPv6 绉佺綉鍦板潃锛屽苟闄愬埗閲嶅畾鍚戝拰鍝嶅簲澶у皬锛屼紭鍏堥噰鐢ㄤ笟鍔?allowlist銆? 
+-## 3. 鐢熶骇鎿嶄綔绾︽潫
++涓婁紶蹇呴』鎵ц decoded size limit銆佺湡瀹炴牸寮忔帰娴嬨€佸厑璁告牸寮忕櫧鍚嶅崟銆佹湇鍔＄ hash銆佽矾寰?containment銆佷复鏃跺啓鍏ヤ笌鍘熷瓙 rename锛涘鎴风 hash 涓嶇搴旀嫆缁濄€傜敤鎴峰浘鐗囧拰 candidate asset 闇€瑕佺ǔ瀹?identity锛屽鏍搞€侀瑙堛€佹壒鍑嗗拰鏈€缁堟樉绀轰笉寰楁寚鍚戜笉鍚岃祫浜с€? 
+-绂佹锛?+## 4. 鏁版嵁銆佽縼绉讳笌鍙戝竷
+ 
+-- DELETE ALL
+-- TRUNCATE
+-- FLUSHDB
+-- 娓呯┖ review queue
+-- 鎵归噺 archive 鏈?dry-run
+-- 鎵归噺 crawler
+-- 澶ц妯℃姄 MFC
+-- 鎵嬪伐鏀?DB 妯℃嫙鎴愬姛
+-- 鎵嬪伐鏀?job status
+-- mock 鍐掑厖鐢熶骇
++Figure title銆佹硶璇瓧娈点€丗abricant canonicalization/aliases銆丆ategory銆丳ersonnage銆佸唴瀹瑰叧鑱斻€丗avorite/Like 璇箟鍜岃处鎴锋ā鍨嬬殑鍙樻洿閮藉睘浜庢暟鎹縼绉汇€傚繀椤绘彁渚?schema migration銆佺储寮曘€佸彲杩芥函 backfill銆佸啿绐佹姤鍛娿€乨ry-run銆乧anary銆乺eadback 鍜屽洖婊?琛ユ晳鏂规銆備笉寰楁墜宸ユ敼鐢熶骇 DB 妯℃嫙鎴愬姛銆? 
+-鎵€鏈夋壒閲忓彉鏇村繀椤伙細
++鍙戝竷鏂伴〉闈㈡垨 API 鍓嶅繀椤绘槑纭洰鏍?褰撳墠鍩虹/宸查獙璇佺姸鎬侊紝瀹屾垚鏉冮檺銆佽縼绉汇€佸叧閿硶璇矾寰勩€佺┖鐘舵€?Placeholder銆佹帓搴忚涔夈€佸鏍?readback銆侀檺娴佸拰閿欒鐩戞帶妫€鏌ャ€侶ome 妯″潡锛圖erniers avis銆丩es mieux not茅es 绛夛級浠呭綋杈惧埌浜у搧瀹氫箟鐨勭湡瀹炴暟鎹槇鍊煎悗鎵嶆樉绀猴紱鍐峰惎鍔ㄩ樁娈垫樉绀鸿础鐚個璇疯€岄潪浼娲昏穬銆傛湭楠岃瘉鍔熻兘涓嶅緱浠ユ枃妗ｃ€乵ock 鎴?HTTP 200 瀹ｇО瀹屾垚銆? 
+-1. dry-run
+-2. 缁熻
+-3. reviewer 瀹℃牳
+-4. canary
+-5. 灏忔壒閲?-6. 楠岃瘉
+-7. 鍐嶆墿澶?+鎵€鏈夋壒閲忔搷浣滈伒寰細dry-run -> 缁熻 -> reviewer 瀹℃牳 -> canary -> 灏忔壒閲?-> 楠岃瘉 -> 鍐嶆墿澶с€傜姝?DELETE ALL銆乀RUNCATE銆丗LUSHDB銆佹棤 dry-run 鐨勬壒閲?archive銆佸ぇ瑙勬ā crawler銆佹墜宸ユ敼 job status 鎴栦互 mock 鍐掑厖鐢熶骇銆? 
+----
++## 5. 瀹℃牳涓?UI 绾︽潫
+ 
+-## 4. 瀹夊叏杈圭晫
++瀹℃牳鍐冲畾蹇呴』淇濆瓨 reviewer銆乺eason銆乼ime銆佽瘉鎹€佸綋鍓嶇姸鎬佸拰 fingerprint銆傝嚜鍔ㄨ鍒欏彲浠ュ亸鍙洖锛屼絾涓嶈兘瑕嗙洊浜哄伐鍐冲畾锛涚姸鎬佸拰璇佹嵁鍙樺寲鏃舵墠鎸?reopen 瑙勫垯閲嶆柊杩涘叆闃熷垪銆? 
+-### SSRF
++鍓嶅彴鍜岀鐞嗙鏀瑰姩搴斿眬閮ㄣ€佸彲楠岃瘉銆佸彲鍥為€€銆傜姝㈡湭缁忔壒鍑嗛噸鍋氱櫥褰?绠＄悊 UI銆佸垹闄ゅ鏍稿瓧娈点€侀殣钘忔牳蹇?action銆佺敤鎻愰珮 rate limit 鎺╃洊璇锋眰椋庢毚鎴栦负灞€閮ㄤ慨澶嶆暣浣撳洖閫€椤甸潰銆傞伩鍏嶅弻鍑汇€乮nflight 閲嶅璇锋眰銆佽繃鏈熻姹傚拰濯掍綋 URL 鐢熷懡鍛ㄦ湡娉勬紡銆? 
+-澶栭儴鍥剧墖 fetch 蹇呴』锛?+## 6. Git 涓庝簨瀹炴潵婧? 
+-- allow http/https only
+-- DNS resolve A/AAAA
+-- block loopback
+-- block private IP
+-- block link-local
+-- block metadata IP
+-- block IPv6 ULA
+-- block IPv4-mapped IPv6 private
+-- validate every redirect hop
+-- limit redirect count
+-- business allowlist preferred
+-- prevent DNS rebinding
++绂佹 report-only commit 鍐掑厖鍔熻兘淇銆乸atch 浠ｆ浛婧愮爜銆乫orce push锛堥櫎瀹夊叏娉勯湶涓旂粡鎺堟潈锛夈€佹彁浜?operational data 鎴栧惈鏁忔劅淇℃伅鐨勪复鏃惰瘉鎹€傛瘡杞敼鍔ㄤ繚鎸佸皬鑼冨洿骞舵湁鐪熷疄 diff銆佺浉鍏虫鏌ュ拰瀹℃煡銆? 
+-### File Upload
++GitHub main銆佺敓浜?backend銆佺敓浜х鐞嗙鍜?NAS Agent 蹇呴』鍙璐︼紱浠讳綍鐗堟湰婕傜Щ閮芥爣璁颁负 `SOURCE STATE = INCONSISTENT`锛屽厛瀵硅处鍐嶆墿澶у紑鍙戞垨鍙戝竷銆? 
+-蹇呴』锛?+## 7. 鎿嶄綔鎺堟潈涓庨獙璇佺姸鎬? 
+-- decoded size limit
+-- real image format detection
+-- allowed formats only
+-- server-side hash
+-- client hash mismatch reject
+-- normalize/re-encode if needed
+-- path containment
+-- no traversal
+-- temp write
+-- atomic rename
++鎵ц鑰呬笉寰楁搮鑷敼绠＄悊鍛樼敤鎴峰悕鎴栧瘑鐮併€佸垱寤烘浛浠ｇ鐞嗗憳缁曡繃楠岃瘉銆佷慨鏀?JWT secret 鎴栬緭鍑?password hash銆傝处鍙峰畨鍏ㄥ彉鏇村繀椤荤敱鏄庣‘鎺堟潈瑙﹀彂锛屽苟淇濈暀鎿嶄綔鑰呫€佸師鍥犮€佹椂闂村拰缁撴灉鐨勫璁°€? 
+----
++楠屾敹璇佹嵁鍙兘鍐欎负 `VERIFIED`銆乣PARTIAL`銆乣FAILED`銆乣NOT TESTED` 鎴?`INCONSISTENT`锛歚VERIFIED` 瑕佹眰浠ｇ爜銆佽繍琛岀粨鏋滃拰涓氬姟鐘舵€佷竴鑷达紱鍏朵綑鍒嗗埆琛ㄧず闂幆涓嶈冻銆佺湡瀹炲け璐ャ€佹棤鐪熷疄璇佹嵁銆佹垨鎶ュ憡/浠ｇ爜/API/DB/缁熻鍐茬獊銆備笉寰楀皢 created/queued銆佹寜閽€乸ayload銆乻ourceType銆乺eport 鏇存柊鎴栨墜宸?DB 鐘舵€佸伔鎹负鐪熷疄瀹屾垚銆? 
+-## 5. Reviewer 璇佹嵁绛夌骇
++## 8. 缁嗗寲缃戠粶涓庢枃浠惰竟鐣? 
+-鍏佽鐘舵€侊細
++澶栭儴 fetch 鐨勬瘡涓噸瀹氬悜 hop 閮藉繀椤绘墽琛?DNS A/AAAA 涓庤繛鎺ョ洰鏍囨鏌ワ紝骞堕槻 DNS rebinding锛涢櫎鏃㈡湁 IP 鑼冨洿鎷︽埅澶栵紝杩樿闄愬埗鍝嶅簲澶у皬銆佽秴鏃朵笌閲嶅畾鍚戞鏁般€備笂浼犻』鍦ㄦ棦鏈夋牸寮?鍝堝笇/璺緞瑙勫垯澶栵紝蹇呰鏃惰鑼冨寲鎴栭噸鏂扮紪鐮侊紱浠讳綍瀹℃牳銆侀瑙堛€佹壒鍑嗗拰鏈€缁堟樉绀哄繀椤荤粦瀹氬悓涓€ candidate/media identity銆? 
+-- VERIFIED
+-- PARTIAL
+-- FAILED
+-- NOT TESTED
+-- INCONSISTENT
++Crawler job 蹇呴』淇濈暀鐪熷疄鐘舵€佹満 `created -> queued -> claimed -> running -> completed | failed | deferred` 鍜岀粨鏋?writeback銆傚鐞嗗鏍搁槦鍒楁垨鐢熶骇鏁版嵁鏃讹紝绂佹绮楁毚娓呯┖锛涙棫椤瑰彧鑳藉厛鍒嗙被銆佺粺璁″苟淇濈暀鍙鏍歌瘉鎹€? 
+-### VERIFIED
++## 9. UI 涓庤姹傜敓鍛藉懆鏈? 
+-浠ｇ爜銆佽繍琛岀粨鏋溿€佷笟鍔＄姸鎬佷竴鑷淬€?-
+-### PARTIAL
+-
+-閮ㄥ垎瀹屾垚锛岄棴鐜笉瓒炽€?-
+-### FAILED
+-
+-鐪熷疄楠岃瘉澶辫触銆?-
+-### NOT TESTED
+-
+-娌℃湁鐪熷疄鎵ц璇佹嵁銆?-
+-### INCONSISTENT
+-
+-鎶ュ憡銆佷唬鐮併€丄PI銆丏B銆佺粺璁′簰鐩哥煕鐩俱€?-
+----
+-
+-## 6. 绂佹鐘舵€佸伔鎹?-
+-绂佹锛?-
+-- queued 褰?completed
+-- created 褰?executed
+-- 鎸夐挳瀛樺湪褰撻棴鐜?-- HTTP 200 褰撲笟鍔℃纭?-- payload 姝ｇ‘褰?crawler 瀹屾垚
+-- API sourceKind 姝ｇ‘褰撹瑙夎川閲忛€氳繃
+-- report 鏇存柊褰撲唬鐮佷慨澶?-- mock 褰撶敓浜х粨鏋?-- DB 鎵嬪伐鐘舵€佸綋鐪熷疄涓氬姟娴佺▼
+-
+----
+-
+-## 7. UI 绋冲畾鎬х害鏉?-
+-绂佹鎵ц鍣ㄦ湭缁忔壒鍑嗭細
+-
+-- 閲嶅仛绠＄悊鍚庡彴 UI
+-- 淇敼鐧诲綍甯冨眬
+-- 鍒犻櫎宸叉湁瀹℃牳瀛楁
+-- 闅愯棌鏍稿績 action
+-- 涓哄眬閮ㄤ慨澶嶆暣浣撳洖閫€椤甸潰
+-- 鐢ㄦ彁楂?rate limit 鎺╃洊璇锋眰椋庢毚
+-
+-蹇呴』锛?-
+-- 灞€閮ㄦ洿鏂?-- 闃?double-click
+-- inflight dedup
+-- abort stale request
+-- 鍥剧墖 URL 鐢熷懡鍛ㄦ湡绠＄悊
+-- Console pageerror=0
+-- 閬垮厤鍏ㄩ噺 render 閲嶆柊鍙戝ぇ閲忓浘鐗囪姹?-
+----
+-
+-## 8. Git 绾︽潫
+-
+-绂佹锛?-
+-- report-only commit 鍐掑厖鍔熻兘淇
+-- patch 鏂囦欢浠ｆ浛婧愮爜
+-- force push锛岄櫎闈炴槑纭鐞嗗畨鍏ㄦ硠闇插苟缁忔巿鏉?-- rewrite history 浣滀负鏅€氬紑鍙戞墜娈?-- 鎻愪氦 operational data
+-- 鎻愪氦涓存椂 evidence 鏂囦欢鍚晱鎰熸暟鎹?-
+-姣忚疆锛?-
+-- small scope
+-- real diff
+-- tests
+-- commit
+-- push main
+-- Reviewer 瀹℃煡
+-
+----
+-
+-## 9. Source-of-Truth 绾︽潫
+-
+-蹇呴』淇濇寔锛?-
+-- GitHub main
+-- production backend
+-- production guanli
+-- NAS agent
+-
+-鐗堟湰鍙拷韪€?-
+-濡傛灉瀛樺湪婕傜Щ锛?-
+-鈫?SOURCE STATE = INCONSISTENT
+-
+-鍏堝璐︼紝鍐嶅紑鍙戙€?+鍓嶅彴鍜岀鐞嗙鍙兘鍋氬眬閮ㄣ€佸彲楠岃瘉銆佸彲鍥為€€鐨勬敼鍔ㄣ€傜姝㈡湭缁忔壒鍑嗛噸鍋氱鐞嗗悗鍙版垨鐧诲綍甯冨眬銆佸垹闄ゅ凡鏈夊鏍稿瓧娈点€侀殣钘忔牳蹇?action銆佷负灞€閮ㄤ慨澶嶆暣浣撳洖閫€椤甸潰锛屾垨閫氳繃鎻愰珮 rate limit 鎺╃洊璇锋眰椋庢毚銆備氦浜掑繀椤婚槻 double-click銆乮nflight 閲嶅璇锋眰鍜岃繃鏈熻姹傦紱濯掍綋 URL 鏈夋槑纭敓鍛藉懆鏈燂紱閬垮厤鍏ㄩ噺 render 閲嶅彂澶ч噺鍥剧墖璇锋眰锛屽苟鍦ㄩ獙鏀朵腑纭娴忚鍣?console `pageerror=0`銆?diff --git a/docs/05_ROADMAP_AND_PRIORITIES.md b/docs/05_ROADMAP_AND_PRIORITIES.md
+index 9c43b3c..bb256db 100644
+--- a/docs/05_ROADMAP_AND_PRIORITIES.md
++++ b/docs/05_ROADMAP_AND_PRIORITIES.md
+@@ -1,160 +1,97 @@
+ # ModelWiki 寮€鍙戣矾绾夸笌浼樺厛绾? 
+-## Phase 0锛氱ǔ瀹氬熀绾?+## 鎸佺画鎬у熀纭€锛氬彲淇℃暟鎹笌鍙戝竷闂ㄦ
+ 
+-鐩爣锛?+浜哄伐瀹℃牳銆佽瘉鎹€乧andidate identity銆乨ecision audit銆侀噸澶嶆姂鍒躲€乺eopen銆佹潈闄愩€佹暟鎹畨鍏ㄥ拰 source-of-truth 瀵硅处鏄叏闃舵鍓嶆彁銆傚畠浠槸褰撳墠宸插湪寤虹殑鏁版嵁璐ㄩ噺鍩虹锛屽繀椤荤户缁仛鐪熷疄闂幆楠岃瘉锛涗笉鏇夸唬涓嬪垪浜у搧闃舵锛屼篃涓嶈兘琚墿澶?crawler 鎵€鍙栦唬銆? 
+-- GitHub / production / NAS 鐗堟湰涓€鑷?-- 绠＄悊鍚庡彴绋冲畾鐧诲綍
+-- 鏃犵櫧灞?-- 鏃?429 璇锋眰椋庢毚
+-- 鍩虹瀹夊叏鎵弿閫氳繃
+-- 涓嶅啀鏈夌湡瀹炲嚟鎹硠闇?+## P0锛氭暟鎹笌璇█鍩虹
+ 
+----
++鐩爣锛氳鐩綍鍜屾硶璇綋楠屾垚涓哄悗缁〉闈㈠彲渚濊禆鐨勪簨瀹炴潵婧愩€? 
+-## Phase 1锛氫汉宸ュ鏍哥湡姝ｅ彲闈?+- 瀹屾暣娓呯偣骞剁粺涓€娉曡瀛楃涓诧細Header銆丗ooter銆丼earch銆丒xplorer銆佺瓫閫夈€佹帓搴忋€佽鎯呫€佽鏍笺€丄vis銆佽处鎴枫€佽璇併€侀偖浠躲€佹牎楠屼笌閿欒锛?+- Fabricant canonicalization 涓?aliases锛屽鐞嗛噸澶嶃€乶ative/鑻辨枃鍙樹綋鍜?0 鍟嗗搧瀹炰綋锛?+- 缁熶竴 Category 鍚嶇О/鍏崇郴锛汸ersonnage 浣滀负 P0 姝ｅ紡瀹炰綋鎻愬墠寤虹珛鏁版嵁妯″瀷鍜?Figure 鍏崇郴琛紱
++- 瀹氫箟 `display_title` 涓?`original_title`/`full_name` 鐨勫鍏ャ€佸睍绀轰笌鍥為€€瑙勫垯锛?+- 寤虹珛缁熶竴 Placeholder 涓庡浘鐗囨潵婧?浼樺厛绾у绾︼紱
++- 鏄庣‘骞跺疄鐜?Latest Added銆乁pcoming銆丩atest Releases 鐨勫瓧娈靛拰鎺掑簭璇箟锛?+- 涓哄唴瀹瑰叧鑱斿拰鍚庣画璐︽埛妯″瀷鍑嗗鍙縼绉荤殑鏁版嵁濂戠害銆? 
+-鏈€楂樹紭鍏堢骇銆?+## P1锛氳鎯呴〉 MVP
+ 
+-瀹屾垚锛?+鐩爣锛氫竴寮?Figure 椤佃冻浠ユ敮鎸佸彲闈犳祻瑙堝拰鏀惰棌鍐崇瓥銆? 
+-- Review list 杩斿洖褰撳墠 Figure 鐘舵€?-- title 涓嶅啀鏄?"-"
+-- image count 鏄剧ず鐪熷疄鍊?-- detail original evidence 涓?current state 鍒嗗紑
+-- candidate 鍙ǔ瀹氭樉绀?-- preview/lightbox 鍚屼竴璧勪骇
+-- keep_pending
+-- decisionReason
+-- reviewer
+-- decisionAt
+-- action 闂幆
+-- detail_review recheck 姝ｇ‘
++- 鐪熸鐨勫叧绯婚潰鍖呭睉锛?+- display title銆乷riginal title 涓庣畝娲佷富淇℃伅锛?+- `Photos du Studio`銆乣Communaut茅`銆乣Photos officielles` 鍒嗘潵婧?Gallery銆佷富鍥句紭鍏堢骇鍜岀粺涓€ Placeholder锛?+- 鎸?`Informations g茅n茅rales`銆乣Caract茅ristiques`銆乣Sortie`銆乣Production` 鍒嗙粍鐨勯潪绌?Specifications锛?+- Studio 鍐呭涓庣ぞ鍖?Avis 鍒嗙锛?+- 1 涓€昏瘎鍒?+ 4 涓淮搴︼紝骞舵樉绀烘牱鏈噺锛?+- 鐧诲綍鐢ㄦ埛鍙繘鍏?Collection銆乄ishlist銆丯oter銆丄vis 娴佺▼鐨勯〉闈㈠绾︺€? 
+-楠屾敹鏍囧噯锛?+## P2锛氳处鎴蜂笌鏀惰棌
+ 
+-绠＄悊鍛樿兘鍦ㄤ笉渚濊禆鏃?snapshot 鐨勬儏鍐典笅瀹屾垚鐪熷疄鍒ゆ柇銆?+鐩爣锛氭敞鍐岃幏寰楁竻鏅般€佸彲鎸佺画鐨勪环鍊笺€? 
+----
++- Ma collection銆丮a wishlist銆丮es avis銆丮on profil锛?+- 姣忕敤鎴锋瘡 Figure 涓€浠藉彲鏇存柊鐨?Rating/Avis锛?+- Favorite 鍒?Wishlist銆乫igure Like 鍒板唴瀹逛簰鍔ㄧ殑鍙楁帶璇箟杩佺Щ锛?+- 鏀惰棌/鎰挎湜娓呭崟鐨勬潈闄愩€佸彲瑙佹€с€佸璁″拰涓汉缁熻锛?+- 涓哄悗缁?Mes photos 淇濈暀妯″瀷涓庡鏍歌竟鐣岋紝浣嗕笉鎶㈠厛寤鸿瀹屾暣绀句氦缃戠粶銆? 
+-## Phase 2锛氫汉宸ュ喅瀹氳蹇?+## P3锛欵xplorer 涓庢悳绱? 
+-瀹炵幇锛?+鐩爣锛氭妸鐩綍浠庢暟鎹簱绛涢€夊櫒鍙樻垚鎺㈢储浣撻獙銆? 
+-- evidenceFingerprint
+-- duplicate suppression
+-- reopen conditions
+-- decision audit
++- 鍏ㄥ眬鍗虫椂鎼滅储 Figure銆丳ersonnage銆丼eries銆丗abricant锛?+- Explorer 绛涢€夈€乧hips銆佹帓搴忋€佺粨鏋滄暟銆侀噸缃拰绉诲姩绔瓫閫夋娊灞夛紱
++- Cat茅gorie銆丼茅rie銆丳ersonnage銆丗abricant銆伱塩helle銆丄nn茅e 绛夌粨鏋勫寲绛涢€夛紱
++- Series/Fabricant 閫夋嫨鍣ㄦ彁渚涘綍鍏ユ悳绱€佺儹闂ㄩ」鍒楄〃鍜屽垎椤?寮傛缁撴灉锛岄伩鍏嶄紶缁熻秴闀?<select>锛?+- Personnages 鎸夋暟鎹垚鐔熷害杩涘叆瀵艰埅鎴?Explorer锛屼絾瀹炰綋鍏崇郴宸插湪 P0 寤虹珛銆? 
+-鐩爣锛?+## P4锛氶椤? 
+-浜哄伐鍐冲畾涓嶈鏃犲彉鍖栫殑鑷姩鎵弿鍙嶅瑕嗙洊銆?+鐩爣锛氱敤鐪熷疄鏁版嵁寮曞鎺㈢储锛岃€屼笉鏄互闀垮垪琛ㄦ垨浼椿璺冨～鍏呴〉闈€? 
+----
++- Hero + 鍏ㄥ眬鎼滅储锛孒ero 浣跨敤瀹炴媿褰㈣薄鍜屽壇鏍囬锛堝 "Explorez les figurines. Comparez les versions. Partagez votre avis."锛夛紱
++- Explorer par cat茅gorie锛堣瑙夊垎绫诲崱鐗囷細Prize Figures銆丼cale Figures銆丯endoroid銆丄ction Figures銆丷esin & GK锛変笌 Univers populaires锛堝 One Piece銆丏ragon Ball銆丯aruto銆丏emon Slayer銆丠atsune Miku锛夛紱
++- Derniers Tests par Phoebus 鐨勫皝闈㈠拰鍐呭鍏ュ彛锛?+- 杈惧埌鐪熷疄鏁版嵁闃堝€煎悗鍐嶆樉绀?Derniers avis 涓?Les mieux not茅es锛?+- 娓呮櫚鍛藉悕鐨?Latest Added/Upcoming/Latest Releases 灏忓瀷妯″潡骞堕摼鎺?Explorer锛?+- 涓嶅湪棣栭〉鎵归噺鍔犺浇绗笁鏂硅棰?iframe銆? 
+-## Phase 3锛氬墠鍙版牳蹇冧骇鍝佽兘鍔?+## P5锛歍ests & Guides 鍐呭浣撶郴
+ 
+-浼樺厛锛?+鐩爣锛氭矇娣€鍙绱€佸彲鍏宠仈銆佸彲鎸佺画鍙戝竷鐨?Studio 鍐呭銆? 
+-1. 鎼滅储涓庣瓫閫?-2. Figure detail 璐ㄩ噺
+-3. Related 鍘婚噸/鎺掑繁
+-4. 鍥剧墖绋冲畾灞曠ず
+-5. 鐢ㄦ埛鐐硅禐
+-6. 鏀惰棌
+-7. 璇勮
+-8. 鏀惰棌鐘舵€佷笌涓汉涓績
++- Test銆乁nboxing銆丆omparatif銆丟uide d'authenticit茅銆丟uide collectionneur銆丆ustomisation & 3D 鐨勭嫭绔嬪唴瀹归〉锛?+- 鍐呭鐘舵€併€佹硶璇瓧娈点€佸皝闈€佷綔鑰呫€佸彂甯冩棩鏈熶笌 Figure/Series/Personnage/Fabricant 缁撴瀯鍖栧叧绯伙紱
++- Figure 椤靛叧鑱斿唴瀹广€佸唴瀹瑰垪琛ㄥ拰缂栬緫宸ヤ綔娴侊紱
++- 鍙湁瀹為檯娴嬭瘯鎴栧埗浣滆繃鐨勪骇鍝佹墠鏄剧ず鐩稿叧 Studio/3D 淇℃伅銆? 
+----
++## P5 涔嬪悗锛氭繁鍖栫ぞ鍖? 
+-## Phase 4锛氭敹钘忕鐞?+鍏堟墿灞曠敤鎴峰疄鎷嶃€丠elpful 涓庡叕寮€鏀惰棌锛屽啀鑰冭檻鍏虫敞銆佹椿鍔ㄦ祦銆佸窘绔犮€佹垚鍛樻帓琛岀瓑绀句氦鑳藉姏銆傛墍鏈夌ぞ鍖哄姛鑳戒互鐪熷疄鍐呭銆佸鏍搞€佷妇鎶ャ€侀檺娴併€侀殣绉佸拰瀹¤涓轰笂绾挎潯浠躲€? 
+-瀹炵幇锛?-
+-- Own
+-- Wanted
+-- Ordered
+-- Sold
+-- Watch
+-
+-浠ュ強锛?-
+-- notes
+-- quantity
+-- purchase price
+-- purchase date
+-- channel
+-- visibility
+-
+----
+-
+-## Phase 5锛氳瘎娴嬩笌缂栬緫鍐呭
+-
+-杩欐槸绋冲畾杩愯惀鏈熶富绾夸箣涓€銆?-
+-瀹炵幇锛?-
+-- 鏂囩珷绫诲瀷
+-- Figure 鍏宠仈
+-- Series 鍏宠仈
+-- Manufacturer 鍏宠仈
+-- 鏂囩珷鍒楄〃
+-- Figure 椤靛叧鑱旇瘎娴?-- 棣栭〉鏈€鏂拌瘎娴?-- 缂栬緫鑰呭伐浣滄祦
+-
+----
+-
+-## Phase 6锛氳交閲忕ぞ鍖哄寮?-
+-瀹炵幇锛?-
+-- 璇勮绠＄悊
+-- 鏈€杩戣瘎璁?-- 鐑棬鐐硅禐
+-- 鐑棬鏀惰棌
+-- 鍙€夎瘎鍒?-- 鐢ㄦ埛鍏紑鏀惰棌椤?-- 鐢ㄦ埛璐＄尞璁板綍
+-
+----
+-
+-## Phase 7锛欳rawler 杈呭姪杩愯惀
+-
+-Crawler 浠庝富绾块€€灞呰緟鍔┿€?-
+-鍙敤浜庯細
+-
+-- 鏂板鍟嗗搧瀵煎叆
+-- 鏄庣‘缂哄け琛ュ叏
+-- 绠＄悊鍛?request_refetch
+-- 灏忚妯℃潵婧愭洿鏂?-- 鏁版嵁楠岃瘉
++## 褰撳墠鏄庣‘涓嶅簲浼樺厛鍋? 
+-瑕佹眰锛?+- 鎵╁ぇ crawler 骞跺彂鎴栧ぇ瑙勬ā MFC 鎶撳彇锛?+- 澶ц妯¤嚜鍔?archive 鎴栫粫杩囦汉宸ュ鏍革紱
++- 鍦?P0 鍓嶉噸鍋氶椤垫垨鎶婅瑙夎璁″綋浣滄暟鎹棶棰樼殑鏇夸唬锛?+- 閲嶅仛鏁翠釜绠＄悊鍚庡彴 UI锛?+- 澶嶆潅 AI 鍥惧儚妯″瀷鏇夸唬浜哄伐瀹℃牳锛?+- 澶嶆潅鎺ㄨ崘绠楁硶銆佸ぇ瑙勬ā寰湇鍔℃媶鍒嗘垨涓烘湭鏉ユ墿灞曡繃搴﹁璁★紱
++- 鍦ㄦ病鏈夌湡瀹?Avis/璇勫垎/鍐呭鏁版嵁鏃朵吉閫犵ぞ鍖烘椿璺冩垨姒滃崟銆? 
+-- 灏忔牱鏈?canary
+-- job 鐘舵€佺湡瀹?-- 澶辫触鍙拷韪?-- 涓嶈鐩栦汉宸ョ‘璁ゆ暟鎹?-- 涓嶇‘瀹氬唴瀹硅繘鍏?review
++浜у搧浼樺厛绾т繚鎸佷笉鍙橈細P0 鏁版嵁/璇█ -> P1 璇︽儏椤?MVP -> P2 璐︽埛鏀惰棌 -> P3 Explorer+鎼滅储 -> P4 棣栭〉 -> P5 鍐呭浣撶郴 -> 绀惧尯娣卞寲銆? 
+----
++## 鍏ㄩ樁娈垫墽琛岄棬妲? 
+-## 褰撳墠鏄庣‘涓嶅簲浼樺厛鍋?+姣忎釜闃舵鍙戝竷鍓嶅潎闇€楠岃瘉锛氭湇鍔＄瑙掕壊/鎵€鏈夋潈鎷掔粷璺緞銆佸彲鍥炴粴 schema migration銆乨ry-run/backfill/鍐茬獊鎶ュ憡銆乧anary/readback銆佸叧閿硶璇矾寰勩€丳laceholder/绌虹姸鎬併€佺紦瀛樺け鏁堛€侀檺娴佷笌閿欒鐩戞帶銆傚鏍镐笌 crawler 杩樺繀椤诲叿鏈夋搷浣滃墠鐘舵€併€佺湡瀹炲姩浣溿€佹寔涔呭寲銆丄PI readback銆佸埛鏂扮粨鏋滀互鍙婂繀瑕佺殑濯掍綋鎴?job 楠岃瘉锛涙病鏈夎繖浜涜瘉鎹殑鑳藉姏鍙兘鏍囦负鐩爣鎴?`NOT TESTED`銆? 
+-- 鎵╁ぇ crawler 骞跺彂
+-- 澶ц妯?MFC 鎶撳彇
+-- 澶ц妯¤嚜鍔?archive
+-- 閲嶅仛鏁翠釜绠＄悊鍚庡彴 UI
+-- 澶嶆潅 AI 鍥惧儚妯″瀷鏇夸唬浜哄伐瀹℃牳
+-- 澶嶆潅鎺ㄨ崘绠楁硶
+-- 澶ц妯″井鏈嶅姟鎷嗗垎
+-- 涓烘湭鏉ユ墿灞曡繃搴﹁璁?+P0 鐨勫鍏ュ拰 canonicalization 涓嶅緱鎶?0 鍟嗗搧瀹炰綋銆侀噸澶?Fabricant/Category 鎴栨湭缁忓鏌ュ唴瀹规毚闇茬粰鍏叡瀵艰埅銆佹悳绱?facet 鎴栭椤佃仛鍚堛€侾1 杩橀獙鏀跺浘鐗囨斁澶т笌瀹夊叏 fallback銆佺浉鍏虫帹鑽愭帓宸卞拰鎸?figureId 鍘婚噸銆佸叕寮€ API 涓嶆硠闇茶崏绋?瀹℃牳璇佹嵁/闅愯棌鐢ㄦ埛鍐呭锛屼互鍙?Studio銆丄vis銆佸浘鐗囧鏍哥姸鎬佸郊姝ょ嫭绔嬨€? 
+-鍏堟妸锛?+P2 鐨?CollectionEntry 鍙€愭璁板綍鏁伴噺銆佸娉ㄣ€佽喘鍏ヤ环鏍笺€佹棩鏈熴€佹笭閬撲笌鍙鎬э紱鏃?Favorite/Like 鏁版嵁杩佺Щ蹇呴』鏈夋槧灏勩€佸璁°€佸洖婊?琛ユ晳鍜岀敤鎴峰彲鐞嗚В缁撴灉锛屼笉鑳界洿鎺ュ垹闄ゆ垨娣峰悎璇箟銆侾3 鐨勬煡璇㈤渶鍙傛暟鍖栥€佸垎椤点€侀檺鍒跺鏉傚害鍜屽彲瑙佹€ц繃婊わ紝涓旇鐩?title銆乤lias銆丳ersonnage銆丗abricant銆丼茅rie銆丣AN銆丮FC ID銆乻ource ID 涓庡叧閿瓧銆? 
+-> 璧勬枡鍙俊 + 浜哄伐瀹℃牳鍙潬 + 鏀惰棌鍙敤 + 鍐呭鍙寔缁彂甯?+P4 妯″潡鍙鍙栨槑纭殑 API 瀛楁鍜屽凡鍙戝竷鐘舵€侊紝涓嶈兘璁?Theme 涓存椂鍒ゆ柇瀹氫箟涓氬姟璇箟锛屽浘鐗囦紭鍏堜娇鐢ㄥ畨鍏ㄣ€佸凡瀹℃牳涓斿彲绋冲畾灞曠ず鐨勮祫浜с€侾5 淇濇寔 WordPress 璐熻矗鍐呭缂栬緫涓庡憟鐜帮紝API/DB 璐熻矗 `articleId`銆佸疄浣撳叧绯诲拰鍐呭绫诲瀷绛夌粨鏋勫寲浜嬪疄锛涘彂甯冦€佹洿鏂板拰鍏崇郴鍙樻洿鍧囧彲瀹¤銆? 
+-鍋氬ソ銆?+浠讳綍闃舵鍧囦笉寰楁湭缁忔巿鏉冧慨鏀圭鐞嗗憳璐﹀彿/瀵嗙爜鎴栧畨鍏ㄥ瘑閽ャ€佸皢 Redis 褰撲綔闀挎湡瀹℃牳/涓氬姟浜嬪疄鏉ユ簮銆佷互鎵嬪伐 DB/job 鐘舵€佷唬鏇跨湡瀹炴祦绋嬶紝鎴栦互 HTTP 200銆佹寜閽€乵ock銆乺eport 鎴?queued job 瀹ｇО宸插彂甯?瀹屾垚銆?diff --git a/docs/README.md b/docs/README.md
+index 021174b..beba3bc 100644
+--- a/docs/README.md
++++ b/docs/README.md
+@@ -1,70 +1,44 @@
+-# ModelWiki 浜у搧涓庢灦鏋勫熀绾挎枃妗?+锘? ModelWiki 浜у搧涓庢灦鏋勫熀绾挎枃妗? 
+-鏈洰褰曟槸 ModelWiki 鐨勪骇鍝併€佹灦鏋勫拰宸ョ▼绾︽潫鍩虹嚎銆?+鏈洰褰曞畾涔?ModelWiki 鐨勪骇鍝佹柟鍚戙€佺洰鏍囨灦鏋勫拰涓嶅彲绐佺牬鐨勫伐绋嬬害鏉熴€傚畠閫傜敤浜?OpenCode銆乀rae銆丠ermes 涓庝汉宸ュ紑鍙戣€咃紱鎵ц浠讳綍鍔熻兘銆佹暟鎹垨鍙戝竷鎿嶄綔鍓嶉兘搴斿厛闃呰銆? 
+-浠讳綍 OpenCode / Trae / Hermes / 浜哄伐寮€鍙戣€呭湪淇敼椤圭洰涔嬪墠锛岄兘搴斿厛闃呰杩欎簺鏂囨。銆?+## 褰撳墠鐘舵€? 
+-## 鏂囨。鐩綍
++ModelWiki 姝ｄ粠鈥滃彲鏌ヨ鐨勫晢鍝佹暟鎹簱鈥濆崌绾т负娉曡浼樺厛鐨勬墜鍔炵櫨绉戙€佹敹钘忓喅绛栭〉鍜岀ぞ鍖恒€侾ersonnage 浣滀负 P0 姝ｅ紡瀹炰綋锛孎abricant canonicalization銆佺粺涓€ Placeholder銆丩atest/Upcoming/Releases 璇箟鍖哄垎涓庢硶璇叏閲忔湰鍦板寲鏋勬垚鏁版嵁涓庤瑷€鍩虹銆備汉宸ュ鏍搞€佽瘉鎹暀瀛樹笌閲嶅瀹℃牳鎶戝埗鏄幇鏈夋暟鎹川閲忓熀纭€锛岄儴鍒嗚兘鍔涘凡鍦ㄥ缓骞跺繀椤绘寔缁互鐪熷疄闂幆楠岃瘉锛涘畠浠笉鏄墠鍙颁骇鍝佽矾绾跨殑鏇夸唬鍝併€? 
+-1. `00_PRODUCT_VISION.md`
+-   - 浜у搧瀹氫綅
+-   - 鏍稿績鐢ㄦ埛
+-   - 浜у搧杈圭晫
+-   - 宸茬‘璁や笟鍔″喅绛?+涓嬪垪鍓嶅彴鑳藉姏鍧囦负鐩爣锛岄櫎闈炴枃妗ｆ槑纭爣涓衡€滃綋鍓嶅熀纭€鈥濇垨鏈夌嫭绔嬮獙鏀惰瘉鎹紝鍚﹀垯涓嶅緱灏嗗叾鎻忚堪涓哄凡缁忎笂绾匡細瀹屾暣娉曡鏈湴鍖栥€侀噸鏋勮鎯呴〉銆丆ollection/Wishlist銆佸嵆鏃舵悳绱€侀椤靛唴瀹规ā鍧椼€乀ests & Guides 涓庣ぞ鍖烘繁鍖栥€? 
+-2. `01_USER_REQUIREMENTS.md`
+-   - 璁垮銆佹敞鍐岀敤鎴枫€佺紪杈戣€呫€佺鐞嗗憳闇€姹?-   - 鏀惰棌銆佺偣璧炪€佽瘎璁恒€佽瘎娴嬪唴瀹归渶姹?-   - 鍓嶅彴椤甸潰闇€姹?-   - 绠＄悊鍚庡彴闇€姹?+## 闃呰璺嚎
+ 
++1. `00_PRODUCT_VISION.md`
++   - 浜у搧瀹氫綅銆佷俊鎭灦鏋勩€佽瑷€涓庢暟鎹師鍒?+2. `01_USER_REQUIREMENTS.md`
++   - 璁垮銆佽处鎴枫€佺紪杈戜笌绠＄悊鍛樼殑椤甸潰鍜岃涓洪渶姹? 3. `02_SYSTEM_ARCHITECTURE.md`
+-   - 褰撳墠绯荤粺鏄犲皠
+-   - 鎺ㄨ崘鐩爣鏋舵瀯
+-   - 妯″潡杈圭晫
+-   - 鏁版嵁涓庡鏍告祦杞?-   - Crawler 鍐峰惎鍔ㄥ畾浣?-
++   - 褰撳墠鏈嶅姟鏄犲皠銆佺洰鏍囨暟鎹ā鍨嬨€丄PI/DB/Redis 杈圭晫銆佸獟浣撲笌杩佺Щ濂戠害
+ 4. `03_CONTENT_GOVERNANCE_AND_REVIEW.md`
+-   - 鑷姩妫€娴嬩笌浜哄伐瀹℃牳鍏崇郴
+-   - 鍥剧墖瀹℃牳
+-   - 璇︽儏瀹℃牳
+-   - 浜哄伐鍐崇瓥浼樺厛绾?-   - evidence fingerprint 涓庨噸澶嶅鏍告姂鍒?-
++   - 璇佹嵁銆佹潵婧愬垎绾с€佷汉宸ュ鏍搞€乺eopen銆佸唴瀹瑰彂甯冧笌绀惧尯娌荤悊
+ 5. `04_SECURITY_AND_ENGINEERING_GUARDRAILS.md`
+-   - 瀹夊叏绾︽潫
+-   - 鐢熶骇鎿嶄綔绾︽潫
+-   - Git 涓庡嚟鎹害鏉?-   - Reviewer 璇佹嵁鏍囧噯
+-   - 绂佹鐘舵€佸伔鎹?-
++   - 韬唤鏉冮檺銆佹互鐢ㄩ槻鎶ゃ€佷笂浼?澶栭摼濯掍綋銆佽縼绉汇€佸彂甯冧笌鎿嶄綔绾㈢嚎
+ 6. `05_ROADMAP_AND_PRIORITIES.md`
+-   - 寮€鍙戜紭鍏堢骇
+-   - 闃舵鎬х洰鏍?-   - 鏄庣‘鏆備笉鍋氫簨椤?+   - 鍞竴鐨勪骇鍝侀樁娈甸『搴忓拰鏆備笉浼樺厛浜嬮」
+ 
+-Reviewer / QA Baseline:
+-`docs/reviewer/README.md`
++Reviewer / QA 鍩虹嚎浠嶅湪锛歚docs/reviewer/README.md`銆? 
+ ## 鏈€楂樼骇鍘熷垯
+ 
+-ModelWiki 涓嶆槸鈥滅埇铏噰闆嗗睍绀虹珯鈥濄€?-
+-瀹冩槸锛?-
+-> 鎵嬪姙璧勬枡搴?+ 鏀惰棌绠＄悊骞冲彴 + 杞婚噺绀惧尯 + 缂栬緫/璇勬祴鍐呭骞冲彴 + 绠＄悊瀹℃牳绯荤粺銆?+ModelWiki 涓嶆槸鈥滅埇铏噰闆嗗睍绀虹珯鈥濄€傚畠鏄細
+ 
+-Crawler 涓昏鏈嶅姟浜庡喎鍚姩鍜屽皯閲忓悗缁ˉ鍏ㄣ€傞殢鐫€绔欑偣鎴愮啛锛屽唴瀹硅川閲忋€佷汉宸ョ紪杈戙€佺敤鎴锋敹钘忎笌绀惧尯浜掑姩搴旀垚涓轰富绾裤€?+> 鍙帰绱㈢殑鎵嬪姙鐧剧 + 鏀惰棌鍐崇瓥宸ュ叿 + 鍙寔缁唴瀹逛綋绯?+ 鏈夊鏍歌竟鐣岀殑绀惧尯銆? 
+-## 鍐崇瓥浼樺厛绾?+鐖櫕鍙湇鍔′簬鍐峰惎鍔ㄣ€佹槑纭己澶卞拰鍙楁帶 refetch锛涘畠涓嶅緱鍐冲畾浜у搧浼樺厛绾э紝涔熶笉寰楄鐩栦汉宸ョ‘璁ゅ唴瀹广€? 
+-鍙戠敓鍐茬獊鏃讹紝鎸変互涓嬮『搴忓垽鏂細
++鍙戠敓鍐茬獊鏃讹紝鎸変互涓嬮『搴忓喅绛栵細
+ 
+-1. 鏈洰褰曚腑宸茬‘璁ょ殑浜у搧鍐崇瓥锛?-2. 浜哄伐瀹℃牳涓庡唴瀹瑰畨鍏ㄥ師鍒欙紱
+-3. 鏁版嵁瀹屾暣鎬т笌瀹夊叏绾︽潫锛?-4. 褰撳墠鏋舵瀯绾︽潫锛?+1. 鏈洰褰曠‘璁ょ殑浜у搧鏂瑰悜涓?`05_ROADMAP_AND_PRIORITIES.md` 鐨勯樁娈甸『搴忥紱
++2. 鍐呭瀹夊叏銆佷汉宸ュ鏍稿拰鏁版嵁鍙俊鍘熷垯锛?+3. 鏉冮檺銆侀殣绉併€佹暟鎹畬鏁存€т笌鍙戝竷绾︽潫锛?+4. 褰撳墠鏋舵瀯杈圭晫锛? 5. 鍗曟鎵ц鍣ㄦ姤鍛婃垨涓存椂瀹炵幇銆? 
+-鎵ц鍣ㄦ姤鍛婁笉鑳借鐩栦骇鍝佸熀绾裤€?+鎵ц鍣ㄦ姤鍛娿€佹寜閽瓨鍦ㄦ垨 mock 缁撴灉閮戒笉鑳借鐩栦骇鍝佸熀绾挎垨鏋勬垚涓婄嚎璇佹嵁銆傛瘡涓彲浜や粯鑳藉姏鑷冲皯浠ユ搷浣滃墠鐘舵€併€佺湡瀹炴搷浣溿€佹湇鍔＄鍝嶅簲銆佹寔涔呭寲鐘舵€併€丄PI readback 鍜屽埛鏂板悗鐨勯〉闈㈢粨鏋滄瀯鎴愰棴鐜紱娑夊強濯掍綋鏃惰繕椤婚獙璇佸疄闄?endpoint銆丠TTP status銆乧ontent type銆佸昂瀵稿拰蹇呰鐨勮瑙夋鏌ャ€?diff --git a/docs/reviewer/00_REVIEWER_BOOTSTRAP.md b/docs/reviewer/00_REVIEWER_BOOTSTRAP.md
+index 19862f7..b3e49e2 100644
+--- a/docs/reviewer/00_REVIEWER_BOOTSTRAP.md
++++ b/docs/reviewer/00_REVIEWER_BOOTSTRAP.md
+@@ -30,7 +30,7 @@
+ - production guanli provenance
+ - production API running build/version
+ - NAS agent version
+-- crawler queue 鐘舵€?+- crawler queue 鐘舵€侊紙浠呭湪鏈 scope 娑夊強 crawler銆佸鍏ユ垨琛ユ暟鍐欏洖鏃朵綔涓哄彂甯冨墠缃鏌ワ級
+ 
+ 涓嶈兘缁ф壙鏃ф姤鍛婁腑鐨勬槗鍙樹簨瀹炪€? 
+@@ -46,9 +46,18 @@ D. 鍙俊瀹樻柟/retailer 鍥剧墖鍙嚜鍔ㄨ繘鍏ユ寮忓浘搴擄紱MFC 鐢ㄦ埛涓婁紶銆? 
+ E. 鍙俊缁撴瀯鍖栬鎯呭彲鑷姩鍐欏叆锛涘啿绐併€佺█鐤忋€佸紓甯歌繘鍏?detail_review銆? 
+-## 4. 浜у搧闀挎湡鏂瑰悜
++## 4. 浜у搧璺嚎涓庡鏌ラ『搴? 
+-闀挎湡涓績鏄細鍙俊璧勬枡搴撱€佹敹钘忕鐞嗐€佺偣璧炶瘎璁恒€佺敤鎴蜂腑蹇冦€佽交閲忕ぞ鍖恒€佹墜鍔炶瘎娴嬪拰缂栬緫鍐呭銆侰rawler 鍙仛鍐峰惎鍔ㄤ笌杈呭姪琛ュ叏銆?+闀挎湡涓績鏄細鍙俊璧勬枡搴撱€佸彲娴忚鐨?Figure 璇︽儏銆丆ollection/Wishlist銆佺湡瀹?Avis銆丳hoebus Studio 鍐呭鍜岃交閲忕ぞ鍖恒€侰rawler 鍙仛鍐峰惎鍔ㄤ笌杈呭姪琛ュ叏锛屼笉鑳借褰撲綔鎵€鏈夊彂甯冪殑寮哄埗涓荤嚎銆?+
++Reviewer 鎸変笅鍒楅『搴忓鏌ワ紝涓斿繀椤诲皢鈥滆鍒?鏈獙璇佲€濅笌鈥滃凡瀹炴柦/宸查獙璇佲€濆垎寮€鎶ュ憡锛?+
++1. `P0 鏁版嵁璐ㄩ噺涓庢硶璇璥锛欶rance locale 鍏ㄥ瓧绗︿覆锛孧anufacturer `canonical_name`/`native_name`/`aliases`锛孭ersonnage 瀹炰綋锛屽垎绫讳竴鑷存€э紝Latest 鐨勭湡瀹炴帓搴忚涔夛紝Figure 涓庡唴瀹瑰疄浣撶殑鍏崇郴銆?+2. `P1 Figure 璇︽儏椤礰锛氭樉绀烘爣棰樹笌鍘熷鏍囬銆佺湡瀹?breadcrumb銆佽鏍煎睍绀恒€丟allery 鍙婃潵婧愩€丼tudio 鍐呭涓庣ぞ鍖?Avis 鐨勮竟鐣屻€?+3. `P2 Collection / Wishlist / Avis`锛氱敤鎴锋嫢鏈?鎰挎湜娓呭崟銆佽縼绉诲吋瀹广€佽瘎鍒嗗拰 Avis 鐨勬潈闄愩€佷竴鑷存€у拰骞傜瓑鎬с€?+4. 鍚庣画锛欵xplorer/Search銆侀椤点€乀ests & Guides銆佺敤鎴风収鐗囧拰绀惧尯娣卞寲銆?+
++浠讳綍 crawler銆佸鍏ユ垨鎵归噺鏁版嵁淇鍙樻洿浠嶉』閬靛惊 `07_CRAWLER_CANARY_PROTOCOL.md` 鍜?`08_PRODUCTION_CHANGE_SAFETY_PROTOCOL.md`锛涙棤鍏?scope 涓嶈姹備汉涓哄埗閫?canary銆? 
+ ## 5. 鎺ㄨ崘瀹℃煡杈撳嚭鏍煎紡
+ 
+diff --git a/docs/reviewer/03_GLOBAL_REVIEW_CHECKLIST.md b/docs/reviewer/03_GLOBAL_REVIEW_CHECKLIST.md
+index 787ca2a..b53b9e2 100644
+--- a/docs/reviewer/03_GLOBAL_REVIEW_CHECKLIST.md
++++ b/docs/reviewer/03_GLOBAL_REVIEW_CHECKLIST.md
+@@ -34,10 +34,14 @@
+ 
+ - source/source_id dedup
+ - JAN normalization
++- `display_title` 闈㈠悜鐢ㄦ埛銆乣original_title`/full_name 淇濈暀鍘熷鍙拷婧悕绉帮紱涓嶅緱鐢ㄤ竴涓瓧娈垫贩鐢ㄤ袱绉嶇洰鐨? - title/slug uniqueness
+-- category/product_kind separation
++- category/product_kind separation锛涘垎绫诲悕绉板拰鍓嶇 France locale 涓€鑷? - material mapping
+-- manufacturer/series/character relations
++- Manufacturer 浣跨敤 canonical entity锛歚canonical_name`銆乣native_name`銆乣aliases`銆乻lug锛涢噸澶嶅疄浣撳拰 0 浜у搧瀹炰綋鐨勫鐞嗘湁鍙璁¤鍒?+- Series/Personnage/Figure 鐨勭湡瀹炲叧绯诲彲璇诲洖锛涗笉寰椾互瀛楃涓茬寽娴嬪叧绯绘潵浼€?breadcrumb 鎴栫瓫閫夌粨鏋?+- Latest/"nouveautes" 鐨勬帓搴忓瓧娈点€佺瓫閫夋潯浠跺拰鏂囨璇箟涓€鑷达細褰曞叆鏃堕棿銆佸彂鍞棩鏈熴€佹湭鏉ュ彂鍞笉寰楁贩绉?+- 鍐呭瀹炰綋锛圱est銆乁nboxing銆丆omparatif銆丟uide 绛夛級涓?Figure 鐨勫叧鑱斿彲鍒涘缓銆佽鍙栧拰鍒犻櫎锛屽苟鏈?canonical source/鏉冮檺杈圭晫
+ - manual edits protected from crawler overwrite
+ 
+ ## E. Images
+@@ -49,7 +53,9 @@
+ - server-side hash
+ - path containment
+ - duplicate detection
+-- primary image selection
++- `sourceType` 鍙拷婧笖涓庡疄闄呮潵婧?Tab/鏍囩涓€鑷达紙Studio銆丆ommunaut茅銆乷fficielle 绛夛級
++- primary image selection 浣跨敤鏈€浣冲彲鐢ㄥ浘鐗囷紝涓嶅亣璁炬墍鏈?Figure 閮藉凡鏈?Studio 鍥剧墖锛涗紭鍏堢骇鍜?fallback 鍙祴璇?+- 鏃犲浘鏃朵娇鐢ㄧ粺涓€璁捐鐨?placeholder锛屼笉鎶婂姞杞藉け璐ユ垨绌虹櫧鍐掑厖鍐呭
+ - candidate identity
+ - preview/lightbox identity
+ - browser visibility
+@@ -84,12 +90,18 @@
+ - pageerror=0
+ - 429=0
+ - no request storm
++- France locale 鍏ㄥ瓧绗︿覆锛欻eader銆丗ooter銆佹悳绱€丒xplorer/Browse銆乫ilters銆乻ort銆佽鎯呫€佽鏍笺€丆ollection銆乄ishlist銆丄vis銆佽处鎴枫€佺櫥褰曟敞鍐屻€佸瘑鐮佹牎楠屻€侀敊璇拰閭欢婵€娲绘祦绋嬶紱涓嶅緱鍑虹幇娣峰悎鑻辨硶瀛楃涓?+- Figure 璇︽儏锛歚display_title` 鍙锛宍original_title` 浠嶅彲璁块棶锛沚readcrumb 浠庣湡瀹?Series/Personnage/Figure 鍏崇郴鐢熸垚锛涜鏍兼寜 Informations generales/Caracteristiques/Sortie/Production 鍒嗙粍锛岀┖瀛楁涓嶆覆鏌?+- Gallery锛氭潵婧?Tab/鏍囩鍜屽浘鐗?`sourceType` 鐩哥锛屾渶浣冲彲鐢ㄤ富鍥惧彲瑙侊紝placeholder 鍙涓斿彲璁块棶
++- Studio Test/Review 涓庣ぞ鍖?Avis 涓虹嫭绔嬪尯鍩熴€佺嫭绔嬫暟鎹簮鍜岀嫭绔嬪姩浣滐紝涓嶈兘娣锋垚鍚屼竴 comments 鍒楄〃
+ 
+ ## H. Community
+ 
+ - like idempotency
+-- favorite idempotency
+-- comment auth/edit/delete
++- Favorite 鍒?Wishlist 鏈夋槑纭吋瀹广€佽縼绉绘垨娓呴€€鏂规锛涗笉寰楀湪鏈鏄庣瓥鐣ユ椂璁╂棫鏁版嵁闈欓粯涓㈠け鎴栧弻鍐欐紓绉?+- Collection/Wishlist 娣诲姞銆佸垹闄ゃ€侀噸澶嶆彁浜ゅ箓绛夛紱璺ㄧ敤鎴疯鍙栥€佷慨鏀瑰拰鍒犻櫎鍧囪鎷掔粷
++- 涓€涓敤鎴锋瘡涓?Figure 浠呬竴鏉″彲缂栬緫 rating/avis锛涙€诲垎鍔?4 涓淮搴︼紝璇︽儏灞曠ず鑱氬悎鍒嗘暟鍜屾牱鏈暟
++- avis auth/create/edit/delete銆佽瘎鍒嗘洿鏂般€乤dmin moderation銆乺ate limit銆乷utput escaping
+ - admin moderation
+ - collection privacy/state transitions
+ - personal metadata validation
+diff --git a/docs/reviewer/05_UI_INTERACTION_TEST_BASELINE.md b/docs/reviewer/05_UI_INTERACTION_TEST_BASELINE.md
+index 1e52175..291f34f 100644
+--- a/docs/reviewer/05_UI_INTERACTION_TEST_BASELINE.md
++++ b/docs/reviewer/05_UI_INTERACTION_TEST_BASELINE.md
+@@ -4,6 +4,8 @@
+ 
+ UI 娴嬭瘯楠岃瘉鐪熷疄浜や簰锛屼笉楠岃瘉瀛楃涓插瓨鍦ㄣ€俙keepPending` 瀛楃涓插瓨鍦ㄤ笉浠ｈ〃 keep_pending 鍙敤銆? 
++闄ょ鐞嗙 smoke 澶栵紝浜у搧 UI 鐨勪紭鍏堥獙璇侀『搴忎负 `P0 鏁版嵁/娉曡`銆乣P1 璇︽儏椤礰銆乣P2 Collection/Wishlist/Avis`銆侲xplorer/Search銆侀椤点€佸唴瀹瑰拰绀惧尯娣卞寲鍦ㄧ浉搴?scope 鍒版潵鏃跺鍔犳祴璇曪紱涓嶅緱鍥犺矾绾垮浘鏂囧瓧鑰屽绉板凡缁忎笂绾裤€?+
+ ## Admin login smoke
+ 
+ `open login 鈫?fill env-backed credentials 鈫?login 鈫?dashboard visible`锛屽苟璁板綍 pageerror銆乧onsole error銆?01銆?29銆?xx銆傜姝㈣緭鍑哄嚟鎹€?@@ -36,6 +38,33 @@ Figure title銆乫igureId/slug銆乺iskType銆乺iskReason銆乷riginal evidence銆乧urre
+ 
+ 妫€鏌ュ叏灞€ render銆乤lert 鏄惁閲嶅缓鍥剧墖 DOM銆乥lob URL 鐢熷懡鍛ㄦ湡銆侀噸澶?listener銆乻tale request abort銆乮nflight dedup銆乨ouble-click disabled銆? 
++## P0 data and France locale
++
++鍦?France locale 涓嬮€愰〉妫€鏌?Header銆丗ooter銆佹悳绱€丅rowse/Explorer銆乫ilters銆乻ort銆佽鎯呫€佽鏍笺€佽处鎴枫€佺櫥褰曟敞鍐屻€佸瘑鐮佹牎楠屻€侀敊璇姸鎬佸強閭欢婵€娲荤浉鍏冲彲瑙佸瓧绗︿覆銆傚垏鎹㈣矾鐢便€佺┖鐘舵€併€佸姞杞藉け璐ュ拰琛ㄥ崟鏍￠獙涔熷繀椤绘鏌ワ紱绂佹鍙鏌ラ灞忔垨闈欐€佺炕璇戞枃浠躲€?+
++楠岃瘉 Manufacturer 鏄剧ず canonical_name 鐨勮鍒欍€乶ative_name 鐨勫睍绀轰綅缃拰 alias 鎼滅储鍛戒腑锛汸ersonnage銆佸垎绫诲拰 Latest 椤甸潰/鍗＄墖鐨勫悕绉颁笌瀹為檯鏌ヨ璇箟涓€鑷淬€侺atest 蹇呴』鑳戒粠 UI 杩芥函鍒版槑纭殑鎺掑簭鍚箟锛屼笉鑳芥妸鈥滄渶杩戝綍鍏モ€濃€滃凡鍙戝敭鈥濃€滄湭鏉ュ彂鍞€濇贩鐢ㄣ€?+
++## P1 Figure detail
++
++`open detail 鈫?inspect relations 鈫?inspect gallery 鈫?inspect specifications 鈫?inspect Studio/Avis boundary`锛?+
++- H1 浣跨敤 `display_title`锛屽畬鏁?`original_title`/full_name 涓嶄涪澶变笖浠ユ绾т俊鎭彲璁块棶銆?+- breadcrumb 鐢辩湡瀹炲叧绯荤敓鎴愶紱缂哄け鍏崇郴鏃跺瀹為檷绾э紝涓嶅彲鐢ㄦ爣棰樺瓧绗︿覆鎷煎嚭铏氬亣 Series 鎴?Personnage銆?+- 瑙勬牸鎸?Informations generales銆丆aracteristiques銆丼ortie銆丳roduction 鍒嗙粍锛涚┖鍊煎瓧娈靛拰绌鸿鍧囦笉鍙銆?+- Gallery 鏄剧ず姣忓浘 `sourceType`锛汼tudio銆丆ommunaut茅銆丳hotos officielles 绛夋潵婧?Tab/鏍囩涓庤祫浜т竴鑷达紱涓诲浘涓哄綋涓嬫渶浣冲彲鐢ㄥ浘鐗囷紱鏃犲浘鏄剧ず缁熶竴 placeholder锛岃€屼笉鏄?broken image銆?+- Studio 鍐呭鍗＄墖锛圱est/Unboxing/Comparatif/Guide锛変笌绀惧尯 Avis 鍒嗗尯鏄剧ず锛汼tudio 缂栬緫鍐呭涓嶈鍏?Avis 鍒楄〃鎴栫ぞ鍖鸿瘎鍒嗐€?+- Figure 鐩稿叧鍐呭鍏ュ彛鍙睍绀哄凡寤虹珛鍏崇郴鐨勫唴瀹瑰疄浣擄紝鐐瑰嚮鍚庡埌姝ｇ‘鍐呭椤点€?+
++## P2 Collection, Wishlist and Avis
++
++浠ヤ袱涓櫘閫氳处鍙峰拰涓€涓棤鐧诲綍浼氳瘽楠岃瘉锛?+
++- `Je la possede`/Collection 涓?Wishlist 鍙坊鍔犮€佺Щ闄ゃ€佸埛鏂板悗淇濇寔锛涘揩閫熷弻鍑绘垨閲嶈瘯涓嶄骇鐢熼噸澶嶈褰曘€?+- 鏈櫥褰曞紩瀵煎埌璁よ瘉锛涜处鍙?A 涓嶈兘閫氳繃 UI 鎴栦慨鏀?URL 璇诲彇/缂栬緫璐﹀彿 B 鐨勭鏈?Collection銆乄ishlist 鎴?Avis銆?+- Favorite 鏃у叆鍙?鏃ф暟鎹伒寰凡澹版槑鐨勫吋瀹广€佽縼绉绘垨娓呴€€绛栫暐锛涗笉鑳藉湪鏂版棫鍏ュ彛涔嬮棿浜х敓涓嶅彲瑙ｉ噴鐨勭姸鎬佸垎鍙夈€?+- `Noter/Ecrire un avis 鈫?submit 鈫?reload 鈫?edit 鈫?reload` 淇濇寔鍚屼竴鏉¤褰曘€傞噸澶嶅垱寤哄繀椤昏浆涓烘洿鏂版垨寰楀埌鏄庣‘鍐茬獊锛屼笉鍙嚭鐜板悓鐢ㄦ埛鍚?Figure 澶氭潯 avis銆?+- 璇︽儏鏄剧ず鎬诲垎銆佸洓涓淮搴﹀拰鏍锋湰鏁帮紱鏍锋湰鏁伴殢棣栬瘎銆佺紪杈戙€佸垹闄ゆ纭彉鍖栵紝0 鏍锋湰涓嶅緱鏄剧ず浼€犲钩鍧囧垎銆?+
+ ## 鐢熶骇榛樿 smoke 涓哄彧璇? 
+ 鍙仛 login/dashboard/list/filter/pagination/reload/image/lightbox銆傛湭缁忔壒鍑嗕笉鍋?approve/reject/request_refetch/keep_pending/cache purge/user modification銆?diff --git a/docs/reviewer/06_API_CONTRACT_AND_DATA_INTEGRITY_TESTS.md b/docs/reviewer/06_API_CONTRACT_AND_DATA_INTEGRITY_TESTS.md
+index ba7298d..88adb1f 100644
+--- a/docs/reviewer/06_API_CONTRACT_AND_DATA_INTEGRITY_TESTS.md
++++ b/docs/reviewer/06_API_CONTRACT_AND_DATA_INTEGRITY_TESTS.md
+@@ -27,6 +27,30 @@
+ 
+ 娴嬭瘯 source/source_id銆丣AN銆乼itle+manufacturer+release 杈呭姪銆乮mage hash銆乮mage source URL銆乺eview evidence fingerprint銆? 
++## P0 catalog, relations and locale integrity
++
++- Figure contract 鍖哄垎 `display_title` 涓?`original_title`/full_name锛涜縼绉汇€佸鍏ャ€佹洿鏂板拰璇诲彇閮戒笉搴旇鐩栧彟涓€瀛楁銆?+- Manufacturer contract 瑕嗙洊 `canonical_name`銆乣native_name`銆乣aliases`銆乻lug 鍜?canonical ID锛沘lias 褰掍竴鍖栧繀椤诲彲杩借釜锛岄噸澶嶅悎骞朵笉鑳界牬鍧?Figure 鍏崇郴鎴栦骇鐢熸棤瑙ｉ噴鐨?0 浜у搧瀹炰綋銆?+- Series銆丳ersonnage銆丆ategory銆丗igure relation 浣跨敤瀹炰綋 ID/鍏崇郴琛ㄨ€岄潪浠呭悕绉板瓧绗︿覆锛涜鎯?breadcrumb銆佺瓫閫夊拰 API readback 浜掔浉涓€鑷淬€?+- Latest contract 鏄庣‘瀹氫箟鎺掑簭瀛楁鍜岃寖鍥达紝骞舵祴璇曞悓鏃ャ€佺┖鏃ユ湡銆佹湭鏉ユ棩鏈熷拰鍒嗛〉绋冲畾鎬э紱API 鏂囨鎴栧瓧娈典笉鑳芥妸 added/released/upcoming 娣蜂负涓€璋堛€?+- France locale API 杩斿洖鐨勭敤鎴峰彲瑙佹灇涓俱€侀獙璇佷俊鎭拰閿欒淇℃伅闇€鏈夊畬鏁?fallback 瑙勫垯锛涙棤缈昏瘧閿€佽嫳娉曟贩鐢ㄣ€佸師濮?key 娉勯湶鍧囦负澶辫触銆?+- 鍐呭瀹炰綋锛圱est銆乁nboxing銆丆omparatif銆丟uide锛夊埌 Figure 鐨勫叧鑱斿叿澶?referential integrity銆佸垹闄?涓嬬嚎琛屼负鍜屾潈闄愭祴璇曪紱娌℃湁鍏宠仈鏃朵笉寰楄繑鍥炰负鐩稿叧鍐呭銆?+
++## P1 detail and gallery contract
++
++- detail response 杩斿洖鎴栧彲纭畾鍦版淳鐢熺湡瀹?breadcrumb 鍏崇郴锛涚姝㈠悗绔互鏍囬璇嶆硶鐚滄祴 Personnage/Serie銆?+- specifications 鏈夌ǔ瀹氬垎缁勬槧灏勶細Informations generales銆丆aracteristiques銆丼ortie銆丳roduction锛涘€间负绌恒€乶ull銆乽nknown 鏃朵笉鐢熸垚鍙覆鏌撶┖瀛楁銆?+- image response 鐨?`sourceType` 鏄彈鎺ф灇涓撅紝鍜屾潵婧?Tab/鏍囩銆乤sset URL銆佸鏍告潵婧愪竴鑷达紱primary image 閫夋嫨鎸夊凡璁板綍鐨勨€滄渶浣冲彲鐢ㄢ€濊鍒欙紝缂哄浘杩斿洖鏄庣‘ placeholder state銆?+- Studio editorial relation 涓?community avis/rating 鏄嫭绔?contract銆佺嫭绔嬭鏁板拰鎺堟潈鍩燂紱Studio 鍐呭涓嶈兘鍐欏叆 avis 鑱氬悎锛孉vis 涓嶈兘琚綔涓?Studio 鍐呭杩斿洖銆?+
++## P2 collection, wishlist, rating and avis integrity
++
++- Collection/Wishlist 鐨?create/delete/toggle 浣跨敤鏄庣‘骞傜瓑璇箟锛涢噸璇曘€佸苟鍙戝拰鍙屾彁浜や笉鑳介噸澶嶅垱寤猴紝涓旇法鐢ㄦ埛瀵硅薄 ID 蹇呴』 403/404锛屼笉娉勯湶绉佹湁鏁版嵁銆?+- Favorite 鍏煎鏈熷繀椤诲畾涔?read/write 鏄犲皠銆佽縼绉绘壒娆°€佸洖婊氬拰鏈€缁堟竻閫€鏉′欢锛涙祴璇曡縼绉诲墠銆佽縼绉讳腑銆佽縼绉诲悗璇诲啓锛岄伩鍏?Favorite 涓?Wishlist 鍙屽悜婕傜Щ銆?+- rating/avis 鏁版嵁妯″瀷瀵?`(user_id, figure_id)` 鏂藉姞鍞竴鎬э紱create銆乪dit/upsert銆乨elete 鍜屽苟鍙戝啓鍏ュ悗鐨?readback 鍧囧彧淇濈暀涓€鏉＄敤鎴疯褰曘€?+- 姣忔潯 avis 鏍￠獙 overall score 涓庡洓缁?score 鐨勮寖鍥淬€佸繀濉?鍙€夎鍒欍€佹枃瀛楀唴瀹广€佹墍鏈夋潈銆佸鏍稿拰杞箟锛涚紪杈戝繀椤绘洿鏂板師璁板綍鑰岄潪鏂板銆?+- 鑱氬悎 contract 杩斿洖鎬诲钩鍧囧垎銆佸洓缁磋仛鍚堝拰 `sampleCount`锛涚敤 0銆?銆佸鐢ㄦ埛銆佺紪杈戝拰鍒犻櫎鏍锋湰鏍稿鍒嗘瘝锛岀姝㈠彧杩斿洖 4.6 鑰屾病鏈夋牱鏈暟銆?+
+ ## Community integrity
+ 
+-Like/Favorite idempotency锛沜ollection state/visibility/quantity/price validation锛沜omments login required銆乷wn edit/delete銆乤dmin moderation銆乺ate limit銆乷utput escaping銆?+Like锛堣嫢淇濈暀锛夊彧浣滀负鍐呭/Avis helpful 绛夊凡瀹氫箟鍔ㄤ綔锛屼笉涓?Figure 鏀惰棌璇箟娣锋穯锛汣ollection state/visibility/quantity/price validation锛汚vis login required銆乷wn edit/delete銆乤dmin moderation銆乺ate limit銆乷utput escaping銆?diff --git a/docs/reviewer/09_REGRESSION_AND_RELEASE_GATE.md b/docs/reviewer/09_REGRESSION_AND_RELEASE_GATE.md
+index 9b74aa8..3877b5a 100644
+--- a/docs/reviewer/09_REGRESSION_AND_RELEASE_GATE.md
++++ b/docs/reviewer/09_REGRESSION_AND_RELEASE_GATE.md
+@@ -12,6 +12,8 @@ remote main known锛泈orktree understood锛泂ecret scan锛泃ypecheck锛泃ests锛沘dmi
+ 
+ frontend/agent endpoints exist锛沺roduction contract matches expected锛沺ersistent status schema correct锛沺agination correct锛涚姝?N+1 鐨勮矾寰勬棤鍥炲綊銆? 
++褰?scope 娑夊強 P0 鏃讹紝棰濆楠岃瘉 France locale 瀛楃涓插拰閿欒鐘舵€併€丮anufacturer canonical/native/alias 鍏崇郴銆丳ersonnage/鍒嗙被/Latest 璇箟浠ュ強鍐呭瀹炰綋涓?Figure 鐨?referential integrity銆?+
+ ## Gate 3 Admin UI
+ 
+ login銆乨ashboard銆乺eview list銆乫ilters銆乸agination銆乺eload銆乧urrent image銆乧andidate銆乴ightbox锛屼笖 pageerror=0銆?29=0銆?xx=0銆?@@ -22,11 +24,17 @@ login銆乨ashboard銆乺eview list銆乫ilters銆乸agination銆乺eload銆乧urrent image
+ 
+ ## Gate 5 Crawler
+ 
+-浠呭湪闇€瑕佸彂甯?crawler 鏃讹細exact canary job銆佺姸鎬佹椂闂寸嚎銆佺湡瀹?writeback銆乺eview state銆佹棤 queue-wide consumption銆?+浠呭湪 scope 鍙戝竷 crawler銆佸鍏ャ€佽ˉ鏁版垨 crawler 鍐欏洖閾捐矾鏃讹細exact canary job銆佺姸鎬佹椂闂寸嚎銆佺湡瀹?writeback銆乺eview state銆佹棤 queue-wide consumption銆傚叾浠栧彂甯冧笉瑕佹眰 crawler canary锛屼篃涓嶅緱鎶?queued job 褰?release evidence锛涙墽琛岀粏鍒欒 `07_CRAWLER_CANARY_PROTOCOL.md`銆? 
+ ## Gate 6 Public Product
+ 
+-homepage銆乴ist銆乻earch銆乨etail銆乺elated銆乮mage zoom銆佸尶鍚嶆祻瑙堛€佺櫥褰曞姩浣溿€乧ollection銆乧omments銆乺elated review article銆?+鎸?scope 搴旂敤浠ヤ笅闂ㄧ锛岃€屼笉鏄姹傚皻鏈疄鏂界殑璺嚎鍥惧姛鑳斤細
++
++- `P1 Figure detail`锛歚display_title`/`original_title`銆佺湡瀹炲叧绯?breadcrumb銆佽鏍煎垎缁勫拰缂哄け闅愯棌銆丟allery sourceType/鏉ユ簮 Tab/鏈€浣充富鍥炬垨 placeholder銆丼tudio 鍐呭涓庣ぞ鍖?Avis 鍒嗙銆丗igure 鍏宠仈鍐呭銆?+- `P2 Collection/Wishlist/Avis`锛氬尶鍚嶄笌璺ㄧ敤鎴锋潈闄愩€佹坊鍔?鍒犻櫎骞傜瓑銆丗avorite 杩佺Щ绛栫暐銆佹瘡鐢ㄦ埛姣?Figure 涓€鏉″彲缂栬緫 avis銆佹€诲垎鍔犲洓缁磋仛鍚堝拰鏍锋湰鏁般€?+- 鍚庣画 Explorer/Search銆侀椤点€佸唴瀹瑰拰绀惧尯 scope锛氶獙璇佺浉搴旂殑瀵艰埅銆佺瓫閫夈€佹悳绱€佹暟鎹槇鍊?鍐峰惎鍔ㄧ┖鎬佸拰鏉冮檺闂幆銆?+
++浠嶉€傜敤鐨勫熀纭€ smoke锛歨omepage銆乴ist銆乻earch銆乨etail銆乺elated銆乮mage zoom銆佸尶鍚嶆祻瑙堝拰鐧诲綍鍔ㄤ綔锛堜粎瀵规湰娆″彉鏇磋鐩栫殑椤甸潰鎵ц锛夈€? 
+ ## Release decision
+ 
+@@ -34,3 +42,5 @@ homepage銆乴ist銆乻earch銆乨etail銆乺elated銆乮mage zoom銆佸尶鍚嶆祻瑙堛€佺櫥褰? - APPROVE WITH KNOWN LIMITATION锛氫粎闈炲畨鍏?闈炴暟鎹畬鏁存€?闈為棴鐜檺鍒? - REQUEST CHANGES锛歴ecurity gap/source inconsistency/missing evidence/broken interaction/state inconsistency/data risk
+ - BLOCK RELEASE锛歝redential leak/destructive cache or data op/unauthorized access/uncontrolled crawler/production white screen/severe corruption
++
++鏁版嵁淇銆佺紦瀛樸€佺敓浜?UI 鍜岀揣鎬ュ仠姝粛鎸?`08_PRODUCTION_CHANGE_SAFETY_PROTOCOL.md` 鎵ц锛涘彂甯冩姤鍛婄殑璇佹嵁鐘舵€佷粛鎸?`02_EVIDENCE_AND_STATUS_STANDARD.md`銆?diff --git a/docs/reviewer/10_REVIEW_REPORT_TEMPLATE.md b/docs/reviewer/10_REVIEW_REPORT_TEMPLATE.md
+index e23020d..3d1511c 100644
+--- a/docs/reviewer/10_REVIEW_REPORT_TEMPLATE.md
++++ b/docs/reviewer/10_REVIEW_REPORT_TEMPLATE.md
+@@ -46,10 +46,33 @@ before / after
+ ### Browser
+ pageerror / console errors / 401 / 429 / 5xx / request counts
+ 
++## Product Route Coverage
++
++閫愰」濉啓 `IN SCOPE`銆乣OUT OF SCOPE` 鎴栫姸鎬侊紱`OUT OF SCOPE` 涓嶆槸宸查€氳繃銆?+
++| Priority | Check | Status / Evidence |
++|---|---|---|
++| P0 | France locale strings and errors | |
++| P0 | Manufacturer canonical/native/aliases; Personnage/category/Latest semantics | |
++| P0 | Content entity 鈫?Figure relation | |
++| P1 | display_title/original_title; real breadcrumb; grouped non-empty specs | |
++| P1 | Gallery sourceType/tabs/best primary/placeholder | |
++| P1 | Studio content separated from community Avis | |
++| P2 | Collection/Wishlist auth and idempotency | |
++| P2 | Favorite compatibility, migration, or retirement evidence | |
++| P2 | One editable rating/avis per user/Figure; overall + four dimensions + sample count | |
++| Later | Explorer/Search, homepage, content, community (when in scope) | |
++
++瀵规湭瀹炴柦鍔熻兘蹇呴』鍐?`NOT TESTED` 鎴?`OUT OF SCOPE` 骞惰鏄庡師鍥狅紱涓嶅緱鐢ㄨ鍒掓枃妗ｃ€乵ock 鎴栭潤鎬佸厓绱犺瘉鏄庝笂绾裤€?+
+ ## Production Writes
+ 
+ 鍒楀嚭 review status changes銆乧rawler jobs銆丏B writes銆丷edis writes銆乧ache purge銆乽ser changes銆傛病鏈夊垯鍐?`NONE`銆? 
++## Crawler Applicability
++
++`APPLICABLE / NOT APPLICABLE`锛氳鏄庢湰娆℃槸鍚﹀彉鏇?crawler銆佸鍏ャ€佽ˉ鏁版垨鍐欏洖閾捐矾銆備粎 `APPLICABLE` 鏃堕檮 exact canary 鐨?job ID銆佺姸鎬佹椂闂寸嚎鍜?writeback 璇佹嵁锛屽苟寮曠敤 `07_CRAWLER_CANARY_PROTOCOL.md`锛沗NOT APPLICABLE` 鏃朵笉寰楁妸缂哄皯 crawler canary 璁颁负鍙戝竷缂哄彛銆?+
+ ## Constraints for Executor
+ 
+ 蹇呴』鏄庣‘绂佹锛歝redential changes/output銆乥ulk delete銆乹ueue clear銆乥atch crawler銆乵anual DB status edit銆乵ock as production evidence銆乽nrelated UI rewrite銆?diff --git a/docs/reviewer/11_KNOWN_RISKS_AND_OPEN_QUESTIONS.md b/docs/reviewer/11_KNOWN_RISKS_AND_OPEN_QUESTIONS.md
+index ac27d7a..b232aa5 100644
+--- a/docs/reviewer/11_KNOWN_RISKS_AND_OPEN_QUESTIONS.md
++++ b/docs/reviewer/11_KNOWN_RISKS_AND_OPEN_QUESTIONS.md
+@@ -1,6 +1,20 @@
+ # Known Risks and Open Questions
+ 
+-## P0 / High Priority
++## P0 / 鏁版嵁璐ㄩ噺涓庢硶璇?+
++### France locale completeness
++闇€瀵?Header銆丗ooter銆佹悳绱€丅rowse/Explorer銆乫ilters銆乻ort銆佽鎯呫€佽鏍笺€佽处鎴枫€佺櫥褰曟敞鍐屻€佸瘑鐮佹牎楠屻€侀敊璇拰閭欢婵€娲诲仛杩愯鏃跺叏瀛楃涓插璁°€傜姝㈣嫳娉曟贩鐢ㄥ拰缂哄け缈昏瘧閿€傜姸鎬侊細`NOT TESTED`銆?+
++### Canonical catalog entities
++Manufacturer 鐨?`canonical_name`銆乣native_name`銆乣aliases`銆侀噸澶嶅悎骞跺強 0 浜у搧瀹炰綋澶勭悊瑙勫垯灏氭湭楠岃瘉锛汸ersonnage 瀹炰綋銆佸垎绫昏鑼冨拰 Figure 鍏崇郴鐨?source-of-truth 涔熸湭纭銆傜姸鎬侊細`REVIEW REQUIRED`銆?+
++### Latest semantics
++"Dernieres fiches ajoutees"銆?Dernieres sorties" 鍜?"Sorties a venir" 鐨勬帓搴忓瓧娈点€佺┖/鏈潵鏃ユ湡瑙勫垯灏氭湭瀹氱銆傜姸鎬侊細`REVIEW REQUIRED`銆?+
++### Content-to-Figure relation
++Tests銆乁nboxings銆丆omparatifs銆丟uides 涓?Figure 鐨?canonical relation銆佷笅绾胯涓哄拰缂栬緫鏉冮檺鏈獙璇併€傜姸鎬侊細`NOT TESTED`銆?+
++## P0 / Existing Operational Risks
+ 
+ ### Source provenance
+ 鐢熶骇 guanli artifact 涓?repo source SHA 涓嶅悓锛宐uild/minify/deploy chain 鏄惁鍙鐜板緟纭銆傜姸鎬侊細`NOT VERIFIED`銆?@@ -25,6 +39,9 @@ DNS resolution銆両Pv6銆乺edirect validation銆乺ebinding銆傜姸鎬侊細`REVIEW REQUI
+ 
+ ## P1
+ 
++### Detail-page data presentation
++`display_title`/`original_title` 鐨勬暟鎹縼绉汇€佺湡瀹?breadcrumb銆佽鏍煎垎缁?绌哄瓧娈甸殣钘忋€丟allery `sourceType`銆佹潵婧?Tab銆佹渶浣充富鍥惧拰 placeholder 閮藉皻鏈瘉鏄庡凡瀹炴柦銆係tudio 鍐呭涓庣ぞ鍖?Avis 鐨勫畬鍏ㄩ殧绂诲悓鏍峰緟楠岃瘉銆傜姸鎬侊細`NOT TESTED`銆?+
+ ### Human decision memory
+ 闇€瑕?evidence fingerprint銆乻uppression銆乺eopen rule銆? 
+@@ -34,13 +51,24 @@ DNS resolution銆両Pv6銆乺edirect validation銆乺ebinding銆傜姸鎬侊細`REVIEW REQUI
+ ### Review current state
+ 纭 current Figure data銆乷riginal evidence銆乧urrent state 鍒嗙锛岄伩鍏?stale snapshot 璇瀹℃牳鍛樸€? 
+-## 浜у搧鎵╁睍闂
++## P2 / Collection, Wishlist and Avis
+ 
+ ### Collection model
+-鍚庣画鏄庣‘ one Figure one state銆乬roup 涓?status 鏄惁鍏卞瓨銆乹uantity 璇箟銆佸叕寮€榛樿鍊笺€?+闇€鏄庣‘ one Figure one state銆乬roup 涓?status 鏄惁鍏卞瓨銆乹uantity 璇箟銆佸叕寮€榛樿鍊硷紝浠ュ強璺ㄧ敤鎴锋巿鏉冨拰璇锋眰骞傜瓑銆傜姸鎬侊細`REVIEW REQUIRED`銆?+
++### Wishlist and Favorite transition
++Favorite 鍒?Wishlist 蹇呴』閫夋嫨骞惰褰曞吋瀹瑰眰銆佸彲鍥炴粴杩佺Щ鎴栨槑纭竻閫€绛栫暐锛涙棫鍏ュ彛銆佸巻鍙叉暟鎹拰 API 瀹㈡埛绔湪杩囨浮鏈熺殑璇诲啓瑙勫垯灏氭湭楠岃瘉銆傜姸鎬侊細`REVIEW REQUIRED`銆?+
++### Rating and Avis uniqueness
++闇€楠岃瘉 `(user, Figure)` 鍞竴绾︽潫銆佸彲缂栬緫璁板綍銆佹€诲垎鍔犲洓缁磋寖鍥淬€佽仛鍚堟牱鏈暟銆佸垹闄?缂栬緫閲嶇畻鍙婂鏍哥瓥鐣ャ€傜姸鎬侊細`NOT TESTED`銆?+
++## 鍚庣画浜у搧鎵╁睍闂
+ 
+ ### Review article model
+ 鏄庣‘ WordPress article 鏄惁涓?canonical content source銆乥ackend relation table銆乤rticle taxonomy銆乪ditor workflow銆? 
+ ### Search architecture
+ 鏄惁寮曞叆涓撶敤鎼滅储寮曟搸搴旀牴鎹湡瀹炴暟鎹妯″喅瀹氾紝涓嶆彁鍓嶈繃搴﹁璁°€?+
++### Explorer, homepage and community data thresholds
++Explorer/Search銆侀椤靛拰绀惧尯妯″潡搴斿湪鐩稿簲 scope 瀹℃煡銆傞椤电殑绀惧尯 Avis 鍜屾渶楂樿瘎鍒嗘ā鍧楅渶瑕佺湡瀹炴暟鎹槇鍊间笌鍐峰惎鍔ㄧ┖鎬侊紝涓嶅緱浼€犳椿璺冩垨璁?1 涓瘎鍒嗚繘鍏ユ鍗曘€傜姸鎬侊細`REVIEW REQUIRED`銆?diff --git a/docs/reviewer/README.md b/docs/reviewer/README.md
+index 17caad0..e901ed2 100644
+--- a/docs/reviewer/README.md
++++ b/docs/reviewer/README.md
+@@ -1,6 +1,6 @@
+ # ModelWiki Reviewer Baseline
+ 
+-鏈洰褰曟槸鐙珛 Reviewer銆佹祴璇曟墽琛屽櫒鍜屽彂甯冨鏌ョ殑闀挎湡鍩虹嚎銆傚畠鍥炵瓟锛氭€庝箞瀹°€佹€庝箞娴嬨€佷粈涔堣瘉鎹墠绠楀畬鎴愩€佸綋鍓嶆湁鍝簺宸茬煡椋庨櫓銆?+鏈洰褰曟槸鐙珛 Reviewer銆佹祴璇曟墽琛屽櫒鍜屽彂甯冨鏌ョ殑闀挎湡鍩虹嚎銆傚畠鍥炵瓟锛氭€庝箞瀹°€佹€庝箞娴嬨€佷粈涔堣瘉鎹墠绠楀畬鎴愩€佸綋鍓嶆湁鍝簺宸茬煡椋庨櫓銆傚畠浠ャ€奙odelWiki 缃戠珯鏀圭増鏂规銆嬩负浜у搧璺嚎渚濇嵁锛屼絾涓嶆妸璺嚎鍥炬弿杩版垚宸插疄鏂藉姛鑳姐€? 
+ ## 浣跨敤椤哄簭
+ 
+@@ -17,6 +17,21 @@
+ - 涓嶆妸 API metadata 褰撹瑙夎川閲忛€氳繃銆? - 瀹夊叏銆佷汉宸ュ鏍稿彲闈犳€с€佹暟鎹畬鏁存€т紭鍏堜簬寮€鍙戦€熷害銆? - Crawler 涓昏鏈嶅姟鍐峰惎鍔ㄥ拰灏戦噺鍚庣画琛ュ叏锛屼笉鏄暱鏈熶骇鍝佷腑蹇冦€?+- crawler canary 鍙湪 crawler銆佸鍏ャ€佽ˉ鏁版垨鍏跺啓鍥為摼璺浉鍏崇殑鍙樻洿涓Е鍙戯紱閫氱敤鍙戝竷涓嶄互 crawler 鎵ц涓哄墠缃潯浠讹紝璇﹁ `07_CRAWLER_CANARY_PROTOCOL.md`銆?+
++## 褰撳墠瀹℃煡浼樺厛绾?+
++- `P0 鏁版嵁璐ㄩ噺涓庢硶璇璥锛欶rance locale 鍏ㄥ瓧绗︿覆瀹屾暣鎬э紱Manufacturer 鏍囧噯鍖栵紱Personnage銆佸垎绫汇€丩atest 璇箟锛涙棤鍥?placeholder锛涙暟鎹叧绯诲拰鍐呭鍏宠仈鐨勬纭€с€?+- `P1 Figure 璇︽儏椤礰锛歚display_title`/`original_title`銆佺湡瀹炲叧绯?breadcrumb銆佽鏍煎垎缁勪笌缂哄け瀛楁闅愯棌銆丟allery 鏉ユ簮鍜屼富鍥鹃€夋嫨銆丼tudio 鍐呭涓庣ぞ鍖?Avis 鍒嗙銆?+- `P2 Collection / Wishlist / Avis`锛氭潈闄愪笌骞傜瓑鎬э紱姣忕敤鎴锋瘡 Figure 涓€鏉″彲缂栬緫璇勫垎/avis锛涙€诲垎銆? 涓淮搴﹀拰鏍锋湰鏁帮紱Favorite 鍒?Wishlist 鐨勫吋瀹规垨娓呴€€绛栫暐銆?+- 鍚庣画锛欵xplorer/Search銆侀椤点€乀ests & Guides 鍐呭浣撶郴銆佺敤鎴风収鐗囧拰绀惧尯娣卞寲銆傚畠浠粛搴旀寜鏈洰褰曠殑璇佹嵁銆佷汉宸ュ鏍稿拰鐢熶骇瀹夊叏瑕佹眰瀹℃煡銆?+
++## 鎸佺画閫傜敤鐨勫崗璁?+
++- 璇佹嵁鐘舵€佸拰闂幆鏍囧噯锛歚02_EVIDENCE_AND_STATUS_STANDARD.md`銆?+- 浜哄伐瀹℃牳銆佸€欓€夊浘鐗囧拰璇︽儏瀹℃牳鐨勬棦鏈夎鍒欙細`00_REVIEWER_BOOTSTRAP.md`銆乣03_GLOBAL_REVIEW_CHECKLIST.md`銆?+- crawler 涓撻」 canary锛歚07_CRAWLER_CANARY_PROTOCOL.md`銆?+- 鐢熶骇鍙樻洿銆佹暟鎹慨澶嶃€佺紦瀛樺強绱ф€ュ仠姝細`08_PRODUCTION_CHANGE_SAFETY_PROTOCOL.md`銆? 
+ ## 鐘舵€佹灇涓? 
+diff --git a/docs/reviewer/REVIEWER_BASELINE_MANIFEST.json b/docs/reviewer/REVIEWER_BASELINE_MANIFEST.json
+index 3880bd4..514a06b 100644
+--- a/docs/reviewer/REVIEWER_BASELINE_MANIFEST.json
++++ b/docs/reviewer/REVIEWER_BASELINE_MANIFEST.json
+@@ -1,15 +1,15 @@
+ {
+-  "00_REVIEWER_BOOTSTRAP.md": "ba5a1c1e86513e76666bfb7596bbcf4be05026bb9d85d6052a254ae21b99be29",
++  "00_REVIEWER_BOOTSTRAP.md": "0b17c841dc63b33174432f21875dae2d922e48eaf1d0b5607529c55ed808ad14",
+   "01_BASELINE_STATE.md": "0f8c8c86ad4f05b38df4d34dda79243668d7017a0c1f8e73a5cd0b9b9930ec55",
+   "02_EVIDENCE_AND_STATUS_STANDARD.md": "7132a8ed0ab3569d2d8f2e9c2916a155c771ad68ba60b53a50b20cd16621d1af",
+-  "03_GLOBAL_REVIEW_CHECKLIST.md": "aaf8f230573611dd102254fb411a07a2a96ed4f780540ea0afecbce25c437dda",
++  "03_GLOBAL_REVIEW_CHECKLIST.md": "cdab8eca92adc5ec2423fa881ec9c332dc5ba78c6e50c2c5a663d1a6c2bf1f98",
+   "04_SECURITY_REVIEW_BASELINE.md": "372a4fd86555ed5692333ed814f67c572168392239fcc3cc8561f8ccdb2d7e4a",
+-  "05_UI_INTERACTION_TEST_BASELINE.md": "d2772dc679fe44f79900508147b156f73998f1af880846b11e9b51b8313500fc",
+-  "06_API_CONTRACT_AND_DATA_INTEGRITY_TESTS.md": "b7351c09a9448be92a2bc901c2fe068525da223332f69f03bd7b7bf3b0ca9938",
++  "05_UI_INTERACTION_TEST_BASELINE.md": "20fe206b51befd06a6a6d00248a46a6968c8c64dfa414575110460256b822d05",
++  "06_API_CONTRACT_AND_DATA_INTEGRITY_TESTS.md": "dc72ffc0afb3df3a0116e3b907f3e3e830f6aef6bfb2e2b6b778542513a8b199",
+   "07_CRAWLER_CANARY_PROTOCOL.md": "a437abe19e1bfbdb6264c1a542c7f6f676eba058e85ef3f457a229705b672dd2",
+   "08_PRODUCTION_CHANGE_SAFETY_PROTOCOL.md": "328dd5e3225a7da133766a3d24823ecebc2db2f99d8717915ce8eb3a401729cc",
+-  "09_REGRESSION_AND_RELEASE_GATE.md": "1ea9ec5c9d8c75aa0676afa88da822465e1259ced980972f1c2c5f23105d5a12",
+-  "10_REVIEW_REPORT_TEMPLATE.md": "69145e524bd5e748ea278caa5d623033e46636e04ceb7d6af14589f62c10f24e",
+-  "11_KNOWN_RISKS_AND_OPEN_QUESTIONS.md": "3cc037e4d07ebc18a423f17b277c63a9fc17f2fa1bee66968a1070b018e772f4",
+-  "README.md": "cf828c29190fe81d7494322ce131be0030f06cfb76d701e4d9eb976606d93d77"
+-}
+\ No newline at end of file
++  "09_REGRESSION_AND_RELEASE_GATE.md": "40b8eebcc7c85cc8e7341c906eb0a106bf19093b5afb135ccc3cd42eb6aa4a01",
++  "10_REVIEW_REPORT_TEMPLATE.md": "1f36d8abc799f1d3ef52ab02184f3436d7b0ef195ab3468e89dc7baf995e3576",
++  "11_KNOWN_RISKS_AND_OPEN_QUESTIONS.md": "0f712f722c05ed1074bc9f8eabe9eae1834d0a4e5c371f348bcd08c61afbe633",
++  "README.md": "e6bc70a06d8465ad07cb095240009ba0792a1b85894479136f67c40d2caade13"
++}
+diff --git a/guanli_index.php b/guanli_index.php
+index a739f51..260a98a 100644
+--- a/guanli_index.php
++++ b/guanli_index.php
+@@ -419,11 +419,11 @@ h1{font-size:2rem}h3{font-size:1.25rem}
+         closeMobileSidebar();
+     }
+ 
+-    function loadStats(){ setLoading('stats',true); api('/admin/stats').then(function(r){ if(r.success) state.stats = r.data; }).catch(function(){}).then(function(){ setLoading('stats', false); }); }
++    function loadStats(){ setLoading('stats',true); api('/admin/stats').then(function(r){ if(r.success) state.stats = r.data; }).catch(function(){ addAlert('error','缁熻鍔犺浇澶辫触'); }).then(function(){ setLoading('stats', false); }); }
+     function loadFigures(){
+         setLoading('figures',true); var params = '?page='+state.figuresPage+'&perPage=20';
+         if(state.figuresSearch) params += '&search=' + encodeURIComponent(state.figuresSearch);
+-        api('/figures' + params, 'GET', null, false).then(function(r){ if(r.success){ state.figures = r.data || []; state.figuresMeta = r.meta || null; } }).catch(function(){}).then(function(){ setLoading('figures', false); });
++        api('/figures' + params, 'GET', null, false).then(function(r){ if(r.success){ state.figures = r.data || []; state.figuresMeta = r.meta || null; } }).catch(function(){ addAlert('error','浣滃搧鍔犺浇澶辫触'); }).then(function(){ setLoading('figures', false); });
+     }
+     function loadReviewItems(){
+         setLoading('review', true);
+@@ -445,7 +445,7 @@ h1{font-size:2rem}h3{font-size:1.25rem}
+             } else addAlert('error', getErrorMessage(r, '澶嶆牳闃熷垪鍔犺浇澶辫触'));
+         }).catch(function(){ addAlert('error','澶嶆牳闃熷垪鍔犺浇澶辫触'); }).then(function(){ setLoading('review', false); });
+     }
+-    function loadUsers(){ setLoading('users',true); api('/admin/users').then(function(r){ if(r.success) state.users = r.data || []; }).catch(function(){}).then(function(){ setLoading('users', false); }); }
++    function loadUsers(){ setLoading('users',true); api('/admin/users').then(function(r){ if(r.success) state.users = r.data || []; }).catch(function(){ addAlert('error','鐢ㄦ埛鍒楄〃鍔犺浇澶辫触'); }).then(function(){ setLoading('users', false); }); }
+     function loadEntity(section){
+         var cfg = ENTITY_CONFIG[section]; if(!cfg) return;
+         var page = state.entityPage[section] || 1;
+diff --git a/modelwiki-theme/functions.php b/modelwiki-theme/functions.php
+index 65458b0..ec1c996 100644
+--- a/modelwiki-theme/functions.php
++++ b/modelwiki-theme/functions.php
+@@ -61,6 +61,8 @@ add_action('send_headers', 'mw_security_headers');
+ 
+ function mw_add_rewrite_rules() {
+     add_rewrite_rule('^figure/([^/]+)/?$', 'index.php?figure_slug=$matches[1]', 'top');
++    add_rewrite_rule('^characters/?$', 'index.php?mw_characters=1', 'top');
++    add_rewrite_rule('^character/([^/]+)/?$', 'index.php?character_slug=$matches[1]', 'top');
+     add_rewrite_rule('^series/([^/]+)/?$', 'index.php?series_slug=$matches[1]', 'top');
+     add_rewrite_rule('^manufacturer/([^/]+)/?$', 'index.php?manufacturer_slug=$matches[1]', 'top');
+     add_rewrite_rule('^sculptor/([^/]+)/?$', 'index.php?sculptor_slug=$matches[1]', 'top');
+@@ -70,9 +72,11 @@ add_action('init', 'mw_add_rewrite_rules');
+ 
+ function mw_add_query_vars($vars) {
+     $vars[] = 'figure_slug';
++    $vars[] = 'character_slug';
+     $vars[] = 'series_slug';
+     $vars[] = 'manufacturer_slug';
+     $vars[] = 'sculptor_slug';
++    $vars[] = 'mw_characters';
+     $vars[] = 'mw_account';
+     return $vars;
+ }
+@@ -84,6 +88,15 @@ function mw_figure_template_include($template) {
+         $new_template = locate_template(['page-figure.php']);
+         if ($new_template) return $new_template;
+     }
++    $character_slug = get_query_var('character_slug');
++    if ($character_slug) {
++        $new_template = locate_template(['page-character.php']);
++        if ($new_template) return $new_template;
++    }
++    if (get_query_var('mw_characters')) {
++        $new_template = locate_template(['page-characters.php']);
++        if ($new_template) return $new_template;
++    }
+     $series_slug = get_query_var('series_slug');
+     if ($series_slug) {
+         $new_template = locate_template(['page-series-list.php', 'page-series.php']);
+diff --git a/modelwiki-theme/header.php b/modelwiki-theme/header.php
+index 967f4c5..ada978b 100644
+--- a/modelwiki-theme/header.php
++++ b/modelwiki-theme/header.php
+@@ -34,7 +34,8 @@
+         <a href="<?php echo esc_url(add_query_arg('lang', mw_lang(), home_url('/'))); ?>" class="mw-logo" aria-label="<?php echo esc_attr(mw_t('ModelWiki Home')); ?>">ModelWiki</a>
+         <nav class="mw-nav" aria-label="<?php echo esc_attr(mw_t('Primary Navigation')); ?>">
+             <a href="<?php echo esc_url(add_query_arg('lang', mw_lang(), home_url('/'))); ?>"><?php echo esc_html(mw_t('Home')); ?></a>
+-            <a href="<?php echo esc_url(add_query_arg('lang', mw_lang(), home_url('/browse/'))); ?>"><?php echo esc_html(mw_t('Browse')); ?></a>
++            <a href="<?php echo esc_url(add_query_arg('lang', mw_lang(), home_url('/browse/'))); ?>"><?php echo esc_html(mw_t('Figurines')); ?></a>
++            <a href="<?php echo esc_url(add_query_arg('lang', mw_lang(), home_url('/characters/'))); ?>"><?php echo esc_html(mw_t('Personnages')); ?></a>
+             <a href="<?php echo esc_url(add_query_arg('lang', mw_lang(), home_url('/search/'))); ?>"><?php echo esc_html(mw_t('Search')); ?></a>
+             <a href="<?php echo esc_url(add_query_arg('lang', mw_lang(), home_url('/series/'))); ?>"><?php echo esc_html(mw_t('Series')); ?></a>
+             <a href="<?php echo esc_url(add_query_arg('lang', mw_lang(), home_url('/manufacturers/'))); ?>"><?php echo esc_html(mw_t('Manufacturers')); ?></a>
+@@ -61,7 +62,8 @@
+     </div>
+     <nav class="mw-mobile-menu" id="mw-mobile-menu" aria-label="<?php echo esc_attr(mw_t('Mobile Navigation')); ?>">
+         <a href="<?php echo esc_url(add_query_arg('lang', mw_lang(), home_url('/'))); ?>"><?php echo esc_html(mw_t('Home')); ?></a>
+-        <a href="<?php echo esc_url(add_query_arg('lang', mw_lang(), home_url('/browse/'))); ?>"><?php echo esc_html(mw_t('Browse')); ?></a>
++        <a href="<?php echo esc_url(add_query_arg('lang', mw_lang(), home_url('/browse/'))); ?>"><?php echo esc_html(mw_t('Figurines')); ?></a>
++        <a href="<?php echo esc_url(add_query_arg('lang', mw_lang(), home_url('/characters/'))); ?>"><?php echo esc_html(mw_t('Personnages')); ?></a>
+         <a href="<?php echo esc_url(add_query_arg('lang', mw_lang(), home_url('/search/'))); ?>"><?php echo esc_html(mw_t('Search')); ?></a>
+         <a href="<?php echo esc_url(add_query_arg('lang', mw_lang(), home_url('/series/'))); ?>"><?php echo esc_html(mw_t('Series')); ?></a>
+         <a href="<?php echo esc_url(add_query_arg('lang', mw_lang(), home_url('/manufacturers/'))); ?>"><?php echo esc_html(mw_t('Manufacturers')); ?></a>
+diff --git a/modelwiki-theme/index.php b/modelwiki-theme/index.php
+index 183c885..2034370 100644
+--- a/modelwiki-theme/index.php
++++ b/modelwiki-theme/index.php
+@@ -32,7 +32,7 @@
+     <section class="mw-latest">
+         <h2><?php echo esc_html(mw_t('Latest Releases')); ?></h2>
+         <?php
+-        $result = mw_api_get('/figures', array('perPage' => 12, 'sort' => 'release_date:desc'));
++        $result = mw_api_get('/figures', array('perPage' => 12, 'sort' => 'release_date:desc', 'lang' => mw_lang()));
+         $data = isset($result['data']) ? $result['data'] : null;
+         if ($data):
+             $data = mw_dedup_figures($data);
+diff --git a/modelwiki-theme/languages.php b/modelwiki-theme/languages.php
+index 42eb88c..7b230d4 100644
+--- a/modelwiki-theme/languages.php
++++ b/modelwiki-theme/languages.php
+@@ -157,6 +157,8 @@ $MW_TRANSLATIONS = [
+         // 瀵艰埅
+         'Home' => 'Accueil',
+         'Browse' => 'Explorer',
++        'Figurines' => 'Figurines',
++        'Personnages' => 'Personnages',
+         'Series' => 'S茅ries',
+         'Manufacturers' => 'Fabricants',
+         'Sculptors' => 'Sculpteurs',
+@@ -246,6 +248,7 @@ $MW_TRANSLATIONS = [
+         'Figures (%d)' => 'Figurines (%d)',
+         'Series (%d)' => 'S茅ries (%d)',
+         'Manufacturers (%d)' => 'Fabricants (%d)',
++        'Characters (%d)' => 'Personnages (%d)',
+         'No results found for your search.' => 'Aucun r茅sultat pour votre recherche.',
+         'Try different keywords or browse by category.' => 'Essayez d\'autres mots-cl茅s ou parcourez par cat茅gorie.',
+         'Enter a search term to find figures, series, and manufacturers.' => 'Saisissez un terme pour trouver des figurines, s茅ries et fabricants.',
+@@ -257,6 +260,8 @@ $MW_TRANSLATIONS = [
+         'No figures found for this series yet.' => 'Aucune figurine trouv茅e pour cette s茅rie.',
+         'No figures found for this manufacturer yet.' => 'Aucune figurine trouv茅e pour ce fabricant.',
+         'No figures found for this sculptor yet.' => 'Aucune figurine trouv茅e pour ce sculpteur.',
++        'Figures for this character' => 'Figurines pour ce personnage',
++        'No figures found for this character yet.' => 'Aucune figurine trouv茅e pour ce personnage pour le moment.',
+         'View image %d' => 'Voir l\'image %d',
+         // 鍒楄〃椤电粺璁?         '%s series total' => '%s s茅ries au total',
+@@ -265,6 +270,7 @@ $MW_TRANSLATIONS = [
+         'No series found.' => 'Aucune s茅rie trouv茅e.',
+         'No manufacturers found.' => 'Aucun fabricant trouv茅.',
+         'No sculptors found.' => 'Aucun sculpteur trouv茅.',
++        'No characters found.' => 'Aucun personnage trouv茅.',
+         // 404 椤甸潰
+         'The page you are looking for does not exist.' => 'La page que vous recherchez n\'existe pas.',
+         'Try searching instead...' => 'Essayez de rechercher...',
+@@ -330,6 +336,8 @@ $MW_TRANSLATIONS = [
+     'en' => [
+         'Home' => 'Home',
+         'Browse' => 'Browse',
++        'Figurines' => 'Figurines',
++        'Personnages' => 'Characters',
+         'Series' => 'Series',
+         'Manufacturers' => 'Manufacturers',
+         'Sculptors' => 'Sculptors',
+@@ -408,6 +416,7 @@ $MW_TRANSLATIONS = [
+         'Figures (%d)' => 'Figures (%d)',
+         'Series (%d)' => 'Series (%d)',
+         'Manufacturers (%d)' => 'Manufacturers (%d)',
++        'Characters (%d)' => 'Characters (%d)',
+         'No results found for your search.' => 'No results found for your search.',
+         'Try different keywords or browse by category.' => 'Try different keywords or browse by category.',
+         'Enter a search term to find figures, series, and manufacturers.' => 'Enter a search term to find figures, series, and manufacturers.',
+@@ -418,6 +427,8 @@ $MW_TRANSLATIONS = [
+         'No figures found for this series yet.' => 'No figures found for this series yet.',
+         'No figures found for this manufacturer yet.' => 'No figures found for this manufacturer yet.',
+         'No figures found for this sculptor yet.' => 'No figures found for this sculptor yet.',
++        'Figures for this character' => 'Figures for this character',
++        'No figures found for this character yet.' => 'No figures found for this character yet.',
+         'View image %d' => 'View image %d',
+         '%s series total' => '%s series total',
+         '%s manufacturers total' => '%s manufacturers total',
+@@ -425,6 +436,7 @@ $MW_TRANSLATIONS = [
+         'No series found.' => 'No series found.',
+         'No manufacturers found.' => 'No manufacturers found.',
+         'No sculptors found.' => 'No sculptors found.',
++        'No characters found.' => 'No characters found.',
+         'The page you are looking for does not exist.' => 'The page you are looking for does not exist.',
+         'Try searching instead...' => 'Try searching instead...',
+         'Back to Home' => 'Back to Home',
+@@ -489,6 +501,8 @@ $MW_TRANSLATIONS = [
+     'de' => [
+         'Home' => 'Startseite',
+         'Browse' => 'Durchsuchen',
++        'Figurines' => 'Figuren',
++        'Personnages' => 'Charaktere',
+         'Series' => 'Serien',
+         'Manufacturers' => 'Hersteller',
+         'Sculptors' => 'Bildhauer',
+@@ -567,6 +581,7 @@ $MW_TRANSLATIONS = [
+         'Figures (%d)' => 'Figuren (%d)',
+         'Series (%d)' => 'Serien (%d)',
+         'Manufacturers (%d)' => 'Hersteller (%d)',
++        'Characters (%d)' => 'Charaktere (%d)',
+         'No results found for your search.' => 'Keine Ergebnisse f眉r Ihre Suche gefunden.',
+         'Try different keywords or browse by category.' => 'Versuchen Sie andere Stichw枚rter oder durchsuchen Sie nach Kategorie.',
+         'Enter a search term to find figures, series, and manufacturers.' => 'Geben Sie einen Suchbegriff ein, um Figuren, Serien und Hersteller zu finden.',
+@@ -577,6 +592,8 @@ $MW_TRANSLATIONS = [
+         'No figures found for this series yet.' => 'Keine Figuren in dieser Serie gefunden.',
+         'No figures found for this manufacturer yet.' => 'Keine Figuren dieses Herstellers gefunden.',
+         'No figures found for this sculptor yet.' => 'Keine Werke dieses Bildhauers gefunden.',
++        'Figures for this character' => 'Figuren f眉r diesen Charakter',
++        'No figures found for this character yet.' => 'Noch keine Figuren f眉r diesen Charakter gefunden.',
+         'View image %d' => 'Bild %d ansehen',
+         '%s series total' => '%s Serien insgesamt',
+         '%s manufacturers total' => '%s Hersteller insgesamt',
+@@ -584,6 +601,7 @@ $MW_TRANSLATIONS = [
+         'No series found.' => 'Keine Serien gefunden.',
+         'No manufacturers found.' => 'Keine Hersteller gefunden.',
+         'No sculptors found.' => 'Keine Bildhauer gefunden.',
++        'No characters found.' => 'Keine Charaktere gefunden.',
+         'The page you are looking for does not exist.' => 'Die gesuchte Seite existiert nicht.',
+         'Try searching instead...' => 'Versuchen Sie stattdessen zu suchen...',
+         'Back to Home' => 'Zur眉ck zur Startseite',
+@@ -648,6 +666,8 @@ $MW_TRANSLATIONS = [
+     'it' => [
+         'Home' => 'Home',
+         'Browse' => 'Sfoglia',
++        'Figurines' => 'Figurine',
++        'Personnages' => 'Personaggi',
+         'Series' => 'Serie',
+         'Manufacturers' => 'Produttori',
+         'Sculptors' => 'Scultori',
+@@ -726,6 +746,7 @@ $MW_TRANSLATIONS = [
+         'Figures (%d)' => 'Figure (%d)',
+         'Series (%d)' => 'Serie (%d)',
+         'Manufacturers (%d)' => 'Produttori (%d)',
++        'Characters (%d)' => 'Personaggi (%d)',
+         'No results found for your search.' => 'Nessun risultato per la tua ricerca.',
+         'Try different keywords or browse by category.' => 'Prova altre parole chiave o sfoglia per categoria.',
+         'Enter a search term to find figures, series, and manufacturers.' => 'Inserisci un termine per trovare figurine, serie e produttori.',
+@@ -736,6 +757,8 @@ $MW_TRANSLATIONS = [
+         'No figures found for this series yet.' => 'Nessuna figura trovata per questa serie.',
+         'No figures found for this manufacturer yet.' => 'Nessuna figura trovata per questo produttore.',
+         'No figures found for this sculptor yet.' => 'Nessuna figura trovata per questo scultore.',
++        'Figures for this character' => 'Figure per questo personaggio',
++        'No figures found for this character yet.' => 'Nessuna figura trovata per questo personaggio.',
+         'View image %d' => 'Vedi immagine %d',
+         '%s series total' => '%s serie in totale',
+         '%s manufacturers total' => '%s produttori in totale',
+@@ -743,6 +766,7 @@ $MW_TRANSLATIONS = [
+         'No series found.' => 'Nessuna serie trovata.',
+         'No manufacturers found.' => 'Nessun produttore trovato.',
+         'No sculptors found.' => 'Nessuno scultore trovato.',
++        'No characters found.' => 'Nessun personaggio trovato.',
+         'The page you are looking for does not exist.' => 'La pagina che stai cercando non esiste.',
+         'Try searching instead...' => 'Prova a cercare...',
+         'Back to Home' => 'Torna alla Home',
+@@ -826,4 +850,4 @@ if (!function_exists('esc_html_e')) {
+ }
+ if (!function_exists('esc_attr_e')) {
+     function esc_attr_e($key, $domain = '') { echo esc_attr(mw_t($key)); }
+-}
+\ No newline at end of file
++}
+diff --git a/modelwiki-theme/page-figure.php b/modelwiki-theme/page-figure.php
+index 5cf4de1..1591832 100644
+--- a/modelwiki-theme/page-figure.php
++++ b/modelwiki-theme/page-figure.php
+@@ -3,7 +3,7 @@ $figure = get_query_var('mw_figure_data');
+ if (!$figure) {
+     $slug = get_query_var('figure_slug');
+     if ($slug && function_exists('mw_api_call')) {
+-        $figure = mw_api_call('/figures/' . urlencode($slug));
++        $figure = mw_api_call('/figures/' . urlencode($slug), ['lang' => mw_lang()]);
+     }
+ }
+ 
+@@ -24,6 +24,11 @@ if (!empty($figure['revisions'])) {
+     }
+ }
+ 
++$display_title = $figure['displayTitle'] ?? ($figure['name'] ?? '');
++$original_title = $figure['originalTitle'] ?? ($figure['nameJp'] ?? '');
++$display_description = $figure['displayDescription'] ?? ($figure['description'] ?? '');
++$display_origin = $figure['displayOrigin'] ?? ($figure['origin'] ?? '');
++
+ get_header();
+ ?>
+ 
+@@ -39,7 +44,7 @@ get_header();
+             <a href="<?php echo esc_url(add_query_arg('lang', mw_lang(), home_url('/browse/?category=' . urlencode($firstCat['slug'] ?? '')))); ?>"><?php echo esc_html($firstCat['name'] ?? ''); ?></a>
+             <?php endif; ?>
+             <span class="mw-breadcrumb-sep">/</span>
+-            <span><?php echo esc_html($figure['name'] ?? ''); ?></span>
++            <span><?php echo esc_html($display_title); ?></span>
+         </nav>
+ 
+         <div class="mw-figure-layout">
+@@ -77,7 +82,7 @@ get_header();
+                 ?>
+                 <div class="<?php echo esc_attr($main_class); ?>">
+                     <img src="<?php echo esc_url(mw_image_url($gallery_images[0])); ?>"
+-                         alt="<?php echo esc_attr($gallery_images[0]['alt'] ?? ($figure['name'] ?? '')); ?>"
++                         alt="<?php echo esc_attr($gallery_images[0]['alt'] ?? $display_title); ?>"
+                          loading="eager"
+                          fetchpriority="high"
+                          class="<?php echo esc_attr($main_img_class); ?>"
+@@ -98,14 +103,14 @@ get_header();
+                     <button type="button" class="mw-gallery-thumb <?php echo $i === 0 ? 'active' : ''; ?>"
+                             data-gallery-thumb
+                             data-full="<?php echo esc_url(mw_image_url($full_src)); ?>"
+-                            data-alt="<?php echo esc_attr($img['alt'] ?? ($figure['name'] ?? '')); ?>"
++                            data-alt="<?php echo esc_attr($img['alt'] ?? $display_title); ?>"
+                             aria-label="<?php echo esc_attr(sprintf(mw_t('View image %d'), $i + 1)); ?>">
+                         <img src="<?php echo esc_url(mw_image_url($thumb_src)); ?>" alt="" loading="lazy">
+                     </button>
+                     <?php endforeach; ?>
+                 </div>
+                 <?php endif; ?>
+-                <div class="mw-lightbox" id="mw-lightbox" role="dialog" aria-modal="true" aria-label="<?php echo esc_attr($figure['name'] ?? 'Image preview'); ?>">
++                <div class="mw-lightbox" id="mw-lightbox" role="dialog" aria-modal="true" aria-label="<?php echo esc_attr($display_title ?: 'Image preview'); ?>">
+                     <button type="button" class="mw-lightbox-close" id="mw-lightbox-close" aria-label="<?php echo esc_attr(mw_t('Close image preview')); ?>">&times;</button>
+                     <img src="" alt="" id="mw-lightbox-img">
+                 </div>
+@@ -117,9 +122,9 @@ get_header();
+             </div>
+ 
+             <div class="mw-figure-info">
+-                <h1 class="mw-figure-title"><?php echo esc_html($figure['name'] ?? ''); ?></h1>
+-                <?php if (!empty($figure['nameJp'])): ?>
+-                <p class="mw-figure-name-jp"><?php echo esc_html($figure['nameJp']); ?></p>
++                <h1 class="mw-figure-title"><?php echo esc_html($display_title); ?></h1>
++                <?php if (!empty($original_title) && $original_title !== $display_title): ?>
++                <p class="mw-figure-name-jp"><?php echo esc_html($original_title); ?></p>
+                 <?php endif; ?>
+ 
+                 <div class="mw-figure-tags">
+@@ -157,7 +162,7 @@ get_header();
+                 <?php
+                 // Per DATA_CONTRACT.md 搂1.5: clean description for encyclopedic display.
+                 // Strips purchase info, URLs, HTML remnants, excessive whitespace.
+-                $cleaned_description = mw_clean_description($figure['description'] ?? '');
++                $cleaned_description = mw_clean_description($display_description);
+                 ?>
+                 <?php if (!empty($cleaned_description)): ?>
+                 <p style="color:var(--mw-text-secondary);font-size:.9375rem;line-height:1.7;margin-bottom:var(--mw-space-5);"><?php echo esc_html($cleaned_description); ?></p>
+@@ -172,10 +177,10 @@ get_header();
+                 </div>
+                 <?php endif; ?>
+ 
+-                <?php if (!empty($figure['origin'])): ?>
++                <?php if (!empty($display_origin)): ?>
+                 <div class="mw-meta-card">
+                     <span class="mw-meta-card-label"><?php echo esc_html(mw_t('Origin')); ?></span>
+-                    <span><?php echo esc_html($figure['origin']); ?></span>
++                    <span><?php echo esc_html($display_origin); ?></span>
+                 </div>
+                 <?php endif; ?>
+ 
+@@ -212,8 +217,15 @@ get_header();
+                     <span class="mw-meta-card-label"><?php echo esc_html(mw_t('Character')); ?></span>
+                     <?php foreach ($figure['characters'] as $i => $c): ?>
+                         <?php if ($i > 0) echo ', '; ?>
+-                        <a href="<?php echo esc_url(home_url('/browse/?search=' . urlencode($c['character']['name'] ?? $c['character']['nameEn'] ?? ''))); ?>">
+-                            <?php echo esc_html($c['character']['name'] ?? $c['character']['nameEn'] ?? ''); ?>
++                        <?php
++                        $character = $c['character'] ?? [];
++                        $character_name = mw_display_name($character);
++                        $character_url = !empty($character['slug'])
++                            ? home_url('/character/' . $character['slug'] . '/')
++                            : home_url('/browse/?search=' . urlencode($character_name));
++                        ?>
++                        <a href="<?php echo esc_url(add_query_arg('lang', mw_lang(), $character_url)); ?>">
++                            <?php echo esc_html($character_name); ?>
+                         </a>
+                     <?php endforeach; ?>
+                 </div>
+@@ -245,8 +257,8 @@ get_header();
+                         <?php if (!empty($figure['priceJpy'])): ?>
+                         <div class="mw-specs-item"><span class="mw-specs-label"><?php echo esc_html(mw_t('Price')); ?></span><span class="mw-specs-value">&yen;<?php echo esc_html(number_format($figure['priceJpy'])); ?></span></div>
+                         <?php endif; ?>
+-                        <?php if (!empty($figure['origin'])): ?>
+-                        <div class="mw-specs-item"><span class="mw-specs-label"><?php echo esc_html(mw_t('Origin')); ?></span><span class="mw-specs-value"><?php echo esc_html($figure['origin']); ?></span></div>
++                        <?php if (!empty($display_origin)): ?>
++                        <div class="mw-specs-item"><span class="mw-specs-label"><?php echo esc_html(mw_t('Origin')); ?></span><span class="mw-specs-value"><?php echo esc_html($display_origin); ?></span></div>
+                         <?php endif; ?>
+                         <?php if (!empty($figure['releaseDate'])): ?>
+                         <div class="mw-specs-item"><span class="mw-specs-label"><?php echo esc_html(mw_t('Release Date')); ?></span><span class="mw-specs-value"><?php echo esc_html(date_i18n(get_option('date_format'), strtotime($figure['releaseDate']))); ?></span></div>
+@@ -308,7 +320,7 @@ get_header();
+                     <?php endforeach; ?>
+                 <?php endif; ?>
+                 <li class="mw-lineage-item mw-lineage-current">
+-                    <strong><?php echo esc_html($figure['name'] ?? ''); ?></strong>
++                    <strong><?php echo esc_html($display_title); ?></strong>
+                     <?php if (!empty($figure['releaseDate'])): ?>
+                     <span class="mw-lineage-date"><?php echo esc_html(date_i18n('M Y', strtotime($figure['releaseDate']))); ?></span>
+                     <?php endif; ?>
+@@ -345,7 +357,7 @@ get_header();
+         <?php
+         $related_figures = [];
+         if (function_exists('mw_api_fetch') && !empty($figure['series']['slug'])) {
+-            $related_result = mw_api_fetch('/figures', ['series' => $figure['series']['slug'], 'perPage' => 6, 'sort' => 'release_date:desc']);
++            $related_result = mw_api_fetch('/figures', ['series' => $figure['series']['slug'], 'perPage' => 6, 'sort' => 'release_date:desc', 'lang' => mw_lang()]);
+             if ($related_result['success'] && is_array($related_result['data'])) {
+                 $related_figures = array_filter($related_result['data'], function($f) use ($figure) {
+                     return ($f['id'] ?? null) !== ($figure['id'] ?? null);
+diff --git a/modelwiki-theme/page-search.php b/modelwiki-theme/page-search.php
+index 5ca2af6..bd3bbe6 100644
+--- a/modelwiki-theme/page-search.php
++++ b/modelwiki-theme/page-search.php
+@@ -2,7 +2,7 @@
+ get_header();
+ 
+ $query = isset($_GET['q']) ? sanitize_text_field(trim($_GET['q'])) : '';
+-$allowedTypes = array('all', 'figure', 'series', 'manufacturer');
++$allowedTypes = array('all', 'figure', 'series', 'manufacturer', 'character');
+ $type = isset($_GET['type']) ? sanitize_text_field($_GET['type']) : 'all';
+ if (!in_array($type, $allowedTypes, true)) {
+     $type = 'all';
+@@ -29,10 +29,11 @@ if (!empty($query)) {
+         <?php if ($results && isset($results['data'])): ?>
+             <?php $searchData = $results['data']; ?>
+             <div class="mw-search-tabs">
+-                <a href="<?php echo esc_url(add_query_arg(array('q' => $query, 'type' => 'all', 'lang' => mw_lang()))); ?>" class="mw-search-tab<?php echo $type === 'all' ? ' active' : ''; ?>"><?php echo esc_html(sprintf(mw_t('All (%d)'), ($searchData['figures']['total'] ?? 0) + ($searchData['series']['total'] ?? 0) + ($searchData['manufacturers']['total'] ?? 0))); ?></a>
++                <a href="<?php echo esc_url(add_query_arg(array('q' => $query, 'type' => 'all', 'lang' => mw_lang()))); ?>" class="mw-search-tab<?php echo $type === 'all' ? ' active' : ''; ?>"><?php echo esc_html(sprintf(mw_t('All (%d)'), ($searchData['figures']['total'] ?? 0) + ($searchData['series']['total'] ?? 0) + ($searchData['manufacturers']['total'] ?? 0) + ($searchData['characters']['total'] ?? 0))); ?></a>
+                 <a href="<?php echo esc_url(add_query_arg(array('q' => $query, 'type' => 'figure', 'lang' => mw_lang()))); ?>" class="mw-search-tab<?php echo $type === 'figure' ? ' active' : ''; ?>"><?php echo esc_html(sprintf(mw_t('Figures (%d)'), $searchData['figures']['total'] ?? 0)); ?></a>
+                 <a href="<?php echo esc_url(add_query_arg(array('q' => $query, 'type' => 'series', 'lang' => mw_lang()))); ?>" class="mw-search-tab<?php echo $type === 'series' ? ' active' : ''; ?>"><?php echo esc_html(sprintf(mw_t('Series (%d)'), $searchData['series']['total'] ?? 0)); ?></a>
+                 <a href="<?php echo esc_url(add_query_arg(array('q' => $query, 'type' => 'manufacturer', 'lang' => mw_lang()))); ?>" class="mw-search-tab<?php echo $type === 'manufacturer' ? ' active' : ''; ?>"><?php echo esc_html(sprintf(mw_t('Manufacturers (%d)'), $searchData['manufacturers']['total'] ?? 0)); ?></a>
++                <a href="<?php echo esc_url(add_query_arg(array('q' => $query, 'type' => 'character', 'lang' => mw_lang()))); ?>" class="mw-search-tab<?php echo $type === 'character' ? ' active' : ''; ?>"><?php echo esc_html(sprintf(mw_t('Characters (%d)'), $searchData['characters']['total'] ?? 0)); ?></a>
+             </div>
+ 
+             <?php if ($type === 'all' || $type === 'figure'): ?>
+@@ -83,10 +84,27 @@ if (!empty($query)) {
+                 <?php endif; ?>
+             <?php endif; ?>
+ 
++            <?php if ($type === 'all' || $type === 'character'): ?>
++                <?php if (!empty($searchData['characters']['items'])): ?>
++                    <section class="mw-search-section">
++                        <h2><?php echo esc_html(mw_t('Personnages')); ?></h2>
++                        <div class="mw-entity-grid">
++                            <?php foreach ($searchData['characters']['items'] as $item): ?>
++                                <a href="<?php echo esc_url(add_query_arg('lang', mw_lang(), home_url('/character/' . $item['slug'] . '/'))); ?>" class="mw-entity-card">
++                                    <span class="mw-entity-name"><?php echo esc_html(mw_display_name($item)); ?></span>
++                                    <span class="mw-entity-count"><?php echo intval($item['_count']['figures'] ?? 0); ?> <?php echo esc_html(mw_t('figures')); ?></span>
++                                </a>
++                            <?php endforeach; ?>
++                        </div>
++                    </section>
++                <?php endif; ?>
++            <?php endif; ?>
++
+             <?php if (
+                 empty($searchData['figures']['items']) &&
+                 empty($searchData['series']['items']) &&
+-                empty($searchData['manufacturers']['items'])
++                empty($searchData['manufacturers']['items']) &&
++                empty($searchData['characters']['items'])
+             ): ?>
+                 <p class="mw-no-results"><?php echo esc_html(mw_t('No results found for your search.')); ?></p>
+             <?php endif; ?>
+diff --git a/modelwiki-theme/template-parts/figure-card.php b/modelwiki-theme/template-parts/figure-card.php
+index 9f93203..f9ff9de 100644
+--- a/modelwiki-theme/template-parts/figure-card.php
++++ b/modelwiki-theme/template-parts/figure-card.php
+@@ -46,11 +46,12 @@ function mw_render_figure_card($fig) {
+     $releaseDate = isset($fig['releaseDate']) ? $fig['releaseDate'] : '';
+     $is_merch = mw_is_merch_figure($fig);
+     $is_preorder = $releaseDate && strtotime($releaseDate) > time();
++    $display_title = $fig['displayTitle'] ?? mw_display_name($fig);
+     ?>
+     <a href="<?php echo esc_url(add_query_arg('lang', mw_lang(), home_url('/figure/' . $fig['slug'] . '/'))); ?>" class="mw-figure-card<?php echo $is_merch ? ' mw-figure-card--merch' : ''; ?>">
+         <div class="mw-figure-card-img">
+             <?php if ($image_url): ?>
+-                <img src="<?php echo esc_url($image_url); ?>" alt="<?php echo esc_attr(mw_display_name($fig)); ?>" loading="lazy">
++                <img src="<?php echo esc_url($image_url); ?>" alt="<?php echo esc_attr($display_title); ?>" loading="lazy">
+             <?php else: ?>
+                 <span class="mw-no-image-placeholder"><?php echo esc_html(mw_t('No image')); ?></span>
+             <?php endif; ?>
+@@ -66,7 +67,7 @@ function mw_render_figure_card($fig) {
+             <?php endif; ?>
+         </div>
+         <div class="mw-figure-card-info">
+-            <h3><?php echo esc_html(mw_display_name($fig)); ?></h3>
++            <h3><?php echo esc_html($display_title); ?></h3>
+             <?php if ($manufacturer): ?><span class="mw-figure-card-mfr"><?php echo esc_html($manufacturer); ?></span><?php endif; ?>
+             <?php if ($scale && !$is_merch): ?><span class="mw-figure-card-scale"><?php echo esc_html($scale); ?></span><?php endif; ?>
+             <?php if ($priceJpy): ?><span class="mw-figure-card-price">&yen;<?php echo number_format(intval($priceJpy)); ?></span><?php endif; ?>
+diff --git a/mw-backend/package.json b/mw-backend/package.json
+index 1985f9a..a7095ae 100644
+--- a/mw-backend/package.json
++++ b/mw-backend/package.json
+@@ -7,7 +7,10 @@
+     "build": "tsup src/index.ts --format esm --external @prisma/client --external bcryptjs --external sharp",
+     "start": "node dist/index.js",
+     "typecheck": "tsc --noEmit",
+-    "admin-js-check": "node scripts/admin-js-check.mjs"
++    "admin-js-check": "node scripts/admin-js-check.mjs",
++    "test": "vitest run --reporter verbose",
++    "test:unit": "vitest run --reporter verbose src/test/bigint.test.ts src/test/lifecycle.test.ts",
++    "test:contract": "vitest run --reporter verbose src/test/app-contract.test.ts"
+   },
+   "dependencies": {
+     "@fastify/cors": "^10.0.0",
+@@ -30,16 +33,8 @@
+     "prisma": "^6.0.0",
+     "tsup": "^8.0.0",
+     "tsx": "^4.0.0",
+-    "typescript": "^5.6.0"
+-  },
+-  "pnpm": {
+-    "onlyBuiltDependencies": [
+-      "@prisma/client",
+-      "@prisma/engines",
+-      "esbuild",
+-      "prisma",
+-      "sharp"
+-    ]
++    "typescript": "^5.6.0",
++    "vitest": "^3.1.0"
+   },
+   "overrides": {
+     "esbuild": "0.28.1"
+diff --git a/mw-backend/prisma/schema.prisma b/mw-backend/prisma/schema.prisma
+index ee66a21..7dbf9fd 100644
+--- a/mw-backend/prisma/schema.prisma
++++ b/mw-backend/prisma/schema.prisma
+@@ -352,3 +352,93 @@ model RedirectMap {
+ 
+   @@map("redirect_map")
+ }
++
++model ReviewItem {
++  id                  BigInt    @id @default(autoincrement())
++  publicId            String    @unique @map("public_id")
++  title               String
++  type                String    @default("general")
++  source              String?
++  sourceId            String?   @map("source_id")
++  status              String    @default("pending")
++  priority            Int       @default(1)
++  confidence          Decimal?  @db.Decimal(4, 3)
++  figureId            BigInt?   @map("figure_id")
++  figureSlug          String?   @map("figure_slug")
++  riskType            String?   @map("risk_type")
++  riskReason          String?   @map("risk_reason")
++  suggestedAction     String?   @map("suggested_action")
++  evidenceFingerprint String?   @map("evidence_fingerprint")
++  reviewer            String?
++  decisionReason      String?   @map("decision_reason")
++  decisionAt          DateTime? @map("decision_at")
++  appliedAt           DateTime? @map("applied_at")
++  originalRedisKey    String?   @unique @map("original_redis_key")
++  redisFormatVersion  Int       @default(1) @map("redis_format_version")
++  payload             Json?
++  notes               String?
++  version             Int       @default(0)
++  createdAt           DateTime  @default(now()) @map("created_at")
++  updatedAt           DateTime  @updatedAt @map("updated_at")
++
++  events ReviewEvent[]
++  applyAttempts ReviewApplyAttempt[]
++
++  @@index([status, createdAt])
++  @@index([figureId])
++  @@index([riskType])
++  @@index([evidenceFingerprint])
++  @@map("review_items")
++}
++
++model ReviewEvent {
++  id           BigInt    @id @default(autoincrement())
++  reviewItemId BigInt    @map("review_item_id")
++  event        String
++  action       String?
++  fromStatus   String?   @map("from_status")
++  toStatus     String    @map("to_status")
++  actor        String?
++  reason       String?
++  requestId    String?   @map("request_id")
++  metadata     Json?
++  createdAt    DateTime  @default(now()) @map("created_at")
++
++  reviewItem ReviewItem @relation(fields: [reviewItemId], references: [id], onDelete: Cascade)
++
++  @@index([reviewItemId, createdAt])
++  @@index([requestId])
++  @@map("review_events")
++}
++
++model ReviewApplyAttempt {
++  id                       BigInt    @id @default(autoincrement())
++  publicId                 String    @unique @map("public_id")
++  reviewItemId             BigInt    @map("review_item_id")
++  idempotencyKey           String?   @unique @map("idempotency_key")
++  actorUserId              BigInt?   @map("actor_user_id")
++  actorDisplayNameSnapshot String?   @map("actor_display_name_snapshot")
++  actorRoleSnapshot        String?   @map("actor_role_snapshot")
++  requestId                String?   @map("request_id")
++  status                   String    @default("PENDING")
++  currentStep              String?   @map("current_step")
++  attemptNumber            Int       @default(1) @map("attempt_number")
++  targetFigureId           BigInt?   @map("target_figure_id")
++  targetRevisionId         BigInt?   @map("target_revision_id")
++  errorCode                String?   @map("error_code")
++  errorMessageSafe         String?   @map("error_message_safe")
++  retryable                Boolean   @default(true)
++  metadata                 Json?
++  startedAt                DateTime? @map("started_at")
++  completedAt              DateTime? @map("completed_at")
++  failedAt                 DateTime? @map("failed_at")
++  createdAt                DateTime  @default(now()) @map("created_at")
++  updatedAt                DateTime  @updatedAt @map("updated_at")
++
++  reviewItem ReviewItem @relation(fields: [reviewItemId], references: [id], onDelete: Cascade)
++
++  @@unique([reviewItemId, attemptNumber])
++  @@index([status, createdAt])
++  @@index([targetFigureId])
++  @@map("review_apply_attempts")
++}
+diff --git a/mw-backend/src/index.ts b/mw-backend/src/index.ts
+index 5a4b760..92d733b 100644
+--- a/mw-backend/src/index.ts
++++ b/mw-backend/src/index.ts
+@@ -1,209 +1,7 @@
+-import Fastify from "fastify";
+-import rateLimit from "@fastify/rate-limit";
+-import jwt from "@fastify/jwt";
+-import cors from "@fastify/cors";
+-import helmet from "@fastify/helmet";
+-import fs from "fs";
+-import sharp from "sharp";
+-import path from "path";
+-import { fileURLToPath } from "url";
+-import crypto from "crypto";
+-import { PrismaClient } from "@prisma/client";
+-import { figureRoutes } from "./routes/figures.js";
+-import { searchRoutes } from "./routes/search.js";
+-import { categoryRoutes } from "./routes/categories.js";
+-import { seriesRoutes } from "./routes/series.js";
+-import { manufacturerRoutes } from "./routes/manufacturer.js";
+-import { sculptorRoutes } from "./routes/sculptor.js";
+-import { characterRoutes } from "./routes/characters.js";
+-import { adminRoutes } from "./routes/admin.js";
+-import { authRoutes } from "./routes/auth.js";
+-import { imageRoutes } from "./routes/images.js";
+-import { communityRoutes } from "./routes/community.js";
+-import Redis from "ioredis";
+-
+-Object.defineProperty(BigInt.prototype, "toJSON", { value: function () { return Number(this); }, writable: true, configurable: true });
++import { buildApp } from "./app.js";
+ 
+ async function main() {
+-  const app = Fastify({ logger: true, trustProxy: true, bodyLimit: Number(process.env.BODY_LIMIT_BYTES || 20 * 1024 * 1024) });
+-  const prisma = new PrismaClient();
+-  const redis = new Redis(process.env.REDIS_URL || "redis://localhost:6379");
+-  const jwtSecret = process.env.JWT_SECRET || "dev-secret-change-in-production";
+-  const isProduction = process.env.NODE_ENV === "production";
+-
+-  if (isProduction && (!process.env.JWT_SECRET || jwtSecret === "dev-secret-change-in-production" || jwtSecret.length < 32)) {
+-    throw new Error("JWT_SECRET must be set to a strong secret in production");
+-  }
+-
+-  app.decorate("prisma", prisma);
+-  app.decorate("redis", redis);
+-
+-  const corsOrigins = process.env.CORS_ORIGINS
+-    ? process.env.CORS_ORIGINS.split(",").map((origin) => origin.trim()).filter(Boolean)
+-    : false;
+-
+-  await app.register(cors, {
+-    origin: corsOrigins,
+-    methods: ["GET", "POST", "PUT", "DELETE"],
+-    allowedHeaders: ["Content-Type", "Authorization"],
+-  });
+-
+-  await app.register(helmet, {
+-    contentSecurityPolicy: {
+-      directives: {
+-        defaultSrc: ["'self'"],
+-        baseUri: ["'self'"],
+-        frameAncestors: ["'none'"],
+-        formAction: ["'self'"],
+-        objectSrc: ["'none'"],
+-        imgSrc: ["'self'", "data:", "https:"],
+-        scriptSrc: ["'self'"],
+-        styleSrc: ["'self'"],
+-      },
+-    },
+-    frameguard: false,
+-    crossOriginResourcePolicy: { policy: "same-origin" },
+-  });
+-
+-  await app.register(jwt, {
+-    secret: jwtSecret,
+-    sign: { algorithm: "HS256", expiresIn: process.env.JWT_EXPIRES_IN || "2h" },
+-  });
+-
+-  await app.register(rateLimit, {
+-    max: 300,
+-    timeWindow: "1 minute",
+-    keyGenerator: (req) => req.ip,
+-  });
+-
+-  function isFigureInteractionPath(path: string) {
+-    return /^\/api\/v1\/figures\/[^/]+\/(social|favorite|like|comments)(?:\?|\/|$)/.test(path);
+-  }
+-
+-  app.addHook("onRequest", async (req, reply) => {
+-    const path = req.url;
+-    const isAdminPath = path.startsWith("/api/v1/admin");
+-    const isAuthPath = path.startsWith("/api/v1/auth");
+-    const isWriteMethod = ["POST", "PUT", "PATCH", "DELETE"].includes(req.method);
+-    const isFigureWritePath = path.startsWith("/api/v1/figures") && isWriteMethod && !isFigureInteractionPath(path);
+-    const isEntityWritePath =
+-      (path.startsWith("/api/v1/manufacturers") ||
+-        path.startsWith("/api/v1/series") ||
+-        path.startsWith("/api/v1/sculptors") ||
+-        path.startsWith("/api/v1/categories") ||
+-        path.startsWith("/api/v1/characters")) &&
+-      isWriteMethod;
+-    if (isAdminPath || isAuthPath) {
+-      reply.header("Cache-Control", "no-store");
+-      reply.header("Pragma", "no-cache");
+-    }
+-
+-    if (isAdminPath || isFigureWritePath || isEntityWritePath) {
+-      try {
+-        const auth = req.headers.authorization;
+-        if (!auth?.startsWith("Bearer ") || auth.length <= 7) throw new Error();
+-        const payload = app.jwt.verify<{ userId: string | number; role: string }>(auth.slice(7));
+-        const user = await prisma.user.findUnique({
+-          where: { id: BigInt(payload.userId) },
+-          select: { id: true, role: true, isActive: true },
+-        });
+-        if (!user?.isActive || user.role !== "admin") throw new Error();
+-        (req as any).user = { userId: user.id.toString(), role: user.role };
+-      } catch {
+-        return reply.status(401).send({ success: false, error: { code: "UNAUTHORIZED" } });
+-      }
+-    }
+-  });
+-
+-  app.get("/health", async () => ({ status: "ok", timestamp: new Date().toISOString() }));
+-
+-  app.register(imageRoutes, { prefix: "/api/v1/figures/images" });
+-  app.register(figureRoutes, { prefix: "/api/v1/figures" });
+-  app.register(searchRoutes, { prefix: "/api/v1/search" });
+-  app.register(categoryRoutes, { prefix: "/api/v1/categories" });
+-  app.register(seriesRoutes, { prefix: "/api/v1/series" });
+-  app.register(manufacturerRoutes, { prefix: "/api/v1/manufacturers" });
+-  app.register(sculptorRoutes, { prefix: "/api/v1/sculptors" });
+-  app.register(characterRoutes, { prefix: "/api/v1/characters" });
+-  // Serve cached review candidate images (no auth 鈥?URL is opaque)
+-  app.get("/api/v1/review/cached-image/:reviewId/:fileName", async (req: any, reply: any) => {
+-    const { reviewId, fileName } = req.params as any;
+-    try {
+-      if (!/^[a-zA-Z0-9_-]+$/.test(reviewId) || !/^[a-f0-9]{64}\.[a-z]+$/i.test(fileName)) {
+-        return reply.status(404).send({ success: false, error: { code: "NOT_FOUND" } });
+-      }
+-      const signingSecret = process.env.REVIEW_CACHE_SIGNING_SECRET;
+-      if (!signingSecret) {
+-        return reply.status(500).send({ success: false, error: { code: "SIGNING_NOT_CONFIGURED", message: "REVIEW_CACHE_SIGNING_SECRET is not set" } });
+-      }
+-      // Signature validation
+-      const qExp = (req.query as any).exp;
+-      const qSig = (req.query as any).sig;
+-      if (!qExp || !qSig) {
+-        return reply.status(403).send({ success: false, error: { code: "ACCESS_DENIED" } });
+-      }
+-      const expInt = parseInt(qExp, 10);
+-      if (isNaN(expInt) || Date.now() > expInt) {
+-        return reply.status(403).send({ success: false, error: { code: "ACCESS_DENIED" } });
+-      }
+-      const maxTtl = 86400000;
+-      if (expInt > Date.now() + maxTtl) {
+-        return reply.status(403).send({ success: false, error: { code: "ACCESS_DENIED" } });
+-      }
+-      const signPayload = `${reviewId}/${fileName}:${qExp}`;
+-      const expectedSig = crypto.createHmac("sha256", signingSecret).update(signPayload).digest("hex");
+-      // timingSafeEqual to prevent timing attacks
+-      if (qSig.length !== expectedSig.length) {
+-        return reply.status(403).send({ success: false, error: { code: "ACCESS_DENIED" } });
+-      }
+-      if (!crypto.timingSafeEqual(Buffer.from(qSig), Buffer.from(expectedSig))) {
+-        return reply.status(403).send({ success: false, error: { code: "ACCESS_DENIED" } });
+-      }
+-      const REVIEW_CACHE_DIR = process.env.REVIEW_CACHE_DIR || "/app/assets/review-cache";
+-      const filePath = path.join(REVIEW_CACHE_DIR, reviewId, fileName);
+-      if (!fs.existsSync(filePath)) {
+-        return reply.status(404).send({ success: false, error: { code: "NOT_FOUND" } });
+-      }
+-      // Determine Content-Type from actual image format using sharp
+-      const fileBuf = fs.readFileSync(filePath);
+-      let ct = "image/jpeg";
+-      try {
+-        const meta = await sharp(fileBuf).metadata();
+-        if (meta.format === "png") ct = "image/png";
+-        else if (meta.format === "webp") ct = "image/webp";
+-        else if (meta.format === "jpeg") ct = "image/jpeg";
+-      } catch {}
+-      reply.header("Content-Type", ct);
+-      reply.header("Cache-Control", "private, max-age=86400");
+-      reply.header("X-Content-Type-Options", "nosniff");
+-      return reply.send(fileBuf);
+-    } catch {
+-      return reply.status(404).send({ success: false, error: { code: "NOT_FOUND" } });
+-    }
+-  });
+-
+-  app.register(adminRoutes, { prefix: "/api/v1/admin" });
+-  app.register(authRoutes, { prefix: "/api/v1/auth" });
+-  app.register(communityRoutes, { prefix: "/api/v1" });
+-
+-  app.setErrorHandler((error: any, req: any, reply: any) => {
+-    if (error?.name === "ZodError" || Array.isArray(error?.issues)) {
+-      return reply.status(422).send({ success: false, error: { code: "VALIDATION_ERROR", details: error.issues || error.errors } });
+-    }
+-    if (error.validation) return reply.status(422).send({ success: false, error: { code: "VALIDATION_ERROR", details: error.validation } });
+-    if (error.statusCode === 429) return reply.status(429).send({ success: false, error: { code: "RATE_LIMITED" } });
+-    if (error.statusCode && error.statusCode < 500) {
+-      return reply.status(error.statusCode).send({
+-        success: false,
+-        error: {
+-          code: error.code || "BAD_REQUEST",
+-          message: error.message,
+-        },
+-      });
+-    }
+-    app.log.error(error);
+-    reply.status(500).send({ success: false, error: { code: "INTERNAL_ERROR" } });
+-  });
++  const app = await buildApp();
+ 
+   try {
+     await app.listen({ port: 3000, host: "0.0.0.0" });
+diff --git a/mw-backend/src/routes/admin.ts b/mw-backend/src/routes/admin.ts
+index 5cc84c7..96b058e 100644
+--- a/mw-backend/src/routes/admin.ts
++++ b/mw-backend/src/routes/admin.ts
+@@ -7,6 +7,8 @@ import path from "path";
+ import sharp from "sharp";
+ import crypto from "crypto";
+ import { processAndStoreImage, upsertFigureImageRecord, downloadImage, validateImageUrl } from "./images.js";
++import { adminCacheRoutes } from "../modules/admin-cache/routes.js";
++import { scanKeys } from "../shared/cache/scan-keys.js";
+ 
+ const aigcSchema = z.object({
+   figureId: z.number().int().positive(),
+@@ -107,6 +109,10 @@ const reviewItemSchema = z.object({
+     workflow: z.string().optional(),
+     runId: z.string().optional(),
+   }).optional(),
++  evidenceFingerprint: z.string().min(16).max(128).optional(),
++  decisionReason: z.string().max(1000).nullable().optional(),
++  reviewer: z.string().max(200).nullable().optional(),
++  decisionAt: z.string().datetime().nullable().optional(),
+ });
+ 
+ const candidateImageUpdateSchema = z.object({
+@@ -139,6 +145,10 @@ const reviewUpdateSchema = z.object({
+     width: z.number().int().optional(),
+     height: z.number().int().optional(),
+   }).optional(),
++  evidenceFingerprint: z.string().min(16).max(128).optional(),
++  decisionReason: z.string().max(1000).nullable().optional(),
++  reviewer: z.string().max(200).nullable().optional(),
++  decisionAt: z.string().datetime().nullable().optional(),
+ });
+ 
+ const reviewQuerySchema = z.object({
+@@ -150,10 +160,243 @@ const reviewQuerySchema = z.object({
+   offset: z.coerce.number().int().min(0).default(0),
+ });
+ 
++const reviewDecisionQuerySchema = z.object({
++  figureId: z.string().trim().min(1).optional(),
++  figureSlug: z.string().trim().min(1).optional(),
++  riskType: reviewRiskTypeSchema.optional(),
++  action: reviewActionSchema.optional(),
++  limit: z.coerce.number().int().min(1).max(200).default(50),
++  offset: z.coerce.number().int().min(0).default(0),
++});
++
+ // Special sentinel: when status not provided, default to pending (don't show old items)
+ // Use "all" as explicit override to see everything
+ const ALL_STATUSES = "all";
+ 
++function normalizeForStableJson(value: unknown): unknown {
++  if (typeof value === "bigint") return value.toString();
++  if (value instanceof Date) return value.toISOString();
++  if (Array.isArray(value)) return value.map(normalizeForStableJson);
++  if (value && typeof value === "object") {
++    const source = value as Record<string, unknown>;
++    const out: Record<string, unknown> = {};
++    for (const key of Object.keys(source).sort()) {
++      const v = source[key];
++      if (v !== undefined) out[key] = normalizeForStableJson(v);
++    }
++    return out;
++  }
++  return value;
++}
++
++function stableJson(value: unknown): string {
++  return JSON.stringify(normalizeForStableJson(value));
++}
++
++function reviewFigureKey(item: any): string {
++  const figureId = item.figureId ?? item.payload?.figureId ?? item.payload?.figure?.id;
++  const figureSlug = item.figureSlug ?? item.payload?.figureSlug ?? item.payload?.slug ?? item.payload?.figure?.slug;
++  if (figureId !== undefined && figureId !== null && String(figureId) !== "") return `id:${String(figureId)}`;
++  if (figureSlug) return `slug:${String(figureSlug)}`;
++  return `source:${String(item.source || "unknown")}:${String(item.sourceId || "unknown")}`;
++}
++
++function reviewRiskKey(item: any): string {
++  return String(item.riskType || item.payload?.riskType || item.type || "general_risk");
++}
++
++function redisKeyPart(value: string): string {
++  return encodeURIComponent(value).replace(/\./g, "%2E");
++}
++
++function imageMetaForFingerprint(data: any) {
++  const meta = data && typeof data === "object" ? data : {};
++  return {
++    sourceKind: meta.source_kind || null,
++    safeDisplay: meta.safe_display === true,
++    imageLowQuality: meta.image_low_quality === true,
++  };
++}
++
++function usesImageEvidence(item: any): boolean {
++  const riskType = reviewRiskKey(item);
++  return ["image", "image_review"].includes(String(item.type || "")) || riskType.startsWith("image_");
++}
++
++function usesDetailEvidence(item: any): boolean {
++  const riskType = reviewRiskKey(item);
++  return item.type === "detail_review" || riskType.startsWith("detail_") || ["category_uncertain", "general_risk"].includes(riskType);
++}
++
++function computeReviewEvidenceFingerprint(item: any): string {
++  const payload = item.payload || {};
++  const includeImageEvidence = usesImageEvidence(item);
++  const includeDetailEvidence = usesDetailEvidence(item);
++  const currentEvidence = item.currentStateEvidence || payload.currentStateEvidence || {};
++  const currentImages = currentEvidence.images || {};
++  const currentDetail = currentEvidence.detail || {};
++  const currentImageIds = !includeImageEvidence
++    ? []
++    : Array.isArray(currentImages.imageIds)
++    ? currentImages.imageIds.map(String).sort()
++    : Array.isArray(payload.currentImageIds)
++    ? payload.currentImageIds.map(String).sort()
++    : Array.isArray(payload.imageIds)
++      ? payload.imageIds.map(String).sort()
++      : [];
++  const currentImageRows = includeImageEvidence && Array.isArray(currentImages.rows)
++    ? currentImages.rows.map((row: any) => ({
++        id: row.id == null ? null : String(row.id),
++        source: row.source || null,
++        sha256: row.sha256 || null,
++        width: row.width ?? null,
++        height: row.height ?? null,
++        size: row.size || null,
++        sortOrder: row.sortOrder ?? null,
++        sourceKind: row.sourceKind || null,
++        safeDisplay: row.safeDisplay === true,
++        imageLowQuality: row.imageLowQuality === true,
++      }))
++    : [];
++  const candidate = item.candidateImage || payload.candidateImage || {};
++  const current = item.currentPublicImage || payload.currentPublicImage || {};
++  const detail = item.detailSnapshot || payload.detailSnapshot || {};
++  const relevantDetailFields = {
++    description: currentDetail.description ?? detail.description ?? payload.description ?? null,
++    scale: currentDetail.scale ?? detail.scale ?? payload.scale ?? null,
++    material: currentDetail.material ?? detail.material ?? payload.material ?? null,
++    priceJpy: currentDetail.priceJpy ?? detail.priceJpy ?? payload.priceJpy ?? null,
++    heightMm: currentDetail.heightMm ?? detail.heightMm ?? payload.heightMm ?? null,
++    weightG: currentDetail.weightG ?? detail.weightG ?? payload.weightG ?? null,
++    productLine: currentDetail.productLine ?? detail.productLine ?? payload.productLine ?? null,
++    ageRating: currentDetail.ageRating ?? detail.ageRating ?? payload.ageRating ?? null,
++    specCount: currentDetail.specCount ?? detail.specCount ?? null,
++    specs: detail.specs || null,
++    categories: currentDetail.categories || detail.categories || null,
++    manufacturer: currentDetail.manufacturer || detail.manufacturer || detail.manufacturerName || payload.manufacturer || null,
++    series: currentDetail.series || detail.series || detail.seriesName || payload.series || null,
++    releaseDate: currentDetail.releaseDate || detail.releaseDate || detail.release_date || payload.releaseDate || null,
++  };
++  const evidence = {
++    figure: reviewFigureKey(item),
++    type: item.type || "general",
++    riskType: reviewRiskKey(item),
++    source: item.source || null,
++    sourceId: item.sourceId || null,
++    primaryImageId: includeImageEvidence ? (currentImages.primaryImageId || current.imageId || payload.primaryImageId || null) : null,
++    currentImageIds,
++    currentImageRows,
++    candidate: {
++      imageId: candidate.imageId || null,
++      source: candidate.source || null,
++      hash: candidate.hash || candidate.sha256 || payload.candidateAssetHash || null,
++      width: candidate.width || null,
++      height: candidate.height || null,
++    },
++    detail: includeDetailEvidence ? relevantDetailFields : null,
++  };
++  return crypto.createHash("sha256").update(stableJson(evidence)).digest("hex");
++}
++
++function reviewDecisionKey(item: any): string | null {
++  const fingerprint = item.evidenceFingerprint || computeReviewEvidenceFingerprint(item);
++  const riskType = reviewRiskKey(item);
++  const figureKey = reviewFigureKey(item);
++  if (!fingerprint || !riskType || !figureKey) return null;
++  return `review:decision:${redisKeyPart(figureKey)}:${redisKeyPart(String(riskType))}:${fingerprint}`;
++}
++
++function isSuppressingReviewDecision(action: string): boolean {
++  return ["approve_image", "reject_image", "keep_placeholder", "mark_detail_ok", "dismiss_stale"].includes(action);
++}
++
++function projectReviewDecision(raw: any) {
++  return {
++    reviewItemId: raw?.reviewItemId ?? null,
++    figure: raw?.figure ?? null,
++    type: raw?.type ?? null,
++    riskType: raw?.riskType ?? null,
++    evidenceFingerprint: raw?.evidenceFingerprint ?? null,
++    action: raw?.action ?? null,
++    status: raw?.status ?? null,
++    reviewer: raw?.reviewer ?? null,
++    decisionReason: raw?.decisionReason ?? null,
++    decisionAt: raw?.decisionAt ?? null,
++  };
++}
++
++function reviewDecisionFigureMatches(decision: any, figureId?: string, figureSlug?: string, mappedFigureId?: string): boolean {
++  if (!figureId && !figureSlug && !mappedFigureId) return true;
++  const figure = decision?.figure;
++  const figureIds = [figureId, mappedFigureId].filter((id): id is string => !!id);
++  for (const id of figureIds) {
++    const expected = `id:${id}`;
++    if (String(figure) === expected) return true;
++    if (figure && typeof figure === "object") {
++      const objectId = figure.id ?? figure.figureId;
++      if (objectId !== undefined && objectId !== null && String(objectId) === id) return true;
++    }
++  }
++  if (figureSlug) {
++    const expected = `slug:${figureSlug}`;
++    if (String(figure) === expected) return true;
++    if (figure && typeof figure === "object") {
++      const objectSlug = figure.slug ?? figure.figureSlug;
++      if (objectSlug !== undefined && objectSlug !== null && String(objectSlug) === figureSlug) return true;
++    }
++  }
++  return false;
++}
++
++function reviewDecisionMatchesQuery(decision: any, query: z.infer<typeof reviewDecisionQuerySchema>, mappedFigureId?: string): boolean {
++  if (query.riskType && decision?.riskType !== query.riskType) return false;
++  if (query.action && decision?.action !== query.action) return false;
++  return reviewDecisionFigureMatches(decision, query.figureId, query.figureSlug, mappedFigureId);
++}
++
++async function findExistingPendingReview(app: FastifyInstance, candidate: any) {
++  const fingerprint = candidate.evidenceFingerprint || computeReviewEvidenceFingerprint(candidate);
++  const figureKey = reviewFigureKey(candidate);
++  const riskType = reviewRiskKey(candidate);
++  const ids = await app.redis.zrevrange("review:items", 0, -1);
++  for (const id of ids) {
++    const raw = await app.redis.get(`review:item:${id}`);
++    if (!raw) continue;
++    try {
++      const item = JSON.parse(raw);
++      if (item.status !== "pending") continue;
++      const normalizedItem = await normalizeReviewItemForFingerprint(app, item);
++      const itemFingerprint = normalizedItem.evidenceFingerprint || computeReviewEvidenceFingerprint(normalizedItem);
++      const itemRiskType = reviewRiskKey(normalizedItem);
++      if (itemFingerprint === fingerprint && itemRiskType === riskType && reviewFigureKey(normalizedItem) === figureKey) {
++        return item;
++      }
++    } catch {}
++  }
++  return null;
++}
++
++async function saveReviewDecision(app: FastifyInstance, item: any, action: string, reviewer: string, reason: string | null, now: string) {
++  if (!isSuppressingReviewDecision(action)) return;
++  const evidenceFingerprint = item.evidenceFingerprint || computeReviewEvidenceFingerprint(item);
++  const decisionItem = { ...item, evidenceFingerprint };
++  const key = reviewDecisionKey(decisionItem);
++  if (!key) return;
++  const decision = {
++    reviewItemId: item.id,
++    figure: reviewFigureKey(item),
++    type: item.type || "general",
++    riskType: reviewRiskKey(item),
++    evidenceFingerprint,
++    action,
++    status: item.status,
++    reviewer: reviewer || null,
++    decisionReason: reason || null,
++    decisionAt: now,
++  };
++  await app.redis.set(key, JSON.stringify(decision));
++  await app.redis.zadd("review:decisions", Date.now(), key);
++}
+ 
+ 
+ // security-patched: 瀹夊叏杈呭姪鍑芥暟
+@@ -218,11 +461,122 @@ async function storeProcessedReviewImage(app: FastifyInstance, figureId: bigint,
+ async function resolveReviewFigure(app: FastifyInstance, item: any, payload: any) {
+   const slug = item.figureSlug || payload.figureSlug || payload.slug || payload.figure?.slug;
+   const id = item.figureId || payload.figureId || payload.figure?.id;
++  if (id !== undefined && id !== null && /^\d+$/.test(String(id))) {
++    const byId = await app.prisma.figure.findFirst({ where: { id: BigInt(id), isDeleted: false }, select: { id: true, slug: true, name: true, janCode: true, activeRevisionId: true } });
++    if (byId) return byId;
++  }
+   if (slug) return app.prisma.figure.findFirst({ where: { slug: String(slug), isDeleted: false }, select: { id: true, slug: true, name: true, janCode: true, activeRevisionId: true } });
+-  if (id) return app.prisma.figure.findFirst({ where: { id: BigInt(id), isDeleted: false }, select: { id: true, slug: true, name: true, janCode: true, activeRevisionId: true } });
+   return null;
+ }
+ 
++function specCountForFingerprint(figure: any): number {
++  return [
++    figure.scale,
++    figure.material,
++    figure.priceJpy,
++    figure.releaseDate,
++    figure.heightMm,
++    figure.weightG,
++    figure.productLine,
++    figure.ageRating,
++    figure.manufacturer?.name,
++    figure.series?.name,
++  ].filter((field: any) => field != null && String(field) !== "").length;
++}
++
++async function normalizeReviewItemForFingerprint(app: FastifyInstance, item: any) {
++  const payload = item.payload || {};
++  const resolved = await resolveReviewFigure(app, item, payload);
++  if (!resolved) {
++    return {
++      ...item,
++      evidenceFingerprint: item.evidenceFingerprint || computeReviewEvidenceFingerprint(item),
++    };
++  }
++
++  const figure = await app.prisma.figure.findUnique({
++    where: { id: resolved.id },
++    select: {
++      id: true,
++      slug: true,
++      description: true,
++      scale: true,
++      material: true,
++      priceJpy: true,
++      releaseDate: true,
++      heightMm: true,
++      weightG: true,
++      productLine: true,
++      ageRating: true,
++      manufacturer: { select: { id: true, name: true } },
++      series: { select: { id: true, name: true } },
++      categories: { select: { categoryId: true }, orderBy: { categoryId: "asc" } },
++      images: {
++        orderBy: [{ sortOrder: "asc" }, { id: "asc" }],
++        select: { id: true, source: true, sha256: true, width: true, height: true, size: true, sortOrder: true, data: true },
++      },
++    },
++  });
++  if (!figure) {
++    return {
++      ...item,
++      figureId: String(resolved.id),
++      figureSlug: resolved.slug,
++      evidenceFingerprint: item.evidenceFingerprint || computeReviewEvidenceFingerprint({ ...item, figureId: String(resolved.id), figureSlug: resolved.slug }),
++    };
++  }
++
++  const imageRows = (figure.images || []).map((image: any) => ({
++    id: String(image.id),
++    source: image.source || null,
++    sha256: image.sha256 || null,
++    width: image.width ?? null,
++    height: image.height ?? null,
++    size: image.size || null,
++    sortOrder: image.sortOrder ?? null,
++    ...imageMetaForFingerprint(image.data),
++  }));
++  const primary = imageRows[0] || null;
++  const currentStateEvidence = {
++    figure: { id: String(figure.id), slug: figure.slug },
++    images: {
++      primaryImageId: primary?.id || null,
++      imageIds: imageRows.map((image: any) => image.id).sort(),
++      rows: imageRows,
++    },
++    detail: {
++      description: figure.description || null,
++      scale: figure.scale || null,
++      material: figure.material || null,
++      priceJpy: figure.priceJpy ?? null,
++      releaseDate: figure.releaseDate ? figure.releaseDate.toISOString() : null,
++      heightMm: figure.heightMm ?? null,
++      weightG: figure.weightG ?? null,
++      productLine: figure.productLine || null,
++      ageRating: figure.ageRating || null,
++      manufacturer: figure.manufacturer ? { id: String(figure.manufacturer.id), name: figure.manufacturer.name } : null,
++      series: figure.series ? { id: String(figure.series.id), name: figure.series.name } : null,
++      categories: (figure.categories || []).map((row: any) => String(row.categoryId)),
++      specCount: specCountForFingerprint(figure),
++    },
++  };
++  const normalized = {
++    ...item,
++    figureId: String(figure.id),
++    figureSlug: figure.slug,
++    currentStateEvidence,
++    payload: {
++      ...payload,
++      submittedEvidenceFingerprint: item.evidenceFingerprint || payload.submittedEvidenceFingerprint || null,
++      currentStateEvidence,
++    },
++  };
++  return {
++    ...normalized,
++    evidenceFingerprint: computeReviewEvidenceFingerprint(normalized),
++  };
++}
++
+ async function evaluateReviewItem(app: FastifyInstance, item: any) {
+   const payload = item.payload || {};
+   const problems: string[] = [];
+@@ -511,7 +865,7 @@ export async function adminRoutes(app: FastifyInstance) {
+         const primaryMeta = primaryImage?.data || {};
+         const specFields = [fig.scale, fig.material, fig.priceJpy, fig.releaseDate, fig.heightMm, fig.manufacturer?.name, fig.series?.name].filter((f: any) => f != null);
+         item.currentFigure = {
+-          id: Number(fig.id),
++          id: String(fig.id),
+           title: fig.name || "",
+           slug: fig.slug,
+           imageCount: fig.images?.length || 0,
+@@ -535,6 +889,36 @@ export async function adminRoutes(app: FastifyInstance) {
+     return { success: true, data: items, meta: { count: items.length, total, limit: query.limit, offset, defaultStatus: statusFilter } };
+   });
+ 
++  app.get("/review/decisions", async (req: any) => {
++    const query = reviewDecisionQuerySchema.parse(req.query || {});
++    let mappedFigureId: string | undefined;
++    if (query.figureSlug) {
++      const figure = await app.prisma.figure.findFirst({
++        where: { slug: query.figureSlug, isDeleted: false },
++        select: { id: true },
++      });
++      if (figure) mappedFigureId = String(figure.id);
++    }
++    const keys = await app.redis.zrevrange("review:decisions", 0, -1);
++    const filtered: any[] = [];
++
++    for (const key of keys) {
++      if (!String(key).startsWith("review:decision:")) continue;
++      const raw = await app.redis.get(key);
++      if (!raw) continue;
++      try {
++        const decision = JSON.parse(raw);
++        if (!reviewDecisionMatchesQuery(decision, query, mappedFigureId)) continue;
++        filtered.push(projectReviewDecision(decision));
++      } catch {}
++    }
++
++    const total = filtered.length;
++    const offset = query.offset || 0;
++    const data = filtered.slice(offset, offset + query.limit);
++    return { success: true, data, meta: { count: data.length, total, limit: query.limit, offset } };
++  });
++
+   // GET /review/stats: statistics for the review queue (P0 fix: stats bar)
+   app.get("/review/stats", async () => {
+     const ids = await app.redis.zrevrange("review:items", 0, -1);
+@@ -587,10 +971,41 @@ export async function adminRoutes(app: FastifyInstance) {
+   app.post("/review/items", async (req: any, reply: any) => {
+     const data = reviewItemSchema.parse(req.body);
+     const now = new Date().toISOString();
++    const candidateItem = await normalizeReviewItemForFingerprint(app, data);
++    const decisionKey = reviewDecisionKey(candidateItem);
++    if (decisionKey) {
++      const decisionRaw = await app.redis.get(decisionKey);
++      if (decisionRaw) {
++        try {
++          const decision = JSON.parse(decisionRaw);
++          const suppressedItem = {
++            ...candidateItem,
++            id: null,
++            status: "suppressed",
++            suppressed: true,
++            suppressionReason: "human_decision_exists",
++            decision,
++          };
++          return reply.status(200).send({
++            success: true,
++            data: suppressedItem,
++            meta: { suppressed: true, reason: "human_decision_exists", decision },
++          });
++        } catch {}
++      }
++    }
++    const existingPending = await findExistingPendingReview(app, candidateItem);
++    if (existingPending) {
++      return reply.status(200).send({
++        success: true,
++        data: existingPending,
++        meta: { duplicate: true, reason: "pending_review_exists" },
++      });
++    }
+     const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+     const item = {
+       id,
+-      ...data,
++      ...candidateItem,
+       createdAt: now,
+       updatedAt: now,
+     };
+@@ -600,6 +1015,8 @@ export async function adminRoutes(app: FastifyInstance) {
+     return reply.status(201).send({ success: true, data: item });
+   });
+ 
++  // SAFE update: explicitly forbids status, decisionReason, reviewer, decisionAt
++  const REVIEW_FORBIDDEN_UPDATE_FIELDS = new Set(["status", "decisionReason", "reviewer", "decisionAt", "action", "createdAt"]);
+   app.put("/review/items/:id", async (req: any, reply: any) => {
+     const { id } = req.params as { id: string };
+     const existingRaw = await app.redis.get(`review:item:${id}`);
+@@ -607,7 +1024,20 @@ export async function adminRoutes(app: FastifyInstance) {
+       return reply.status(404).send({ success: false, error: { code: "REVIEW_ITEM_NOT_FOUND" } });
+     }
+ 
+-    const update = reviewUpdateSchema.parse(req.body);
++    const body = req.body || {};
++    const forbiddenKeys = Object.keys(body).filter((k) => REVIEW_FORBIDDEN_UPDATE_FIELDS.has(k));
++    if (forbiddenKeys.length > 0) {
++      return reply.status(422).send({
++        success: false,
++        error: {
++          code: "FORBIDDEN_FIELDS",
++          message: `Cannot modify review state via generic update: ${forbiddenKeys.join(", ")}. Use /action endpoint for status changes.`,
++          fields: forbiddenKeys,
++        },
++      });
++    }
++
++    const update = reviewUpdateSchema.parse(body);
+     const existing = JSON.parse(existingRaw);
+     const item = {
+       ...existing,
+@@ -687,15 +1117,31 @@ export async function adminRoutes(app: FastifyInstance) {
+     const notePrefix = reviewer ? "[" + reviewer + "] " : "";
+     const note = notePrefix + (actionNoteMap[actionBody.action] || actionBody.action);
+     const userNote = actionBody.notes ? `锛?{actionBody.notes}锛塦 : "";
+-    const updatedItem = {
++    const evidenceFingerprint = item.evidenceFingerprint || computeReviewEvidenceFingerprint(item);
++    const isFinalDecision = isSuppressingReviewDecision(actionBody.action);
++    let updatedItem = {
+       ...item,
+       status: newStatus,
++      evidenceFingerprint,
++      decisionReason: isFinalDecision ? (actionBody.notes || null) : item.decisionReason,
++      reviewer: isFinalDecision ? (reviewer || null) : item.reviewer,
++      decisionAt: isFinalDecision ? now : item.decisionAt,
+       notes: item.notes ? `${item.notes}
+ [${now}] ${note}${userNote}` : `[${now}] ${note}${userNote}`,
+-      payload: { ...(item.payload || {}), lastAction: actionBody.action, lastActionAt: now, decisionReason: actionBody.notes || null },
++      payload: {
++        ...(item.payload || {}),
++        lastAction: actionBody.action,
++        lastActionAt: now,
++        evidenceFingerprint,
++        decisionReason: isFinalDecision ? (actionBody.notes || null) : (item.payload || {}).decisionReason,
++        reviewer: isFinalDecision ? (reviewer || null) : (item.payload || {}).reviewer,
++        decisionAt: isFinalDecision ? now : (item.payload || {}).decisionAt,
++      },
+       updatedAt: now,
+     };
++    updatedItem = await normalizeReviewItemForFingerprint(app, updatedItem);
+     await app.redis.set(`review:item:${id}`, JSON.stringify(updatedItem));
++    await saveReviewDecision(app, updatedItem, actionBody.action, reviewer, actionBody.notes || null, now);
+ 
+     // P0: request_refetch creates a crawler job with correct source detection
+     let crawlerJobId: string | null = null;
+@@ -716,6 +1162,7 @@ export async function adminRoutes(app: FastifyInstance) {
+       if (!crawlerJobId) {
+         // P0: Determine correct crawler source based on available identifiers
+         const fid = item.figureId ? Number(item.figureId) : null;
++        // Note: fid used only for crawler job payload figureId (supports Number range)
+         const figSlug = item.figureSlug || (item.payload || {}).figureSlug || "";
+         const snap = (item.payload || {}).detailSnapshot || {};
+         const itemSource = String(item.source || "").toLowerCase();
+@@ -803,8 +1250,8 @@ export async function adminRoutes(app: FastifyInstance) {
+ 
+     // Purge figure display caches when image decisions are made (no FLUSHDB)
+     if (["approve_image", "reject_image", "keep_placeholder"].includes(actionBody.action) && item.figureSlug) {
+-      const figKeys = await app.redis.keys(`figures:detail:*`);
+-      if (figKeys.length > 0) await app.redis.del(...figKeys);
++      const result = await scanKeys(app.redis, "figures:detail:*");
++      // result.deleted is the count of UNLINKed keys
+     }
+     return { success: true, data: { item: updatedItem, action: actionBody.action, crawlerJobId } };
+   });
+@@ -878,6 +1325,7 @@ export async function adminRoutes(app: FastifyInstance) {
+ 
+     try {
+       let applied: any = null;
++      let reviewDecisionAction: string | null = null;
+ 
+       if (item.type === "figure_import") {
+         const figurePayload = payload.figure || {};
+@@ -980,13 +1428,13 @@ export async function adminRoutes(app: FastifyInstance) {
+           await app.prisma.figure.update({ where: { id: savedFigure.id }, data: { activeRevisionId: revision.id } });
+         }
+ 
+-        applied = {
+-          action: existingFigure ? "merged" : "created",
+-          figure: { id: Number(savedFigure.id), slug: savedFigure.slug },
+-          imageImport,
+-          revision: revision ? { id: Number(revision.id), versionNumber: revision.versionNumber } : null,
+-        };
+-      } else if (item.type === "jan_match") {
++          applied = {
++            action: existingFigure ? "merged" : "created",
++            figure: { id: String(savedFigure.id), slug: savedFigure.slug },
++            imageImport,
++            revision: revision ? { id: String(revision.id), versionNumber: revision.versionNumber } : null,
++          };
++        } else if (item.type === "jan_match") {
+         const figureWhere = item.figureSlug
+           ? { slug: item.figureSlug, isDeleted: false }
+           : item.figureId
+@@ -1080,7 +1528,7 @@ export async function adminRoutes(app: FastifyInstance) {
+           try {
+             const stored = await storeProcessedReviewImage(app, figure.id, janCode, {
+               ...processed,
+-              figureId: Number(figure.id),
++              figureId: String(figure.id),
+               janCode,
+             });
+             if (!stored.updated) imageImport.created += 1;
+@@ -1166,6 +1614,7 @@ export async function adminRoutes(app: FastifyInstance) {
+         if (action !== "approve_image") {
+           return reply.status(422).send({ success: false, error: { code: "UNSUPPORTED_ACTION", message: `image_review /apply only supports approve_image, got: ${action}` } });
+         }
++        reviewDecisionAction = action;
+         const figureWhere = item.figureSlug
+           ? { slug: item.figureSlug, isDeleted: false }
+           : item.figureId
+@@ -1203,7 +1652,7 @@ export async function adminRoutes(app: FastifyInstance) {
+               sortOrder: 0,  // Promote to front
+             },
+           });
+-          applied = { action: "already_approved", figure: { id: Number(figure.id), slug: figure.slug }, imageId: Number(existing.id), source: cand.source };
++          applied = { action: "already_approved", figure: { id: String(figure.id), slug: figure.slug }, imageId: String(existing.id), source: cand.source };
+         } else {
+           // Try to download and store image; fall back to URL redirect
+           const janCode = figure.janCode || "no-jancode";
+@@ -1275,7 +1724,7 @@ export async function adminRoutes(app: FastifyInstance) {
+ 
+           applied = {
+             action: "image_approved",
+-            figure: { id: Number(figure.id), slug: figure.slug },
++            figure: { id: String(figure.id), slug: figure.slug },
+             imageId: firstImageId,
+             source: cand.source,
+             processedCount,
+@@ -1287,18 +1736,35 @@ export async function adminRoutes(app: FastifyInstance) {
+ 
+       const now = new Date().toISOString();
+       const problems = await evaluateReviewItem(app, item);
+-      const updatedItem = {
++      const evidenceFingerprint = item.evidenceFingerprint || computeReviewEvidenceFingerprint(item);
++      const reviewer = (req as any).user?.displayName || String((req as any).user?.userId || "");
++      let updatedItem = {
+         ...item,
+-        payload: { ...(item.payload || {}), reviewProblems: problems, lastCheckedAt: now },
++        evidenceFingerprint,
++        reviewer: reviewDecisionAction ? (reviewer || null) : item.reviewer,
++        decisionAt: reviewDecisionAction ? now : item.decisionAt,
++        decisionReason: reviewDecisionAction ? ((req.body || {}).notes || null) : item.decisionReason,
++        payload: {
++          ...(item.payload || {}),
++          reviewProblems: problems,
++          lastCheckedAt: now,
++          evidenceFingerprint,
++          reviewer: reviewDecisionAction ? (reviewer || null) : (item.payload || {}).reviewer,
++          decisionAt: reviewDecisionAction ? now : (item.payload || {}).decisionAt,
++          decisionReason: reviewDecisionAction ? ((req.body || {}).notes || null) : (item.payload || {}).decisionReason,
++        },
+         status: problems.length === 0 ? "resolved" : "needs_changes",
+         notes: problems.length === 0
+           ? (item.notes ? `${item.notes}\nApplied and rechecked at ${now}` : `Applied and rechecked at ${now}`)
+           : (item.notes ? `${item.notes}\nApplied but still needs changes: ${problems.join("; ")}` : `Applied but still needs changes: ${problems.join("; ")}`),
+         updatedAt: now,
+       };
++      updatedItem = await normalizeReviewItemForFingerprint(app, updatedItem);
+       await app.redis.set(`review:item:${id}`, JSON.stringify(updatedItem));
+-      const allKeys = await app.redis.keys("figures:*");
+-      if (allKeys.length > 0) await app.redis.del(...allKeys);
++      if (reviewDecisionAction && problems.length === 0) {
++        await saveReviewDecision(app, updatedItem, reviewDecisionAction, reviewer, (req.body || {}).notes || null, now);
++      }
++      await scanKeys(app.redis, "figures:*");
+ 
+       return { success: true, data: { item: updatedItem, applied, problems } };
+     } catch (err: any) {
+@@ -1413,81 +1879,7 @@ export async function adminRoutes(app: FastifyInstance) {
+     return { success: true, data: job };
+   });
+ 
+-  // Allowed cache namespaces for purge (no review/crawler/session/rate-limit)
+-  const CACHE_ALLOWLIST = [
+-    "figures:detail:*",
+-    "figures:list:*",
+-    "search:*",
+-    "homepage:*",
+-  ];
+-  const BLOCKED_NAMESPACES = ["review:", "crawler:", "session:", "rate-limit:"];
+-
+-  function isAllowedPattern(p: string): boolean {
+-    if (!p || typeof p !== "string") return false;
+-    for (const blocked of BLOCKED_NAMESPACES) {
+-      if (p.startsWith(blocked) || p.includes(blocked)) return false;
+-    }
+-    for (const allowed of CACHE_ALLOWLIST) {
+-      const re = new RegExp("^" + allowed.replace(/\*/g, ".*").replace(/\?/g, ".") + "$");
+-      if (re.test(p)) return true;
+-    }
+-    return false;
+-  }
+-
+-  app.post("/cache/purge", async (req: any, reply: any) => {
+-    const body = (req.body as any) || {};
+-    const pattern = typeof body.pattern === "string" ? body.pattern : undefined;
+-    const paths = Array.isArray(body.paths) ? body.paths.filter((p: unknown): p is string => typeof p === "string" && p.length > 0) : [];
+-
+-    // Block FLUSHDB / purgeAll
+-    if (body.purgeAll === true || (!pattern && paths.length === 0) || pattern === "*") {
+-      return reply.status(422).send({ success: false, error: { code: "PURGE_ALL_BLOCKED", message: "Full flush is not allowed. Use specific namespace patterns." } });
+-    }
+-
+-    const namespaces: string[] = [];
+-    const keySet = new Set<string>();
+-
+-    if (pattern) {
+-      if (!isAllowedPattern(pattern)) {
+-        return reply.status(422).send({ success: false, error: { code: "NAMESPACE_NOT_ALLOWED", message: `Pattern "${pattern}" is not in the allowed cache namespace list` } });
+-      }
+-      namespaces.push(pattern);
+-      // Use SCAN instead of KEYS
+-      let cursor = "0";
+-      do {
+-        const result = await (app.redis as any).scan(cursor, "MATCH", pattern, "COUNT", "100");
+-        cursor = result[0];
+-        for (const k of result[1]) keySet.add(k);
+-      } while (cursor !== "0");
+-    }
+-
+-    for (const path of paths) {
+-      const m = path.match(/^\/figures?\/([^/]+)\/?$/);
+-      if (m?.[1]) {
+-        const detailKey = `figures:detail:${m[1]}`;
+-        keySet.add(detailKey);
+-        namespaces.push(detailKey);
+-      }
+-    }
+-
+-    if (paths.length > 0) {
+-      namespaces.push("figures:list:*");
+-      let cursor2 = "0";
+-      do {
+-        const result2 = await (app.redis as any).scan(cursor2, "MATCH", "figures:list:*", "COUNT", "100");
+-        cursor2 = result2[0];
+-        for (const k of result2[1]) keySet.add(k);
+-      } while (cursor2 !== "0");
+-    }
+-
+-    const keys = Array.from(keySet);
+-    let deleted = 0;
+-    if (keys.length > 0) {
+-      deleted = await app.redis.unlink(...keys);
+-    }
+-
+-    return { success: true, data: { purged: true, mode: "targeted", matched: keys.length, deleted, namespaces } };
+-  });
++  await app.register(adminCacheRoutes);
+ 
+   app.get("/stats", async () => {
+     const [figures, manufacturers, series, sculptors, categories, characters, users, images] = await Promise.all([
+@@ -1533,7 +1925,7 @@ export async function adminRoutes(app: FastifyInstance) {
+   });
+ 
+   app.get("/users", async () => {
+-    const prisma = app.prisma as any;
++    const prisma = app.prisma;
+     const users = await prisma.user.findMany({
+       select: { id: true, email: true, displayName: true, role: true, isActive: true, emailVerifiedAt: true, createdAt: true },
+       orderBy: { createdAt: "desc" },
+@@ -1557,7 +1949,7 @@ export async function adminRoutes(app: FastifyInstance) {
+       }
+     }
+ 
+-    const user = await (app.prisma as any).user.update({
++    const user = await app.prisma.user.update({
+       where: { id: userId },
+       data,
+       select: { id: true, email: true, displayName: true, role: true, isActive: true, emailVerifiedAt: true, createdAt: true },
+@@ -1602,7 +1994,7 @@ export async function adminRoutes(app: FastifyInstance) {
+     if (existing) return reply.status(409).send({ success: false, error: { code: "EMAIL_EXISTS", message: "閭宸茶浣跨敤" } });
+ 
+     const passwordHash = await bcrypt.hash(data.password, 12);
+-    const user = await (app.prisma as any).user.create({
++    const user = await app.prisma.user.create({
+       data: { email: data.email, passwordHash, displayName: data.displayName, role: data.role, emailVerifiedAt: new Date() },
+       select: { id: true, email: true, displayName: true, role: true, isActive: true, emailVerifiedAt: true, createdAt: true },
+     });
+@@ -1640,7 +2032,14 @@ export async function adminRoutes(app: FastifyInstance) {
+     const processing = await app.redis.get("legacy:import:processing");
+     const recentImports: Array<{ itemId: number; status: string }> = [];
+ 
+-    const recentKeys = await app.redis.keys("legacy:import:result:*");
++    // KEEP_TEMPORARILY: legacy import results, low cardinality, read-only
++    const recentKeys: string[] = [];
++    let cursor3 = "0";
++    do {
++      const [nc, ks] = await app.redis.scan(cursor3, "MATCH", "legacy:import:result:*", "COUNT", "100");
++      cursor3 = nc;
++      for (const k of ks) recentKeys.push(k);
++    } while (cursor3 !== "0");
+     for (const key of recentKeys.slice(-10)) {
+       const val = await app.redis.get(key);
+       if (val) {
+@@ -1866,8 +2265,7 @@ export async function adminRoutes(app: FastifyInstance) {
+       }
+     }
+ 
+-    const allKeys = await app.redis.keys("figures:*");
+-    if (allKeys.length > 0) await app.redis.del(...allKeys);
++    await scanKeys(app.redis, "figures:*");
+ 
+     return { success: true, data: { total: data.figures.length, results } };
+   });
+diff --git a/mw-backend/src/routes/auth.ts b/mw-backend/src/routes/auth.ts
+index 831295f..46a84aa 100644
+--- a/mw-backend/src/routes/auth.ts
++++ b/mw-backend/src/routes/auth.ts
+@@ -125,7 +125,7 @@ async function sendVerificationEmail(to: string, displayName: string, verifyUrl:
+ }
+ 
+ export async function authRoutes(app: FastifyInstance) {
+-  const prisma = app.prisma as any;
++  const prisma = app.prisma;
+ 
+   app.post("/register", { config: { rateLimit: { max: 3, timeWindow: "15 minutes" } } }, async (req: any, reply: any) => {
+     if (process.env.ENABLE_PUBLIC_REGISTRATION === "false") {
+diff --git a/mw-backend/src/routes/categories.ts b/mw-backend/src/routes/categories.ts
+index 09ac55d..d875129 100644
+--- a/mw-backend/src/routes/categories.ts
++++ b/mw-backend/src/routes/categories.ts
+@@ -1,5 +1,6 @@
+ import { FastifyInstance } from "fastify";
+ import { z } from "zod";
++import { scanKeys } from "../shared/cache/scan-keys.js";
+ 
+ const createCategorySchema = z.object({
+   slug: z.string().min(1),
+@@ -11,17 +12,13 @@ const createCategorySchema = z.object({
+ const updateCategorySchema = createCategorySchema.partial();
+ 
+ async function invalidateCategoryCache(app: FastifyInstance, slug?: string) {
+-  const keys: string[] = [];
+-  const listKeys = await app.redis.keys("categories:*");
+-  keys.push(...listKeys);
+   if (slug) {
+-    const detailKey = `categories:detail:${slug}`;
+-    keys.push(detailKey);
++    await app.redis.del(`categories:detail:${slug}`);
+   }
+-  if (keys.length > 0) await app.redis.del(...keys);
++  await scanKeys(app.redis, "categories:*");
+ }
+ 
+-async function activeFigureCountByCategory(app: FastifyInstance, categoryIds: any[]) {
++async function activeFigureCountByCategory(app: FastifyInstance, categoryIds: any[]): Promise<Map<string, number>> {
+   if (!categoryIds.length) return new Map<string, number>();
+ 
+   const rows = await app.prisma.figureCategory.groupBy({
+@@ -33,7 +30,7 @@ async function activeFigureCountByCategory(app: FastifyInstance, categoryIds: an
+     _count: { figureId: true },
+   });
+ 
+-  return new Map(rows.map((row: any) => [String(row.categoryId), row._count.figureId || 0]));
++  return new Map<string, number>(rows.map((row: any) => [String(row.categoryId), row._count.figureId || 0]));
+ }
+ 
+ function attachActiveCounts(category: any, counts: Map<string, number>): any {
+diff --git a/mw-backend/src/routes/characters.ts b/mw-backend/src/routes/characters.ts
+index 7572b4c..006a0a2 100644
+--- a/mw-backend/src/routes/characters.ts
++++ b/mw-backend/src/routes/characters.ts
+@@ -1,9 +1,11 @@
+ import { FastifyInstance } from "fastify";
+ import { z } from "zod";
++import { scanKeys } from "../shared/cache/scan-keys.js";
+ 
+ const listQuery = z.object({
+   page: z.coerce.number().min(1).default(1),
+   perPage: z.coerce.number().min(1).max(100).default(50),
++  lang: z.string().optional(),
+ });
+ 
+ const createCharacterSchema = z.object({
+@@ -18,14 +20,37 @@ const createCharacterSchema = z.object({
+ const updateCharacterSchema = createCharacterSchema.partial();
+ 
+ async function invalidateCharacterCache(app: FastifyInstance, slug?: string) {
+-  const keys: string[] = [];
+-  const listKeys = await app.redis.keys("characters:list:*");
+-  keys.push(...listKeys);
+   if (slug) {
+-    const detailKey = `characters:detail:${slug}`;
+-    keys.push(detailKey);
++    await app.redis.del(`characters:detail:${slug}`);
+   }
+-  if (keys.length > 0) await app.redis.del(...keys);
++  await scanKeys(app.redis, "characters:list:*");
++}
++
++function publicSlug(slug?: string | null): string {
++  return String(slug || "")
++    .replace(/-+$/g, "");
++}
++
++function firstText(...values: any[]): string | null {
++  for (const value of values) {
++    if (typeof value === "string" && value.trim() !== "") return value;
++  }
++  return null;
++}
++
++function publicFigureCard(figure: any): any {
++  const localized = Array.isArray(figure.localized) ? figure.localized[0] : null;
++  const displayTitle = firstText(localized?.title, figure.nameEn, figure.name, figure.nameJp, figure.slug) || "";
++  const originalTitle = firstText(figure.nameJp, figure.name, figure.nameEn, displayTitle) || displayTitle;
++  const displayDescription = firstText(localized?.description, figure.description);
++
++  return {
++    ...figure,
++    slug: publicSlug(figure.slug),
++    displayTitle,
++    originalTitle,
++    displayDescription,
++  };
+ }
+ 
+ export async function characterRoutes(app: FastifyInstance) {
+@@ -70,6 +95,7 @@ export async function characterRoutes(app: FastifyInstance) {
+   app.get("/:slug/figures", async (req: any) => {
+     const { slug } = req.params as { slug: string };
+     const query = listQuery.parse(req.query);
++    const lang = query.lang || "fr";
+     const character = await app.prisma.character.findUnique({ where: { slug }, select: { id: true } });
+     if (!character) return { success: true, data: [], meta: { page: 1, perPage: 24, total: 0, totalPages: 0 } };
+ 
+@@ -81,7 +107,8 @@ export async function characterRoutes(app: FastifyInstance) {
+         orderBy: { releaseDate: "desc" },
+         include: {
+           manufacturer: { select: { id: true, slug: true, name: true, nameEn: true } },
+-          series: { select: { id: true, slug: true, name: true, nameEn: true } },
++          series: { select: { id: true, slug: true, name: true, nameJp: true, nameEn: true } },
++          localized: { where: { language: lang }, orderBy: { id: "asc" } },
+           images: { orderBy: { sortOrder: "asc" }, take: 1, select: { id: true, alt: true, size: true, format: true } },
+           categories: { include: { category: { select: { slug: true, name: true } } } },
+         },
+@@ -89,7 +116,7 @@ export async function characterRoutes(app: FastifyInstance) {
+       app.prisma.figure.count({ where: { characters: { some: { characterId: character.id } }, isDeleted: false } }),
+     ]);
+ 
+-    return { success: true, data, meta: { page: query.page, perPage: query.perPage, total, totalPages: Math.ceil(total / query.perPage) } };
++    return { success: true, data: data.map(publicFigureCard), meta: { page: query.page, perPage: query.perPage, total, totalPages: Math.ceil(total / query.perPage) } };
+   });
+ 
+   app.post("/", async (req: any, reply: any) => {
+diff --git a/mw-backend/src/routes/community.ts b/mw-backend/src/routes/community.ts
+index dc84bf6..52e8f90 100644
+--- a/mw-backend/src/routes/community.ts
++++ b/mw-backend/src/routes/community.ts
+@@ -104,7 +104,7 @@ function sanitizeUserText(s: string): string {
+ }
+ 
+ export async function communityRoutes(app: FastifyInstance) {
+-  const prisma = app.prisma as any;
++  const prisma = app.prisma;
+ 
+   app.get("/me/space", async (req: any, reply: any) => {
+     const user = await requireUser(app, req, reply);
+diff --git a/mw-backend/src/routes/figures.ts b/mw-backend/src/routes/figures.ts
+index 4129282..2b97bde 100644
+--- a/mw-backend/src/routes/figures.ts
++++ b/mw-backend/src/routes/figures.ts
+@@ -1,5 +1,6 @@
+ import { FastifyInstance } from "fastify";
+ import { z } from "zod";
++import { scanKeys } from "../shared/cache/scan-keys.js";
+ import { processAndStoreImage, upsertFigureImageRecord } from "./images.js";
+ 
+ const listQuery = z.object({
+@@ -228,10 +229,30 @@ function publicImage(image: any): any {
+   };
+ }
+ 
++function firstText(...values: any[]): string | null {
++  for (const value of values) {
++    if (typeof value === "string" && value.trim() !== "") return value;
++  }
++  return null;
++}
++
++function publicEntityName(entity: any): string | null {
++  return firstText(entity?.nameEn, entity?.name, entity?.nameJp);
++}
++
+ function publicFigure(figure: any): any {
+   if (!figure) return figure;
+   const originalImage = figure.image;
+   const originalImages = figure.images;
++  const localized = Array.isArray(figure.localized) ? figure.localized[0] : null;
++  const featuredCharacter = Array.isArray(figure.characters)
++    ? figure.characters.find((item: any) => item?.isFeatured)?.character || figure.characters[0]?.character
++    : null;
++  const displayTitle = firstText(localized?.title, figure.nameEn, figure.name, figure.nameJp, figure.slug) || "";
++  const originalTitle = firstText(figure.nameJp, figure.name, figure.nameEn, displayTitle) || displayTitle;
++  const displayOrigin = firstText(localized?.origin, publicEntityName(figure.series));
++  const displayCharacter = firstText(localized?.character, publicEntityName(featuredCharacter));
++  const displayDescription = firstText(localized?.description, figure.description);
+   const rest = { ...figure };
+   const hiddenKeys = [
+     String.fromCharCode(109, 102, 99, 73, 100),
+@@ -245,6 +266,11 @@ function publicFigure(figure: any): any {
+   return {
+     ...rest,
+     slug: publicSlug(figure.slug),
++    displayTitle,
++    originalTitle,
++    displayOrigin,
++    displayCharacter,
++    displayDescription,
+     image: originalImage ? publicImage(originalImage) : originalImage,
+     images: Array.isArray(originalImages) ? originalImages.map(publicImage) : originalImages,
+   };
+@@ -258,17 +284,15 @@ async function invalidateFigureCache(app: FastifyInstance, slug?: string) {
+   if (slug) {
+     await app.redis.del(`figures:detail:${slug}`);
+   }
+-  const detailKeys = await app.redis.keys("figures:detail:*");
+-  if (detailKeys.length > 0) await app.redis.del(...detailKeys);
+-  const listKeys = await app.redis.keys("figures:list:*");
+-  if (listKeys.length > 0) await app.redis.del(...listKeys);
++  await scanKeys(app.redis, "figures:detail:*");
++  await scanKeys(app.redis, "figures:list:*");
+ }
+ 
+ export async function figureRoutes(app: FastifyInstance) {
+   // GET / - List figures
+   app.get("/", async (req: any) => {
+     const raw = listQuery.parse(req.query);
+-    const query = { ...raw, minPrice: raw.minPrice ?? raw.priceMin, maxPrice: raw.maxPrice ?? raw.priceMax };
++    const query = { ...raw, lang: raw.lang || "fr", minPrice: raw.minPrice ?? raw.priceMin, maxPrice: raw.maxPrice ?? raw.priceMax };
+     const cacheKey = `figures:list:${JSON.stringify(query)}`;
+ 
+     const cached = await app.redis.get(cacheKey);
+@@ -309,11 +333,13 @@ export async function figureRoutes(app: FastifyInstance) {
+         orderBy: stableOrderBy,
+         include: {
+           manufacturer: { select: { id: true, slug: true, name: true, nameEn: true } },
+-          series: { select: { id: true, slug: true, name: true, nameEn: true } },
++          series: { select: { id: true, slug: true, name: true, nameJp: true, nameEn: true } },
++          characters: { include: { character: { select: { id: true, slug: true, name: true, nameJp: true, nameEn: true } } } },
+           sculptors: { include: { sculptor: { select: { id: true, slug: true, name: true, nameEn: true } } } },
+           categories: { include: { category: { select: { id: true, slug: true, name: true } } } },
+           localized: {
+-            where: query.lang ? { language: query.lang } : undefined,
++            where: { language: query.lang },
++            orderBy: { id: "asc" },
+           },
+           images: {
+             orderBy: [{ sortOrder: "asc" }, { id: "asc" }],
+@@ -363,7 +389,8 @@ export async function figureRoutes(app: FastifyInstance) {
+   app.get("/:slug", async (req: any, reply: any) => {
+     const { slug } = req.params as { slug: string };
+     const rawQuery = detailQuery.parse(req.query || {});
+-    const cacheKey = `figures:detail:${slug}:${rawQuery.lang || "all"}`;
++    const lang = rawQuery.lang || "fr";
++    const cacheKey = `figures:detail:${slug}:${lang}`;
+ 
+     const cached = await app.redis.get(cacheKey);
+     if (cached) return JSON.parse(cached);
+@@ -377,7 +404,8 @@ export async function figureRoutes(app: FastifyInstance) {
+         sculptors: { include: { sculptor: { select: { id: true, slug: true, name: true, nameJp: true, nameEn: true } } } },
+         categories: { include: { category: { select: { id: true, slug: true, name: true } } } },
+         localized: {
+-          where: rawQuery.lang ? { language: rawQuery.lang } : undefined,
++          where: { language: lang },
++          orderBy: { id: "asc" },
+         },
+         releases: {
+           orderBy: { releaseDate: "asc" },
+diff --git a/mw-backend/src/routes/images.ts b/mw-backend/src/routes/images.ts
+index bbd64e1..134e092 100644
+--- a/mw-backend/src/routes/images.ts
++++ b/mw-backend/src/routes/images.ts
+@@ -9,6 +9,7 @@ import path from "path";
+ import sharp from "sharp";
+ import dns from "dns";
+ import os from "os";
++import { scanKeys } from "../shared/cache/scan-keys.js";
+ 
+ const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
+ const DOWNLOAD_TIMEOUT = 15_000; // 15 seconds
+@@ -390,10 +391,8 @@ async function resolveStorageJanCode(app: FastifyInstance, figureId: number, jan
+ }
+ 
+ async function invalidateFigureImageCaches(app: FastifyInstance) {
+-  const detailKeys = await app.redis.keys("figures:detail:*");
+-  if (detailKeys.length > 0) await app.redis.del(...detailKeys);
+-  const listKeys = await app.redis.keys("figures:list:*");
+-  if (listKeys.length > 0) await app.redis.del(...listKeys);
++  await scanKeys(app.redis, "figures:detail:*");
++  await scanKeys(app.redis, "figures:list:*");
+ }
+ 
+ export async function imageRoutes(app: FastifyInstance) {
+diff --git a/mw-backend/src/routes/manufacturer.ts b/mw-backend/src/routes/manufacturer.ts
+index 5900ee0..147285f 100644
+--- a/mw-backend/src/routes/manufacturer.ts
++++ b/mw-backend/src/routes/manufacturer.ts
+@@ -1,5 +1,6 @@
+ import { FastifyInstance } from "fastify";
+ import { z } from "zod";
++import { scanKeys } from "../shared/cache/scan-keys.js";
+ 
+ const listQuery = z.object({
+   page: z.coerce.number().min(1).default(1),
+@@ -19,14 +20,10 @@ const createManufacturerSchema = z.object({
+ const updateManufacturerSchema = createManufacturerSchema.partial();
+ 
+ async function invalidateManufacturerCache(app: FastifyInstance, slug?: string) {
+-  const keys: string[] = [];
+-  const listKeys = await app.redis.keys("manufacturers:list:*");
+-  keys.push(...listKeys);
+   if (slug) {
+-    const detailKey = `manufacturers:detail:${slug}`;
+-    keys.push(detailKey);
++    await app.redis.del(`manufacturers:detail:${slug}`);
+   }
+-  if (keys.length > 0) await app.redis.del(...keys);
++  await scanKeys(app.redis, "manufacturers:list:*");
+ }
+ 
+ export async function manufacturerRoutes(app: FastifyInstance) {
+diff --git a/mw-backend/src/routes/sculptor.ts b/mw-backend/src/routes/sculptor.ts
+index 216f805..48820cf 100644
+--- a/mw-backend/src/routes/sculptor.ts
++++ b/mw-backend/src/routes/sculptor.ts
+@@ -1,5 +1,6 @@
+ import { FastifyInstance } from "fastify";
+ import { z } from "zod";
++import { scanKeys } from "../shared/cache/scan-keys.js";
+ 
+ const listQuery = z.object({
+   page: z.coerce.number().min(1).default(1),
+@@ -19,14 +20,10 @@ const createSculptorSchema = z.object({
+ const updateSculptorSchema = createSculptorSchema.partial();
+ 
+ async function invalidateSculptorCache(app: FastifyInstance, slug?: string) {
+-  const keys: string[] = [];
+-  const listKeys = await app.redis.keys("sculptors:list:*");
+-  keys.push(...listKeys);
+   if (slug) {
+-    const detailKey = `sculptors:detail:${slug}`;
+-    keys.push(detailKey);
++    await app.redis.del(`sculptors:detail:${slug}`);
+   }
+-  if (keys.length > 0) await app.redis.del(...keys);
++  await scanKeys(app.redis, "sculptors:list:*");
+ }
+ 
+ export async function sculptorRoutes(app: FastifyInstance) {
+diff --git a/mw-backend/src/routes/search.ts b/mw-backend/src/routes/search.ts
+index 2ac2973..7684b3b 100644
+--- a/mw-backend/src/routes/search.ts
++++ b/mw-backend/src/routes/search.ts
+@@ -11,8 +11,8 @@ import { z } from "zod";
+  *
+  * 鍙傛暟:
+  *   q    鈥?鎼滅储鍏抽敭璇?(1-200 瀛楃)
+- *   type 鈥?缁撴灉绫诲瀷: all | figure | series | manufacturer | sculptor (榛樿 all)
+- *   locale 鈥?鏈娇鐢?淇濈暀)
++ *   type 鈥?缁撴灉绫诲瀷: all | figure | series | manufacturer | sculptor | character (榛樿 all)
++ *   lang/locale 鈥?localized language, defaults to fr
+  *   page/perPage 鈥?鍒嗛〉 (姣忎釜缁撴灉绫诲瀷鐙珛鍒嗛〉)
+  *
+  * 杩斿洖鏍煎紡:
+@@ -23,6 +23,7 @@ import { z } from "zod";
+  *       series:        { items: [...], total: number },
+  *       manufacturers: { items: [...], total: number },
+  *       sculptors:     { items: [...], total: number },
++ *       characters:    { items: [...], total: number },
+  *     },
+  *     meta: { totalResults, figuresCount, seriesCount, ... }
+  *   }
+@@ -37,7 +38,8 @@ import { z } from "zod";
+ 
+ const searchQuery = z.object({
+   q: z.string().min(1).max(200),
+-  type: z.enum(["all", "figure", "series", "manufacturer", "sculptor"]).default("all"),
++  type: z.enum(["all", "figure", "series", "manufacturer", "sculptor", "character"]).default("all"),
++  lang: z.string().optional(),
+   locale: z.string().optional(),
+   page: z.coerce.number().min(1).default(1),
+   perPage: z.coerce.number().min(1).max(100).default(12),
+@@ -51,11 +53,28 @@ function publicSlug(slug?: string | null): string {
+     .replace(/-+$/g, "");
+ }
+ 
++function normalizeLang(value?: string | null): string {
++  const lang = String(value || "fr").trim().toLowerCase().split(/[-_]/)[0];
++  return lang || "fr";
++}
++
++function firstText(...values: any[]): string | null {
++  for (const value of values) {
++    if (typeof value === "string" && value.trim() !== "") return value;
++  }
++  return null;
++}
++
++function publicEntityName(entity: any): string | null {
++  return firstText(entity?.nameEn, entity?.name, entity?.nameJp);
++}
++
+ export async function searchRoutes(app: FastifyInstance) {
+   app.get("/", async (req: any, reply: any) => {
+     const query = searchQuery.parse(req.query);
+     const searchTerm = query.q;
+     const resultType = query.type;
++    const lang = normalizeLang(query.lang || query.locale);
+ 
+     // 鏋勫缓妯＄硦鎼滅储鏉′欢
+     const textFilter = { contains: searchTerm, mode: "insensitive" as const };
+@@ -70,8 +89,14 @@ export async function searchRoutes(app: FastifyInstance) {
+     // 閫氱敤 Prisma select 鈥?鍖呭惈 nameEn 浠ヤ繚鎸佷笌鍒楄〃 API 涓€鑷?     const figureSelect = {
+       id: true, slug: true, name: true, nameJp: true, nameEn: true,
+-      priceJpy: true, releaseDate: true, scale: true,
++      description: true, priceJpy: true, releaseDate: true, scale: true,
+       manufacturer: { select: { id: true, slug: true, name: true, nameEn: true } },
++      series: { select: { id: true, slug: true, name: true, nameJp: true, nameEn: true } },
++      characters: { include: { character: { select: { id: true, slug: true, name: true, nameJp: true, nameEn: true } } } },
++      localized: {
++        where: { language: lang },
++        orderBy: { id: "asc" as const },
++      },
+       images: {
+         orderBy: { sortOrder: "asc" as const },
+         take: 3,
+@@ -83,6 +108,16 @@ export async function searchRoutes(app: FastifyInstance) {
+       categories: { include: { category: { select: { slug: true, name: true } } } },
+     };
+ 
++    const characterSelect = {
++      id: true,
++      slug: true,
++      name: true,
++      nameJp: true,
++      nameEn: true,
++      series: { select: { id: true, slug: true, name: true, nameJp: true, nameEn: true } },
++      _count: { select: { figures: true } },
++    };
++
+     /**
+      * Transform figure images to expose a usable `url` field.
+      * The list API builds `/api/v1/figures/images/:id` URLs via groupImageVariants,
+@@ -111,16 +146,33 @@ export async function searchRoutes(app: FastifyInstance) {
+     }
+ 
+     function normalizeFigureImages(figures: any[]): any[] {
+-      return figures.map((fig: any) => ({
+-        ...fig,
+-        slug: publicSlug(fig.slug),
+-        images: (fig.images || [])
+-          .filter((img: any) => isSafeDisplayImage(img))
+-          .map((img: any) => ({
+-            ...img,
+-            url: `/api/v1/figures/images/${img.id}`,
+-          })),
+-      }));
++      return figures.map((fig: any) => {
++        const localized = Array.isArray(fig.localized) ? fig.localized[0] : null;
++        const featuredCharacter = Array.isArray(fig.characters)
++          ? fig.characters.find((item: any) => item?.isFeatured)?.character || fig.characters[0]?.character
++          : null;
++        const displayTitle = firstText(localized?.title, fig.nameEn, fig.name, fig.nameJp, fig.slug) || "";
++        const originalTitle = firstText(fig.nameJp, fig.name, fig.nameEn, displayTitle) || displayTitle;
++        const displayOrigin = firstText(localized?.origin, publicEntityName(fig.series));
++        const displayCharacter = firstText(localized?.character, publicEntityName(featuredCharacter));
++        const displayDescription = firstText(localized?.description, fig.description);
++
++        return {
++          ...fig,
++          slug: publicSlug(fig.slug),
++          displayTitle,
++          originalTitle,
++          displayOrigin,
++          displayCharacter,
++          displayDescription,
++          images: (fig.images || [])
++            .filter((img: any) => isSafeDisplayImage(img))
++            .map((img: any) => ({
++              ...img,
++              url: `/api/v1/figures/images/${img.id}`,
++            })),
++        };
++      });
+     }
+ 
+     const whereDeleted = { isDeleted: false };
+@@ -141,7 +193,8 @@ export async function searchRoutes(app: FastifyInstance) {
+         series: { items: [], total: 0 },
+         manufacturers: { items: [], total: 0 },
+         sculptors: { items: [], total: 0 },
+-        meta: { totalResults: total, figuresCount: total, seriesCount: 0, manufacturersCount: 0, sculptorsCount: 0 },
++        characters: { items: [], total: 0 },
++        meta: { totalResults: total, figuresCount: total, seriesCount: 0, manufacturersCount: 0, sculptorsCount: 0, charactersCount: 0 },
+       };
+     } else if (resultType === "series") {
+       const [items, total] = await Promise.all([
+@@ -157,7 +210,8 @@ export async function searchRoutes(app: FastifyInstance) {
+         series: { items, total },
+         manufacturers: { items: [], total: 0 },
+         sculptors: { items: [], total: 0 },
+-        meta: { totalResults: total, figuresCount: 0, seriesCount: total, manufacturersCount: 0, sculptorsCount: 0 },
++        characters: { items: [], total: 0 },
++        meta: { totalResults: total, figuresCount: 0, seriesCount: total, manufacturersCount: 0, sculptorsCount: 0, charactersCount: 0 },
+       };
+     } else if (resultType === "manufacturer") {
+       const [items, total] = await Promise.all([
+@@ -173,7 +227,8 @@ export async function searchRoutes(app: FastifyInstance) {
+         series: { items: [], total: 0 },
+         manufacturers: { items, total },
+         sculptors: { items: [], total: 0 },
+-        meta: { totalResults: total, figuresCount: 0, seriesCount: 0, manufacturersCount: total, sculptorsCount: 0 },
++        characters: { items: [], total: 0 },
++        meta: { totalResults: total, figuresCount: 0, seriesCount: 0, manufacturersCount: total, sculptorsCount: 0, charactersCount: 0 },
+       };
+     } else if (resultType === "sculptor") {
+       const [items, total] = await Promise.all([
+@@ -189,11 +244,29 @@ export async function searchRoutes(app: FastifyInstance) {
+         series: { items: [], total: 0 },
+         manufacturers: { items: [], total: 0 },
+         sculptors: { items, total },
+-        meta: { totalResults: total, figuresCount: 0, seriesCount: 0, manufacturersCount: 0, sculptorsCount: total },
++        characters: { items: [], total: 0 },
++        meta: { totalResults: total, figuresCount: 0, seriesCount: 0, manufacturersCount: 0, sculptorsCount: total, charactersCount: 0 },
++      };
++    } else if (resultType === "character") {
++      const [items, total] = await Promise.all([
++        app.prisma.character.findMany({
++          where: whereCondition,
++          select: characterSelect,
++          take: SEARCH_LIMIT,
++        }),
++        app.prisma.character.count({ where: whereCondition }),
++      ]);
++      result = {
++        figures: { items: [], total: 0 },
++        series: { items: [], total: 0 },
++        manufacturers: { items: [], total: 0 },
++        sculptors: { items: [], total: 0 },
++        characters: { items, total },
++        meta: { totalResults: total, figuresCount: 0, seriesCount: 0, manufacturersCount: 0, sculptorsCount: 0, charactersCount: total },
+       };
+     } else {
+-      // "all" 鈥?骞惰鎼滅储鎵€鏈?4 绉嶇被鍨嬶紙姣忕绫诲瀷: findMany + count = 8 涓煡璇級
+-      const [figItems, figCount, serItems, serCount, mfrItems, mfrCount, scItems, scCount] = await Promise.all([
++      // "all" 鈥?骞惰鎼滅储鎵€鏈?public entity types.
++      const [figItems, figCount, serItems, serCount, mfrItems, mfrCount, scItems, scCount, charItems, charCount] = await Promise.all([
+         app.prisma.figure.findMany({ where: { ...whereCondition, ...whereDeleted }, select: figureSelect, take: SEARCH_LIMIT, orderBy: { releaseDate: "desc" } }),
+         app.prisma.figure.count({ where: { ...whereCondition, ...whereDeleted } }),
+         app.prisma.series.findMany({ where: whereCondition, select: { id: true, slug: true, name: true, nameJp: true, nameEn: true, _count: { select: { figures: true } } }, take: SEARCH_LIMIT }),
+@@ -202,6 +275,8 @@ export async function searchRoutes(app: FastifyInstance) {
+         app.prisma.manufacturer.count({ where: whereCondition }),
+         app.prisma.sculptor.findMany({ where: whereCondition, select: { id: true, slug: true, name: true, nameJp: true, nameEn: true, _count: { select: { figures: true } } }, take: SEARCH_LIMIT }),
+         app.prisma.sculptor.count({ where: whereCondition }),
++        app.prisma.character.findMany({ where: whereCondition, select: characterSelect, take: SEARCH_LIMIT }),
++        app.prisma.character.count({ where: whereCondition }),
+       ]);
+ 
+       result = {
+@@ -209,12 +284,14 @@ export async function searchRoutes(app: FastifyInstance) {
+         series:        { items: serItems as any[], total: serCount as number },
+         manufacturers: { items: mfrItems as any[], total: mfrCount as number },
+         sculptors:     { items: scItems as any[], total: scCount as number },
++        characters:    { items: charItems as any[], total: charCount as number },
+         meta: {
+-          totalResults: (figCount + serCount + mfrCount + scCount) as number,
++          totalResults: (figCount + serCount + mfrCount + scCount + charCount) as number,
+           figuresCount: figCount as number,
+           seriesCount: serCount as number,
+           manufacturersCount: mfrCount as number,
+           sculptorsCount: scCount as number,
++          charactersCount: charCount as number,
+         },
+       };
+     }
+diff --git a/mw-backend/src/routes/series.ts b/mw-backend/src/routes/series.ts
+index c3d42c7..5ae6cd3 100644
+--- a/mw-backend/src/routes/series.ts
++++ b/mw-backend/src/routes/series.ts
+@@ -1,5 +1,6 @@
+ import { FastifyInstance } from "fastify";
+ import { z } from "zod";
++import { scanKeys } from "../shared/cache/scan-keys.js";
+ 
+ const listQuery = z.object({
+   page: z.coerce.number().min(1).default(1),
+@@ -18,14 +19,10 @@ const createSeriesSchema = z.object({
+ const updateSeriesSchema = createSeriesSchema.partial();
+ 
+ async function invalidateSeriesCache(app: FastifyInstance, slug?: string) {
+-  const keys: string[] = [];
+-  const listKeys = await app.redis.keys("series:list:*");
+-  keys.push(...listKeys);
+   if (slug) {
+-    const detailKey = `series:detail:${slug}`;
+-    keys.push(detailKey);
++    await app.redis.del(`series:detail:${slug}`);
+   }
+-  if (keys.length > 0) await app.redis.del(...keys);
++  await scanKeys(app.redis, "series:list:*");
+ }
+ 
+ export async function seriesRoutes(app: FastifyInstance) {

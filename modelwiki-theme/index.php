@@ -32,7 +32,7 @@
     <section class="mw-latest">
         <h2><?php echo esc_html(mw_t('Latest Releases')); ?></h2>
         <?php
-        $result = mw_api_get('/figures', array('perPage' => 12, 'sort' => 'release_date:desc'));
+        $result = mw_api_get('/figures', array('perPage' => 12, 'sort' => 'release_date:desc', 'lang' => mw_lang()));
         $data = isset($result['data']) ? $result['data'] : null;
         if ($data):
             $data = mw_dedup_figures($data);

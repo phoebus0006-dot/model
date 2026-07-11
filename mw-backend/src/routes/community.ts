@@ -104,7 +104,7 @@ function sanitizeUserText(s: string): string {
 }
 
 export async function communityRoutes(app: FastifyInstance) {
-  const prisma = app.prisma as any;
+  const prisma = app.prisma;
 
   app.get("/me/space", async (req: any, reply: any) => {
     const user = await requireUser(app, req, reply);

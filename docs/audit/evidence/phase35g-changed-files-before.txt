@@ -1,0 +1,104 @@
+﻿git : warning: in the working copy of 'docs/00_PRODUCT_VISION.md', LF will be replaced by CRLF the next time Git touche
+s it
+所在位置 行:1 字符: 267
++ ... -before.txt" -Encoding utf8; git diff --name-status HEAD 2>&1 | Out-F ...
++                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (warning: in the... Git touches it:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+warning: in the working copy of 'docs/01_USER_REQUIREMENTS.md', LF will be replaced by CRLF the next time Git touches i
+t
+warning: in the working copy of 'docs/02_SYSTEM_ARCHITECTURE.md', LF will be replaced by CRLF the next time Git touches
+ it
+warning: in the working copy of 'docs/03_CONTENT_GOVERNANCE_AND_REVIEW.md', LF will be replaced by CRLF the next time G
+it touches it
+warning: in the working copy of 'docs/04_SECURITY_AND_ENGINEERING_GUARDRAILS.md', LF will be replaced by CRLF the next 
+time Git touches it
+warning: in the working copy of 'docs/05_ROADMAP_AND_PRIORITIES.md', LF will be replaced by CRLF the next time Git touc
+hes it
+warning: in the working copy of 'docs/README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/reviewer/00_REVIEWER_BOOTSTRAP.md', LF will be replaced by CRLF the next time Git
+ touches it
+warning: in the working copy of 'docs/reviewer/03_GLOBAL_REVIEW_CHECKLIST.md', LF will be replaced by CRLF the next tim
+e Git touches it
+warning: in the working copy of 'docs/reviewer/05_UI_INTERACTION_TEST_BASELINE.md', LF will be replaced by CRLF the nex
+t time Git touches it
+warning: in the working copy of 'docs/reviewer/06_API_CONTRACT_AND_DATA_INTEGRITY_TESTS.md', LF will be replaced by CRL
+F the next time Git touches it
+warning: in the working copy of 'docs/reviewer/09_REGRESSION_AND_RELEASE_GATE.md', LF will be replaced by CRLF the next
+ time Git touches it
+warning: in the working copy of 'docs/reviewer/10_REVIEW_REPORT_TEMPLATE.md', LF will be replaced by CRLF the next time
+ Git touches it
+warning: in the working copy of 'docs/reviewer/11_KNOWN_RISKS_AND_OPEN_QUESTIONS.md', LF will be replaced by CRLF the n
+ext time Git touches it
+warning: in the working copy of 'docs/reviewer/README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/reviewer/REVIEWER_BASELINE_MANIFEST.json', LF will be replaced by CRLF the next t
+ime Git touches it
+warning: in the working copy of 'modelwiki-theme/functions.php', LF will be replaced by CRLF the next time Git touches 
+it
+warning: in the working copy of 'modelwiki-theme/header.php', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'modelwiki-theme/index.php', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'modelwiki-theme/languages.php', LF will be replaced by CRLF the next time Git touches 
+it
+warning: in the working copy of 'modelwiki-theme/page-figure.php', LF will be replaced by CRLF the next time Git touche
+s it
+warning: in the working copy of 'modelwiki-theme/page-search.php', LF will be replaced by CRLF the next time Git touche
+s it
+warning: in the working copy of 'modelwiki-theme/template-parts/figure-card.php', LF will be replaced by CRLF the next 
+time Git touches it
+warning: in the working copy of 'mw-backend/package.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'mw-backend/prisma/schema.prisma', LF will be replaced by CRLF the next time Git touche
+s it
+warning: in the working copy of 'mw-backend/src/index.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'mw-backend/src/routes/admin.ts', LF will be replaced by CRLF the next time Git touches
+ it
+warning: in the working copy of 'mw-backend/src/routes/auth.ts', LF will be replaced by CRLF the next time Git touches 
+it
+warning: in the working copy of 'mw-backend/src/routes/categories.ts', LF will be replaced by CRLF the next time Git to
+uches it
+warning: in the working copy of 'mw-backend/src/routes/characters.ts', LF will be replaced by CRLF the next time Git to
+uches it
+warning: in the working copy of 'mw-backend/src/routes/community.ts', LF will be replaced by CRLF the next time Git tou
+ches it
+warning: in the working copy of 'mw-backend/src/routes/figures.ts', LF will be replaced by CRLF the next time Git touch
+es it
+warning: in the working copy of 'mw-backend/src/routes/search.ts', LF will be replaced by CRLF the next time Git touche
+s it
+M	docs/00_PRODUCT_VISION.md
+M	docs/01_USER_REQUIREMENTS.md
+M	docs/02_SYSTEM_ARCHITECTURE.md
+M	docs/03_CONTENT_GOVERNANCE_AND_REVIEW.md
+M	docs/04_SECURITY_AND_ENGINEERING_GUARDRAILS.md
+M	docs/05_ROADMAP_AND_PRIORITIES.md
+M	docs/README.md
+M	docs/reviewer/00_REVIEWER_BOOTSTRAP.md
+M	docs/reviewer/03_GLOBAL_REVIEW_CHECKLIST.md
+M	docs/reviewer/05_UI_INTERACTION_TEST_BASELINE.md
+M	docs/reviewer/06_API_CONTRACT_AND_DATA_INTEGRITY_TESTS.md
+M	docs/reviewer/09_REGRESSION_AND_RELEASE_GATE.md
+M	docs/reviewer/10_REVIEW_REPORT_TEMPLATE.md
+M	docs/reviewer/11_KNOWN_RISKS_AND_OPEN_QUESTIONS.md
+M	docs/reviewer/README.md
+M	docs/reviewer/REVIEWER_BASELINE_MANIFEST.json
+M	guanli_index.php
+M	modelwiki-theme/functions.php
+M	modelwiki-theme/header.php
+M	modelwiki-theme/index.php
+M	modelwiki-theme/languages.php
+M	modelwiki-theme/page-figure.php
+M	modelwiki-theme/page-search.php
+M	modelwiki-theme/template-parts/figure-card.php
+M	mw-backend/package.json
+M	mw-backend/prisma/schema.prisma
+M	mw-backend/src/index.ts
+M	mw-backend/src/routes/admin.ts
+M	mw-backend/src/routes/auth.ts
+M	mw-backend/src/routes/categories.ts
+M	mw-backend/src/routes/characters.ts
+M	mw-backend/src/routes/community.ts
+M	mw-backend/src/routes/figures.ts
+M	mw-backend/src/routes/images.ts
+M	mw-backend/src/routes/manufacturer.ts
+M	mw-backend/src/routes/sculptor.ts
+M	mw-backend/src/routes/search.ts
+M	mw-backend/src/routes/series.ts

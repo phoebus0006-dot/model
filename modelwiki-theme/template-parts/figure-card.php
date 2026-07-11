@@ -46,11 +46,12 @@ function mw_render_figure_card($fig) {
     $releaseDate = isset($fig['releaseDate']) ? $fig['releaseDate'] : '';
     $is_merch = mw_is_merch_figure($fig);
     $is_preorder = $releaseDate && strtotime($releaseDate) > time();
+    $display_title = $fig['displayTitle'] ?? mw_display_name($fig);
     ?>
     <a href="<?php echo esc_url(add_query_arg('lang', mw_lang(), home_url('/figure/' . $fig['slug'] . '/'))); ?>" class="mw-figure-card<?php echo $is_merch ? ' mw-figure-card--merch' : ''; ?>">
         <div class="mw-figure-card-img">
             <?php if ($image_url): ?>
-                <img src="<?php echo esc_url($image_url); ?>" alt="<?php echo esc_attr(mw_display_name($fig)); ?>" loading="lazy">
+                <img src="<?php echo esc_url($image_url); ?>" alt="<?php echo esc_attr($display_title); ?>" loading="lazy">
             <?php else: ?>
                 <span class="mw-no-image-placeholder"><?php echo esc_html(mw_t('No image')); ?></span>
             <?php endif; ?>
@@ -66,7 +67,7 @@ function mw_render_figure_card($fig) {
             <?php endif; ?>
         </div>
         <div class="mw-figure-card-info">
-            <h3><?php echo esc_html(mw_display_name($fig)); ?></h3>
+            <h3><?php echo esc_html($display_title); ?></h3>
             <?php if ($manufacturer): ?><span class="mw-figure-card-mfr"><?php echo esc_html($manufacturer); ?></span><?php endif; ?>
             <?php if ($scale && !$is_merch): ?><span class="mw-figure-card-scale"><?php echo esc_html($scale); ?></span><?php endif; ?>
             <?php if ($priceJpy): ?><span class="mw-figure-card-price">&yen;<?php echo number_format(intval($priceJpy)); ?></span><?php endif; ?>

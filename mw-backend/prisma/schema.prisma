@@ -352,3 +352,93 @@ model RedirectMap {
 
   @@map("redirect_map")
 }
+
+model ReviewItem {
+  id                  BigInt    @id @default(autoincrement())
+  publicId            String    @unique @map("public_id")
+  title               String
+  type                String    @default("general")
+  source              String?
+  sourceId            String?   @map("source_id")
+  status              String    @default("pending")
+  priority            Int       @default(1)
+  confidence          Decimal?  @db.Decimal(4, 3)
+  figureId            BigInt?   @map("figure_id")
+  figureSlug          String?   @map("figure_slug")
+  riskType            String?   @map("risk_type")
+  riskReason          String?   @map("risk_reason")
+  suggestedAction     String?   @map("suggested_action")
+  evidenceFingerprint String?   @map("evidence_fingerprint")
+  reviewer            String?
+  decisionReason      String?   @map("decision_reason")
+  decisionAt          DateTime? @map("decision_at")
+  appliedAt           DateTime? @map("applied_at")
+  originalRedisKey    String?   @unique @map("original_redis_key")
+  redisFormatVersion  Int       @default(1) @map("redis_format_version")
+  payload             Json?
+  notes               String?
+  version             Int       @default(0)
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+
+  events ReviewEvent[]
+  applyAttempts ReviewApplyAttempt[]
+
+  @@index([status, createdAt])
+  @@index([figureId])
+  @@index([riskType])
+  @@index([evidenceFingerprint])
+  @@map("review_items")
+}
+
+model ReviewEvent {
+  id           BigInt    @id @default(autoincrement())
+  reviewItemId BigInt    @map("review_item_id")
+  event        String
+  action       String?
+  fromStatus   String?   @map("from_status")
+  toStatus     String    @map("to_status")
+  actor        String?
+  reason       String?
+  requestId    String?   @map("request_id")
+  metadata     Json?
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  reviewItem ReviewItem @relation(fields: [reviewItemId], references: [id], onDelete: Cascade)
+
+  @@index([reviewItemId, createdAt])
+  @@index([requestId])
+  @@map("review_events")
+}
+
+model ReviewApplyAttempt {
+  id                       BigInt    @id @default(autoincrement())
+  publicId                 String    @unique @map("public_id")
+  reviewItemId             BigInt    @map("review_item_id")
+  idempotencyKey           String?   @unique @map("idempotency_key")
+  actorUserId              BigInt?   @map("actor_user_id")
+  actorDisplayNameSnapshot String?   @map("actor_display_name_snapshot")
+  actorRoleSnapshot        String?   @map("actor_role_snapshot")
+  requestId                String?   @map("request_id")
+  status                   String    @default("PENDING")
+  currentStep              String?   @map("current_step")
+  attemptNumber            Int       @default(1) @map("attempt_number")
+  targetFigureId           BigInt?   @map("target_figure_id")
+  targetRevisionId         BigInt?   @map("target_revision_id")
+  errorCode                String?   @map("error_code")
+  errorMessageSafe         String?   @map("error_message_safe")
+  retryable                Boolean   @default(true)
+  metadata                 Json?
+  startedAt                DateTime? @map("started_at")
+  completedAt              DateTime? @map("completed_at")
+  failedAt                 DateTime? @map("failed_at")
+  createdAt                DateTime  @default(now()) @map("created_at")
+  updatedAt                DateTime  @updatedAt @map("updated_at")
+
+  reviewItem ReviewItem @relation(fields: [reviewItemId], references: [id], onDelete: Cascade)
+
+  @@unique([reviewItemId, attemptNumber])
+  @@index([status, createdAt])
+  @@index([targetFigureId])
+  @@map("review_apply_attempts")
+}

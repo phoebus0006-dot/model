@@ -11,8 +11,8 @@ import { z } from "zod";
  *
  * 参数:
  *   q    — 搜索关键词 (1-200 字符)
- *   type — 结果类型: all | figure | series | manufacturer | sculptor (默认 all)
- *   locale — 未使用(保留)
+ *   type — 结果类型: all | figure | series | manufacturer | sculptor | character (默认 all)
+ *   lang/locale — localized language, defaults to fr
  *   page/perPage — 分页 (每个结果类型独立分页)
  *
  * 返回格式:
@@ -23,6 +23,7 @@ import { z } from "zod";
  *       series:        { items: [...], total: number },
  *       manufacturers: { items: [...], total: number },
  *       sculptors:     { items: [...], total: number },
+ *       characters:    { items: [...], total: number },
  *     },
  *     meta: { totalResults, figuresCount, seriesCount, ... }
  *   }
@@ -37,7 +38,8 @@ import { z } from "zod";
 
 const searchQuery = z.object({
   q: z.string().min(1).max(200),
-  type: z.enum(["all", "figure", "series", "manufacturer", "sculptor"]).default("all"),
+  type: z.enum(["all", "figure", "series", "manufacturer", "sculptor", "character"]).default("all"),
+  lang: z.string().optional(),
   locale: z.string().optional(),
   page: z.coerce.number().min(1).default(1),
   perPage: z.coerce.number().min(1).max(100).default(12),
@@ -51,11 +53,28 @@ function publicSlug(slug?: string | null): string {
     .replace(/-+$/g, "");
 }
 
+function normalizeLang(value?: string | null): string {
+  const lang = String(value || "fr").trim().toLowerCase().split(/[-_]/)[0];
+  return lang || "fr";
+}
+
+function firstText(...values: any[]): string | null {
+  for (const value of values) {
+    if (typeof value === "string" && value.trim() !== "") return value;
+  }
+  return null;
+}
+
+function publicEntityName(entity: any): string | null {
+  return firstText(entity?.nameEn, entity?.name, entity?.nameJp);
+}
+
 export async function searchRoutes(app: FastifyInstance) {
   app.get("/", async (req: any, reply: any) => {
     const query = searchQuery.parse(req.query);
     const searchTerm = query.q;
     const resultType = query.type;
+    const lang = normalizeLang(query.lang || query.locale);
 
     // 构建模糊搜索条件
     const textFilter = { contains: searchTerm, mode: "insensitive" as const };
@@ -70,8 +89,14 @@ export async function searchRoutes(app: FastifyInstance) {
     // 通用 Prisma select — 包含 nameEn 以保持与列表 API 一致
     const figureSelect = {
       id: true, slug: true, name: true, nameJp: true, nameEn: true,
-      priceJpy: true, releaseDate: true, scale: true,
+      description: true, priceJpy: true, releaseDate: true, scale: true,
       manufacturer: { select: { id: true, slug: true, name: true, nameEn: true } },
+      series: { select: { id: true, slug: true, name: true, nameJp: true, nameEn: true } },
+      characters: { include: { character: { select: { id: true, slug: true, name: true, nameJp: true, nameEn: true } } } },
+      localized: {
+        where: { language: lang },
+        orderBy: { id: "asc" as const },
+      },
       images: {
         orderBy: { sortOrder: "asc" as const },
         take: 3,
@@ -81,6 +106,16 @@ export async function searchRoutes(app: FastifyInstance) {
         },
       },
       categories: { include: { category: { select: { slug: true, name: true } } } },
+    };
+
+    const characterSelect = {
+      id: true,
+      slug: true,
+      name: true,
+      nameJp: true,
+      nameEn: true,
+      series: { select: { id: true, slug: true, name: true, nameJp: true, nameEn: true } },
+      _count: { select: { figures: true } },
     };
 
     /**
@@ -111,16 +146,33 @@ export async function searchRoutes(app: FastifyInstance) {
     }
 
     function normalizeFigureImages(figures: any[]): any[] {
-      return figures.map((fig: any) => ({
-        ...fig,
-        slug: publicSlug(fig.slug),
-        images: (fig.images || [])
-          .filter((img: any) => isSafeDisplayImage(img))
-          .map((img: any) => ({
-            ...img,
-            url: `/api/v1/figures/images/${img.id}`,
-          })),
-      }));
+      return figures.map((fig: any) => {
+        const localized = Array.isArray(fig.localized) ? fig.localized[0] : null;
+        const featuredCharacter = Array.isArray(fig.characters)
+          ? fig.characters.find((item: any) => item?.isFeatured)?.character || fig.characters[0]?.character
+          : null;
+        const displayTitle = firstText(localized?.title, fig.nameEn, fig.name, fig.nameJp, fig.slug) || "";
+        const originalTitle = firstText(fig.nameJp, fig.name, fig.nameEn, displayTitle) || displayTitle;
+        const displayOrigin = firstText(localized?.origin, publicEntityName(fig.series));
+        const displayCharacter = firstText(localized?.character, publicEntityName(featuredCharacter));
+        const displayDescription = firstText(localized?.description, fig.description);
+
+        return {
+          ...fig,
+          slug: publicSlug(fig.slug),
+          displayTitle,
+          originalTitle,
+          displayOrigin,
+          displayCharacter,
+          displayDescription,
+          images: (fig.images || [])
+            .filter((img: any) => isSafeDisplayImage(img))
+            .map((img: any) => ({
+              ...img,
+              url: `/api/v1/figures/images/${img.id}`,
+            })),
+        };
+      });
     }
 
     const whereDeleted = { isDeleted: false };
@@ -141,7 +193,8 @@ export async function searchRoutes(app: FastifyInstance) {
         series: { items: [], total: 0 },
         manufacturers: { items: [], total: 0 },
         sculptors: { items: [], total: 0 },
-        meta: { totalResults: total, figuresCount: total, seriesCount: 0, manufacturersCount: 0, sculptorsCount: 0 },
+        characters: { items: [], total: 0 },
+        meta: { totalResults: total, figuresCount: total, seriesCount: 0, manufacturersCount: 0, sculptorsCount: 0, charactersCount: 0 },
       };
     } else if (resultType === "series") {
       const [items, total] = await Promise.all([
@@ -157,7 +210,8 @@ export async function searchRoutes(app: FastifyInstance) {
         series: { items, total },
         manufacturers: { items: [], total: 0 },
         sculptors: { items: [], total: 0 },
-        meta: { totalResults: total, figuresCount: 0, seriesCount: total, manufacturersCount: 0, sculptorsCount: 0 },
+        characters: { items: [], total: 0 },
+        meta: { totalResults: total, figuresCount: 0, seriesCount: total, manufacturersCount: 0, sculptorsCount: 0, charactersCount: 0 },
       };
     } else if (resultType === "manufacturer") {
       const [items, total] = await Promise.all([
@@ -173,7 +227,8 @@ export async function searchRoutes(app: FastifyInstance) {
         series: { items: [], total: 0 },
         manufacturers: { items, total },
         sculptors: { items: [], total: 0 },
-        meta: { totalResults: total, figuresCount: 0, seriesCount: 0, manufacturersCount: total, sculptorsCount: 0 },
+        characters: { items: [], total: 0 },
+        meta: { totalResults: total, figuresCount: 0, seriesCount: 0, manufacturersCount: total, sculptorsCount: 0, charactersCount: 0 },
       };
     } else if (resultType === "sculptor") {
       const [items, total] = await Promise.all([
@@ -189,11 +244,29 @@ export async function searchRoutes(app: FastifyInstance) {
         series: { items: [], total: 0 },
         manufacturers: { items: [], total: 0 },
         sculptors: { items, total },
-        meta: { totalResults: total, figuresCount: 0, seriesCount: 0, manufacturersCount: 0, sculptorsCount: total },
+        characters: { items: [], total: 0 },
+        meta: { totalResults: total, figuresCount: 0, seriesCount: 0, manufacturersCount: 0, sculptorsCount: total, charactersCount: 0 },
+      };
+    } else if (resultType === "character") {
+      const [items, total] = await Promise.all([
+        app.prisma.character.findMany({
+          where: whereCondition,
+          select: characterSelect,
+          take: SEARCH_LIMIT,
+        }),
+        app.prisma.character.count({ where: whereCondition }),
+      ]);
+      result = {
+        figures: { items: [], total: 0 },
+        series: { items: [], total: 0 },
+        manufacturers: { items: [], total: 0 },
+        sculptors: { items: [], total: 0 },
+        characters: { items, total },
+        meta: { totalResults: total, figuresCount: 0, seriesCount: 0, manufacturersCount: 0, sculptorsCount: 0, charactersCount: total },
       };
     } else {
-      // "all" — 并行搜索所有 4 种类型（每种类型: findMany + count = 8 个查询）
-      const [figItems, figCount, serItems, serCount, mfrItems, mfrCount, scItems, scCount] = await Promise.all([
+      // "all" — 并行搜索所有 public entity types.
+      const [figItems, figCount, serItems, serCount, mfrItems, mfrCount, scItems, scCount, charItems, charCount] = await Promise.all([
         app.prisma.figure.findMany({ where: { ...whereCondition, ...whereDeleted }, select: figureSelect, take: SEARCH_LIMIT, orderBy: { releaseDate: "desc" } }),
         app.prisma.figure.count({ where: { ...whereCondition, ...whereDeleted } }),
         app.prisma.series.findMany({ where: whereCondition, select: { id: true, slug: true, name: true, nameJp: true, nameEn: true, _count: { select: { figures: true } } }, take: SEARCH_LIMIT }),
@@ -202,6 +275,8 @@ export async function searchRoutes(app: FastifyInstance) {
         app.prisma.manufacturer.count({ where: whereCondition }),
         app.prisma.sculptor.findMany({ where: whereCondition, select: { id: true, slug: true, name: true, nameJp: true, nameEn: true, _count: { select: { figures: true } } }, take: SEARCH_LIMIT }),
         app.prisma.sculptor.count({ where: whereCondition }),
+        app.prisma.character.findMany({ where: whereCondition, select: characterSelect, take: SEARCH_LIMIT }),
+        app.prisma.character.count({ where: whereCondition }),
       ]);
 
       result = {
@@ -209,12 +284,14 @@ export async function searchRoutes(app: FastifyInstance) {
         series:        { items: serItems as any[], total: serCount as number },
         manufacturers: { items: mfrItems as any[], total: mfrCount as number },
         sculptors:     { items: scItems as any[], total: scCount as number },
+        characters:    { items: charItems as any[], total: charCount as number },
         meta: {
-          totalResults: (figCount + serCount + mfrCount + scCount) as number,
+          totalResults: (figCount + serCount + mfrCount + scCount + charCount) as number,
           figuresCount: figCount as number,
           seriesCount: serCount as number,
           manufacturersCount: mfrCount as number,
           sculptorsCount: scCount as number,
+          charactersCount: charCount as number,
         },
       };
     }

@@ -34,7 +34,8 @@
         <a href="<?php echo esc_url(add_query_arg('lang', mw_lang(), home_url('/'))); ?>" class="mw-logo" aria-label="<?php echo esc_attr(mw_t('ModelWiki Home')); ?>">ModelWiki</a>
         <nav class="mw-nav" aria-label="<?php echo esc_attr(mw_t('Primary Navigation')); ?>">
             <a href="<?php echo esc_url(add_query_arg('lang', mw_lang(), home_url('/'))); ?>"><?php echo esc_html(mw_t('Home')); ?></a>
-            <a href="<?php echo esc_url(add_query_arg('lang', mw_lang(), home_url('/browse/'))); ?>"><?php echo esc_html(mw_t('Browse')); ?></a>
+            <a href="<?php echo esc_url(add_query_arg('lang', mw_lang(), home_url('/browse/'))); ?>"><?php echo esc_html(mw_t('Figurines')); ?></a>
+            <a href="<?php echo esc_url(add_query_arg('lang', mw_lang(), home_url('/characters/'))); ?>"><?php echo esc_html(mw_t('Personnages')); ?></a>
             <a href="<?php echo esc_url(add_query_arg('lang', mw_lang(), home_url('/search/'))); ?>"><?php echo esc_html(mw_t('Search')); ?></a>
             <a href="<?php echo esc_url(add_query_arg('lang', mw_lang(), home_url('/series/'))); ?>"><?php echo esc_html(mw_t('Series')); ?></a>
             <a href="<?php echo esc_url(add_query_arg('lang', mw_lang(), home_url('/manufacturers/'))); ?>"><?php echo esc_html(mw_t('Manufacturers')); ?></a>
@@ -61,7 +62,8 @@
     </div>
     <nav class="mw-mobile-menu" id="mw-mobile-menu" aria-label="<?php echo esc_attr(mw_t('Mobile Navigation')); ?>">
         <a href="<?php echo esc_url(add_query_arg('lang', mw_lang(), home_url('/'))); ?>"><?php echo esc_html(mw_t('Home')); ?></a>
-        <a href="<?php echo esc_url(add_query_arg('lang', mw_lang(), home_url('/browse/'))); ?>"><?php echo esc_html(mw_t('Browse')); ?></a>
+        <a href="<?php echo esc_url(add_query_arg('lang', mw_lang(), home_url('/browse/'))); ?>"><?php echo esc_html(mw_t('Figurines')); ?></a>
+        <a href="<?php echo esc_url(add_query_arg('lang', mw_lang(), home_url('/characters/'))); ?>"><?php echo esc_html(mw_t('Personnages')); ?></a>
         <a href="<?php echo esc_url(add_query_arg('lang', mw_lang(), home_url('/search/'))); ?>"><?php echo esc_html(mw_t('Search')); ?></a>
         <a href="<?php echo esc_url(add_query_arg('lang', mw_lang(), home_url('/series/'))); ?>"><?php echo esc_html(mw_t('Series')); ?></a>
         <a href="<?php echo esc_url(add_query_arg('lang', mw_lang(), home_url('/manufacturers/'))); ?>"><?php echo esc_html(mw_t('Manufacturers')); ?></a>
