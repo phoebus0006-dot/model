@@ -1,64 +1,71 @@
 import { describe, it, expect } from "vitest";
-import { reviewUpdateSchema } from "../modules/reviews/schemas.js";
-
-const FORBIDDEN_UPDATE_FIELDS = new Set(["status", "decisionReason", "reviewer", "decisionAt", "action", "createdAt"]);
-
-function detectForbiddenFields(body: Record<string, unknown>): string[] {
-  return Object.keys(body).filter((k) => FORBIDDEN_UPDATE_FIELDS.has(k));
-}
+import { reviewEditableFieldsSchema } from "../modules/reviews/schemas.js";
 
 describe("Review PUT state machine bypass fix", () => {
-  describe("Forbidden field detection", () => {
-    it("detects status as forbidden", () => {
-      expect(detectForbiddenFields({ status: "approved" })).toEqual(["status"]);
+  describe("reviewEditableFieldsSchema.strict()", () => {
+    it("allows only editable fields", () => {
+      const result = reviewEditableFieldsSchema.strict().parse({ notes: "Updated note", priority: 2 });
+      expect(result.notes).toBe("Updated note");
+      expect(result.priority).toBe(2);
     });
 
-    it("detects decisionReason as forbidden", () => {
-      expect(detectForbiddenFields({ decisionReason: "reason" })).toEqual(["decisionReason"]);
+    it("rejects status with ZodError when strict", () => {
+      expect(() => reviewEditableFieldsSchema.strict().parse({ status: "approved" })).toThrow();
     });
 
-    it("detects reviewer as forbidden", () => {
-      expect(detectForbiddenFields({ reviewer: "admin" })).toEqual(["reviewer"]);
+    it("rejects decisionReason with ZodError when strict", () => {
+      expect(() => reviewEditableFieldsSchema.strict().parse({ decisionReason: "reason" })).toThrow();
     });
 
-    it("detects multiple forbidden fields", () => {
-      const result = detectForbiddenFields({ status: "approved", reviewer: "admin", notes: "ok" });
-      expect(result).toContain("status");
-      expect(result).toContain("reviewer");
-      expect(result).not.toContain("notes");
+    it("rejects reviewer with ZodError when strict", () => {
+      expect(() => reviewEditableFieldsSchema.strict().parse({ reviewer: "admin" })).toThrow();
     });
 
-    it("allows legitimate editable fields", () => {
-      expect(detectForbiddenFields({ notes: "Updated note", priority: 2 })).toEqual([]);
+    it("rejects decisionAt with ZodError when strict", () => {
+      expect(() => reviewEditableFieldsSchema.strict().parse({ decisionAt: "2026-01-01" })).toThrow();
     });
 
-    it("detects action as forbidden", () => {
-      expect(detectForbiddenFields({ action: "approve_image" })).toEqual(["action"]);
+    it("rejects action with ZodError when strict", () => {
+      expect(() => reviewEditableFieldsSchema.strict().parse({ action: "approve_image" })).toThrow();
     });
 
-    it("detects createdAt as forbidden", () => {
-      expect(detectForbiddenFields({ createdAt: "2026-01-01" })).toEqual(["createdAt"]);
+    it("rejects version with ZodError when strict", () => {
+      expect(() => reviewEditableFieldsSchema.strict().parse({ version: 2 })).toThrow();
     });
 
-    it("returns empty for empty body", () => {
-      expect(detectForbiddenFields({})).toEqual([]);
-    });
-  });
-
-  describe("Existing reviewUpdateSchema remains backward compatible", () => {
-    it("still accepts status (schema unchanged)", () => {
-      const result = reviewUpdateSchema.parse({ status: "approved", notes: "test" });
-      expect(result.status).toBe("approved");
-      expect(result.notes).toBe("test");
+    it("rejects createdAt with ZodError when strict", () => {
+      expect(() => reviewEditableFieldsSchema.strict().parse({ createdAt: "2026-01-01T00:00:00Z" })).toThrow();
     });
 
-    it("still accepts all fields", () => {
-      const result = reviewUpdateSchema.parse({
-        status: "pending", priority: 2, notes: "test",
-        decisionReason: "reason", reviewer: "admin",
-      });
-      expect(result.status).toBe("pending");
-      expect(result.decisionReason).toBe("reason");
+    it("rejects appliedAt with ZodError when strict", () => {
+      expect(() => reviewEditableFieldsSchema.strict().parse({ appliedAt: "2026-01-01T00:00:00Z" })).toThrow();
+    });
+
+    it("rejects idempotencyKey with ZodError when strict", () => {
+      expect(() => reviewEditableFieldsSchema.strict().parse({ idempotencyKey: "abc" })).toThrow();
+    });
+
+    it("rejects events with ZodError when strict", () => {
+      expect(() => reviewEditableFieldsSchema.strict().parse({ events: [] })).toThrow();
+    });
+
+    it("rejects mixed allowed and forbidden fields as a whole", () => {
+      expect(() => reviewEditableFieldsSchema.strict().parse({ notes: "ok", status: "approved" })).toThrow();
+    });
+
+    it("allows empty body", () => {
+      const result = reviewEditableFieldsSchema.strict().parse({});
+      expect(result).toEqual({});
+    });
+
+    it("allows confidence field", () => {
+      const result = reviewEditableFieldsSchema.strict().parse({ confidence: 0.9 });
+      expect(result.confidence).toBe(0.9);
+    });
+
+    it("allows payload field", () => {
+      const result = reviewEditableFieldsSchema.strict().parse({ payload: { key: "val" } });
+      expect(result.payload).toEqual({ key: "val" });
     });
   });
 });

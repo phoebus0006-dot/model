@@ -2,6 +2,13 @@ import { FastifyInstance } from "fastify";
 import bcrypt from "bcryptjs";
 import { updateUserSchema, createUserSchema, passwordUpdateSchema, safeBigInt, isValidPassword } from "./schemas.js";
 
+async function ensureNotLastActiveAdmin(prisma: any, excludeUserId: bigint): Promise<boolean> {
+  const activeAdminCount = await prisma.user.count({
+    where: { role: "admin", isActive: true, id: { not: excludeUserId } },
+  });
+  return activeAdminCount >= 1;
+}
+
 export async function adminUserRoutes(app: FastifyInstance) {
   app.get("/users", async () => {
     const users = await app.prisma.user.findMany({
@@ -16,19 +23,44 @@ export async function adminUserRoutes(app: FastifyInstance) {
     const userId = safeBigInt(id);
     if (userId === null) return reply.status(400).send({ success: false, error: { code: "INVALID_ID" } });
     const data = updateUserSchema.parse(req.body);
-    const existing = await app.prisma.user.findUnique({ where: { id: userId } });
-    if (!existing) return reply.status(404).send({ success: false, error: { code: "USER_NOT_FOUND" } });
-    if (data.role && data.role !== "admin" && existing.role === "admin") {
-      const adminCount = await app.prisma.user.count({ where: { role: "admin", isActive: true } });
-      if (adminCount <= 1) {
-        return reply.status(400).send({ success: false, error: { code: "LAST_ADMIN", message: "Cannot demote the last admin" } });
+    const currentUser = req.user;
+
+    const result = await app.prisma.$transaction(async (tx: any) => {
+      const existing = await tx.user.findUnique({ where: { id: userId } });
+      if (!existing) return { status: 404, error: { code: "USER_NOT_FOUND" } };
+
+      const demotingSelf = currentUser && safeBigInt(currentUser.id) === userId && data.role && data.role !== "admin" && existing.role === "admin";
+      if (demotingSelf) {
+        return { status: 400, error: { code: "CANNOT_DEMOTE_SELF", message: "Cannot demote yourself from admin" } };
       }
-    }
-    const user = await app.prisma.user.update({
-      where: { id: userId }, data,
-      select: { id: true, email: true, displayName: true, role: true, isActive: true, emailVerifiedAt: true, createdAt: true },
+
+      const deactivating = data.isActive === false && existing.role === "admin" && existing.isActive === true;
+
+      if (data.role && data.role !== "admin" && existing.role === "admin") {
+        const adminCount = await tx.user.count({ where: { role: "admin", isActive: true } });
+        if (adminCount <= 1) {
+          return { status: 400, error: { code: "LAST_ADMIN", message: "Cannot demote the last active admin" } };
+        }
+      }
+
+      if (deactivating) {
+        const adminCount = await tx.user.count({ where: { role: "admin", isActive: true } });
+        if (adminCount <= 1) {
+          return { status: 400, error: { code: "LAST_ADMIN", message: "Cannot deactivate the last active admin" } };
+        }
+      }
+
+      const user = await tx.user.update({
+        where: { id: userId }, data,
+        select: { id: true, email: true, displayName: true, role: true, isActive: true, emailVerifiedAt: true, createdAt: true },
+      });
+      return { status: 200, data: user };
     });
-    return { success: true, data: user };
+
+    if (result.error) {
+      return reply.status(result.status).send({ success: false, error: result.error });
+    }
+    return { success: true, data: result.data };
   });
 
   app.put("/users/:id/password", async (req: any, reply: any) => {
@@ -65,19 +97,34 @@ export async function adminUserRoutes(app: FastifyInstance) {
     const { id } = req.params as { id: string };
     const userId = safeBigInt(id);
     if (userId === null) return reply.status(400).send({ success: false, error: { code: "INVALID_ID" } });
-    const user = await app.prisma.user.findUnique({ where: { id: userId } });
-    if (!user) return reply.status(404).send({ success: false, error: { code: "USER_NOT_FOUND", message: "用户不存在" } });
-    if (user.role === "admin") {
-      const adminCount = await app.prisma.user.count({ where: { role: "admin", isActive: true } });
-      if (adminCount <= 1) {
-        return reply.status(400).send({ success: false, error: { code: "LAST_ADMIN", message: "Cannot delete the last admin" } });
+
+    const currentUser = req.user;
+
+    const result = await app.prisma.$transaction(async (tx: any) => {
+      const user = await tx.user.findUnique({ where: { id: userId } });
+      if (!user) return { status: 404, error: { code: "USER_NOT_FOUND", message: "用户不存在" } };
+
+      const deletingSelf = currentUser && safeBigInt(currentUser.id) === userId;
+      if (deletingSelf) {
+        return { status: 400, error: { code: "CANNOT_DELETE_SELF", message: "Cannot delete your own account" } };
       }
+
+      if (user.role === "admin") {
+        const adminCount = await tx.user.count({ where: { role: "admin", isActive: true } });
+        if (adminCount <= 1) {
+          return { status: 400, error: { code: "LAST_ADMIN", message: "Cannot delete the last active admin" } };
+        }
+      }
+
+      await tx.favoriteGroup.deleteMany({ where: { userId } });
+      await tx.favorite.deleteMany({ where: { userId } });
+      await tx.user.delete({ where: { id: userId } });
+      return { status: 200, data: { message: "用户已删除" } };
+    });
+
+    if (result.error) {
+      return reply.status(result.status).send({ success: false, error: result.error });
     }
-    await app.prisma.$transaction([
-      app.prisma.favoriteGroup.deleteMany({ where: { userId } }),
-      app.prisma.favorite.deleteMany({ where: { userId } }),
-      app.prisma.user.delete({ where: { id: userId } }),
-    ]);
-    return { success: true, data: { message: "用户已删除" } };
+    return { success: true, data: result.data };
   });
 }

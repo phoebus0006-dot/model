@@ -2,7 +2,7 @@
 import crypto from "crypto";
 import { ReviewRepository } from "./repository.js";
 import { ReviewService, computeReviewEvidenceFingerprint, reviewDecisionKey, reviewDecisionMatchesQuery, projectReviewDecision, reviewFigureKey, reviewRiskKey } from "./service.js";
-import { reviewItemSchema, reviewUpdateSchema, reviewQuerySchema, reviewDecisionQuerySchema, reviewActionSchema, bulkCleanupSchema, reviewStatusSchema } from "./schemas.js";
+import { reviewItemSchema, reviewUpdateSchema, reviewQuerySchema, reviewDecisionQuerySchema, reviewActionSchema, bulkCleanupSchema, reviewStatusSchema, reviewEditableFieldsSchema } from "./schemas.js";
 import { ACTION_STATUS_MAP, isSuppressingAction } from "./types.js";
 import { scanKeys } from "../../shared/cache/scan-keys.js";
 
@@ -164,9 +164,11 @@ export async function adminReviewRoutes(app: FastifyInstance) {
     const body = req.body || {};
     const forbiddenKeys = Object.keys(body).filter((k) => REVIEW_FORBIDDEN_UPDATE_FIELDS.has(k));
     if (forbiddenKeys.length > 0) return reply.status(422).send({ success: false, error: { code: "FORBIDDEN_FIELDS", message: "Cannot modify review state via generic update: " + forbiddenKeys.join(", ") + ". Use /action endpoint.", fields: forbiddenKeys } });
-    const update = reviewUpdateSchema.parse(body);
+    const update = reviewEditableFieldsSchema.strict().parse(body);
     const existing = JSON.parse(existingRaw);
     const item = { ...existing, ...update, updatedAt: new Date().toISOString() };
+    const versionChanged = existing.version !== undefined && item.version !== existing.version;
+    if (versionChanged) return reply.status(409).send({ success: false, error: { code: "VERSION_CONFLICT", message: "Item version has changed" } });
     await app.redis.set("review:item:" + id, JSON.stringify(item));
     return { success: true, data: item };
   });

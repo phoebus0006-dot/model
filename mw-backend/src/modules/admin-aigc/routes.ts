@@ -1,29 +1,48 @@
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
 
-const aigcSchema = z.object({
-  figureId: z.number().int().positive(),
+const aigcGenerateSchema = z.object({
+  figureId: z.string().regex(/^\d+$/, "Figure ID must be a decimal string").transform((val) => BigInt(val)),
   locale: z.enum(["ja", "en", "zh"]).default("en"),
   promptVersion: z.string().optional(),
 });
 
+const aigcStatusParamsSchema = z.object({
+  figureId: z.string().regex(/^\d+$/, "Figure ID must be a decimal string"),
+});
+
 export async function adminAigcRoutes(app: FastifyInstance) {
   app.post("/aigc/generate", async (req: any, reply: any) => {
-    const data = aigcSchema.parse(req.body);
-    const figure = await app.prisma.figure.findUnique({ where: { id: data.figureId } });
-    if (!figure) return reply.status(404).send({ success: false, error: { code: "FIGURE_NOT_FOUND", message: "Figure not found" } });
-    await app.redis.lpush("aigc:queue", JSON.stringify({ figureId: data.figureId, figureSlug: figure.slug, locale: data.locale, promptVersion: data.promptVersion || "v1", createdAt: new Date().toISOString() }));
-    return { success: true, data: { figureId: data.figureId, status: "queued", locale: data.locale } };
+    const data = aigcGenerateSchema.parse(req.body);
+    const locale = data.locale || "en";
+    const promptVersion = data.promptVersion || "v1";
+    const idStr = data.figureId.toString();
+    const entry = JSON.stringify({ figureId: idStr, locale, promptVersion, createdAt: new Date().toISOString() });
+    await app.redis.rpush("aigc:queue", entry);
+    return reply.status(201).send({ success: true, data: { figureId: idStr, locale, promptVersion, status: "queued" } });
   });
 
-  app.get("/aigc/status/:figureId", async (req: any) => {
-    const { figureId } = req.params as { figureId: string };
-    const id = parseInt(figureId, 10);
-    if (isNaN(id)) return { success: true, data: { status: "invalid_id" } };
-    const result = await app.redis.get(`aigc:result:${id}`);
-    if (result) return { success: true, data: { status: "completed", result: JSON.parse(result) } };
+  app.get("/aigc/status/:figureId", async (req: any, reply: any) => {
+    const { figureId } = aigcStatusParamsSchema.parse(req.params);
+    const resultRaw = await app.redis.get(`aigc:result:${figureId}`);
+    if (resultRaw) {
+      try {
+        const result = JSON.parse(resultRaw);
+        return { success: true, data: { figureId, status: "completed", result } };
+      } catch {
+        return { success: true, data: { figureId, status: "completed", result: resultRaw } };
+      }
+    }
     const queue = await app.redis.lrange("aigc:queue", 0, -1);
-    const inQueue = queue.some((item: string) => { try { return JSON.parse(item).figureId === id; } catch { return false; } });
-    return { success: true, data: { status: inQueue ? "queued" : "not_found" } };
+    const inQueue = queue.some((entry: string) => {
+      try {
+        const parsed = JSON.parse(entry);
+        return parsed.figureId === figureId;
+      } catch { return false; }
+    });
+    if (inQueue) {
+      return { success: true, data: { figureId, status: "queued" } };
+    }
+    return { success: true, data: { figureId, status: "not_found" } };
   });
 }
