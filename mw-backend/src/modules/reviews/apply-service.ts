@@ -49,9 +49,12 @@ export class ReviewApplyService {
           throw new ApplyValidationError(`Unsupported review type: ${item.type}`);
       }
 
-      await applyItemStatus(context, reviewItemId, item, output);
+      const reviewStatus = await applyItemStatus(context, reviewItemId, item, output);
 
-      return { success: true, data: { applied: output } };
+      return {
+        success: output.failure ? false : true,
+        data: { applied: output, reviewStatus, failureStage: output.failure?.stage || null, problems: output.failure?.problems || [] },
+      };
     } catch (e: any) {
       if (e instanceof ReviewNotFound || e instanceof InvalidReviewState ||
           e instanceof ApplyLockConflict || e instanceof ApplyDependencyError ||

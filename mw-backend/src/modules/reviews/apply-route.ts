@@ -12,13 +12,31 @@ export async function adminApplyRoute(app: FastifyInstance) {
         displayName: String(req.user?.displayName || req.user?.username || "system"),
       };
       const body = req.body || {};
-      const action = String(body.action || "");
       const result = await applyService.apply({
         reviewItemId: String(req.params.id),
         actor,
         body,
       });
-      return reply.send({ success: true, data: result.data, actor, action });
+      const payload: any = result.data || {};
+      if (result.success && payload.applied?.success !== false) {
+        return reply.send({
+          success: true,
+          data: payload.applied,
+          reviewStatus: payload.reviewStatus,
+          actor,
+          action: payload.applied?.action,
+        });
+      }
+      return reply.status(422).send({
+        success: false,
+        error: {
+          code: "APPLY_BUSINESS_FAILED",
+          message: "Apply completed with business failures",
+          failureStage: payload.failureStage,
+          problems: payload.problems,
+          action: payload.applied?.action,
+        },
+      });
     } catch (e: any) {
       if (e instanceof ReviewNotFound) return reply.status(404).send({ success: false, error: { code: e.code, message: e.message } });
       if (e instanceof InvalidReviewState) return reply.status(409).send({ success: false, error: { code: e.code, message: e.message } });

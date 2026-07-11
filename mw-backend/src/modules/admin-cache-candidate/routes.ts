@@ -15,6 +15,11 @@ export async function adminCacheCandidateRoutes(app: FastifyInstance) {
       }
     }] },
     async (req: any, reply: any) => {
+      const signingSecret = process.env.REVIEW_CACHE_SIGNING_SECRET;
+      if (!signingSecret) {
+        return reply.status(500).send({ success: false, error: { code: "SIGNING_NOT_CONFIGURED", message: "REVIEW_CACHE_SIGNING_SECRET is not set" } });
+      }
+
       const { reviewId, hash, contentBase64, ext } = req.body;
       if (!reviewId || !hash || !contentBase64) {
         return reply.status(422).send({ success: false, error: { code: "MISSING_FIELDS" } });
@@ -61,13 +66,14 @@ export async function adminCacheCandidateRoutes(app: FastifyInstance) {
       const fileName = normalizedHash + "." + fileExt;
       const filePath = path.join(reviewDir, fileName);
       const tmpPath = filePath + ".tmp." + crypto.randomBytes(8).toString("hex");
-      await fsp.writeFile(tmpPath, reEncoded);
-      await fsp.rename(tmpPath, filePath);
-      const signingSecret = process.env.REVIEW_CACHE_SIGNING_SECRET;
-      if (!signingSecret) {
-        await fsp.unlink(filePath).catch(() => {});
-        return reply.status(500).send({ success: false, error: { code: "SIGNING_NOT_CONFIGURED", message: "REVIEW_CACHE_SIGNING_SECRET is not set" } });
+      try {
+        await fsp.writeFile(tmpPath, reEncoded);
+        await fsp.rename(tmpPath, filePath);
+      } catch (writeErr: any) {
+        try { await fsp.unlink(tmpPath); } catch {}
+        return reply.status(500).send({ success: false, error: { code: "FILE_WRITE_FAILED", message: writeErr?.message || "Failed to write cache file" } });
       }
+
       const maxTtl = 86400000;
       const expiresAt = Math.floor(Date.now() + maxTtl);
       const signPayload = `${reviewId}/${fileName}:${expiresAt}`;

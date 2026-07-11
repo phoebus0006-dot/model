@@ -28,7 +28,7 @@ describe("App startup — no duplicate routes", () => {
 
   it("buildApp creates a valid app instance", () => {
     expect(app).toBeDefined();
-    expect(app.ready).toBeDefined();
+    expect(app.close).toBeDefined();
   });
 
   it("app.ready() does not have duplicate route errors", async () => {
@@ -39,15 +39,13 @@ describe("App startup — no duplicate routes", () => {
       if (msg.includes("FST_ERR_DUPLICATED_ROUTE") || msg.includes("already declared")) {
         throw new Error(`Duplicate route detected: ${msg}`);
       }
-      // Other errors (e.g., missing Redis/DB in skipLifecycle mode) are acceptable
+      // Other infrastructure errors (missing Redis/DB) are acceptable in skipLifecycle mode
     }
   });
 
   it("each admin review route is registered exactly once (must NOT be 404)", async () => {
     for (const [method, url] of ADMIN_REVIEW_ROUTES) {
       const res = await app.inject({ method, url });
-      // Routes must be registered. 401 = exists but unauthorized, which is expected.
-      // 404 = route not registered at all — fail.
       expect(res.statusCode).not.toBe(404);
       expect(res.statusCode).toBe(401);
     }

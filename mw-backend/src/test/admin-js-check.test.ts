@@ -1,10 +1,14 @@
 import { describe, it, expect } from "vitest";
 import { execSync } from "node:child_process";
-import { join } from "node:path";
+import { join, dirname } from "node:path";
 import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 const SCRIPT = join(__dirname, "..", "..", "scripts", "admin-js-check.mjs");
-const PHP_PATH = "D:\\model wiki\\guanli_index.php";
+const ROOT = join(__dirname, "..", "..", "..");
+const PHP_PATH = join(ROOT, "guanli_index.php");
 
 describe("admin-js-check", () => {
   it("exits 0 and prints ALL PASS with real files", () => {

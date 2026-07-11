@@ -6,7 +6,12 @@ export type ApplyStage = (typeof APPLY_STAGES)[number];
 
 export interface ApplyResult {
   success: boolean;
-  data?: { applied: any };
+  data?: {
+    applied: any;
+    reviewStatus?: string;
+    failureStage?: string | null;
+    problems?: string[];
+  };
   stage?: ApplyStage;
   error?: string;
   code?: string;

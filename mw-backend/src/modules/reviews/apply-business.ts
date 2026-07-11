@@ -1,8 +1,6 @@
 import type { Redis } from "ioredis";
 import type { PrismaClient } from "@prisma/client";
 import { processAndStoreImage, upsertFigureImageRecord } from "../../modules/images/image-service.js";
-import { computeReviewEvidenceFingerprint, reviewDecisionKey, reviewFigureKey, reviewRiskKey } from "./service.js";
-import { isSuppressingAction } from "./types.js";
 import { scanKeys } from "../../shared/cache/scan-keys.js";
 
 export interface ApplyContext {
@@ -24,14 +22,22 @@ export interface ApplyInput {
   action: string;
 }
 
+export interface ApplyFailure {
+  stage: string;
+  problems: string[];
+}
+
 export interface ApplyOutput {
+  success: boolean;
   action: string;
-  figure?: { id: number; slug: string };
+  figure?: { id: string; slug: string };
+  reviewStatus?: string;
   imageImport?: { created: number; errors: Array<{ source: string; error: string }> };
   deleted?: number;
-  imageId?: number | null;
+  imageId?: string | null;
   source?: string;
   processedCount?: number;
+  failure?: ApplyFailure;
 }
 
 async function resolveFigure(prisma: PrismaClient, item: any): Promise<any | null> {
@@ -96,21 +102,20 @@ export async function applyFigureImport(input: ApplyInput): Promise<ApplyOutput>
           sortOrder: img.sortOrder ?? i,
           figureId: savedFigure.id,
         });
-        for (const rec of imageRecords) {
-          if (rec.sha256 && imageImport.created === 0) {
-            imageImport.created++;
-          }
-        }
+        imageImport.created += imageRecords.length;
       } catch (err: any) {
         imageImport.errors.push({ source: img.source, error: err?.message || "Image processing failed" });
       }
     }
   }
 
+  const allFailed = images && images.length > 0 && imageImport.errors.length === images.length;
   return {
+    success: !allFailed,
     action: existingFigure ? "figure_updated" : "figure_created",
-    figure: { id: Number(savedFigure.id), slug: savedFigure.slug },
+    figure: { id: String(savedFigure.id), slug: savedFigure.slug },
     imageImport,
+    failure: allFailed ? { stage: "image", problems: ["All images failed to process"] } : undefined,
   };
 }
 
@@ -146,12 +151,11 @@ export async function applyImageReview(input: ApplyInput): Promise<ApplyOutput> 
         sortOrder: 0,
       },
     });
-    return { action: "already_approved", figure: { id: Number(figure.id), slug: figure.slug }, imageId: Number(existing.id), source: cand.source };
+    return { success: true, action: "already_approved", figure: { id: String(figure.id), slug: figure.slug }, imageId: String(existing.id), source: cand.source };
   }
 
   const janCode = figure.janCode || "no-jancode";
-  let firstImageId: number | null = null;
-  let processedCount = 0;
+  let firstImageId: string | null = null;
 
   try {
     const imageRecords = await processAndStoreImage(cand.source, janCode, prisma, {
@@ -159,44 +163,54 @@ export async function applyImageReview(input: ApplyInput): Promise<ApplyOutput> 
       isNsfw: false,
       figureId: figure.id,
     });
-    processedCount = imageRecords.length;
-    firstImageId = Number(figure.id); // placeholder
-  } catch {
-    await upsertFigureImageRecord(prisma, {
-      figureId: figure.id,
-      janCode,
-      sha256: null,
-      size: "raw",
-      format: "jpg",
-      width: cand.width || null,
-      height: cand.height || null,
-      fileSize: null,
-      alt: null,
-      sortOrder: 0,
-      source: cand.source,
-      isNsfw: false,
-    });
-    firstImageId = Number(figure.id);
-    processedCount = 1;
+    for (const rec of imageRecords) {
+      if (firstImageId === null && rec.sha256) {
+        const result = await upsertFigureImageRecord(prisma, {
+          figureId: figure.id,
+          janCode: rec.janCode,
+          sha256: rec.sha256,
+          size: rec.size,
+          format: rec.format,
+          width: rec.width,
+          height: rec.height,
+          fileSize: rec.fileSize,
+          alt: rec.alt || null,
+          sortOrder: rec.sortOrder,
+          source: rec.source,
+          isNsfw: rec.isNsfw || false,
+        });
+        firstImageId = String(result.image.id);
+      }
+    }
+  } catch (err: any) {
+    return {
+      success: false,
+      action: "image_approve_failed",
+      figure: { id: String(figure.id), slug: figure.slug },
+      failure: { stage: "image_download", problems: [err?.message || "Image download/process failed"] },
+    };
   }
 
-  return { action: "image_approved", figure: { id: Number(figure.id), slug: figure.slug }, imageId: firstImageId, source: cand.source, processedCount };
+  return { success: true, action: "image_approved", figure: { id: String(figure.id), slug: figure.slug }, imageId: firstImageId, source: cand.source, processedCount: firstImageId ? 1 : 0 };
 }
 
-export async function applyItemStatus(context: ApplyContext, id: string, item: any, output: ApplyOutput): Promise<void> {
+export async function applyItemStatus(context: ApplyContext, id: string, item: any, output: ApplyOutput): Promise<string> {
   const problems = await evaluateReviewItem(context, item);
   const now = new Date().toISOString();
+  const businessFailed = output.failure || problems.length > 0;
+  const newStatus = businessFailed ? "needs_changes" : "resolved";
   const updatedItem = {
     ...item,
     payload: { ...(item.payload || {}), reviewProblems: problems, lastCheckedAt: now },
-    status: problems.length === 0 ? "resolved" : "needs_changes",
+    status: newStatus,
     notes: problems.length === 0
       ? (item.notes ? `${item.notes}\nApplied and rechecked at ${now}` : `Applied and rechecked at ${now}`)
-      : (item.notes ? `${item.notes}\nApplied but still needs changes: ${problems.join("; ")}` : `Applied but still needs changes: ${problems.join("; ")}`),
+      : (item.notes ? `${item.notes}\nApplied but needs changes: ${problems.join("; ")}` : `Applied but needs changes: ${problems.join("; ")}`),
     updatedAt: now,
   };
   await context.redis.set(`review:item:${id}`, JSON.stringify(updatedItem));
   await scanKeys(context.redis as any, "figures:*");
+  return newStatus;
 }
 
 async function evaluateReviewItem(context: ApplyContext, item: any): Promise<string[]> {
@@ -213,7 +227,7 @@ async function evaluateReviewItem(context: ApplyContext, item: any): Promise<str
   if (item.type === "image" && figure) {
     const rows = await prisma.figureImage.findMany({
       where: { figureId: figure.id },
-      select: { id: true, source: true, size: true, width: true, height: true, sha256: true },
+      select: { id: true },
       orderBy: [{ sortOrder: "asc" }, { id: "asc" }],
     });
     if (rows.length === 0) problems.push("仍然没有图片");
