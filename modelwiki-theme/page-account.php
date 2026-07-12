@@ -30,7 +30,7 @@ get_header();
                         <p><?php echo esc_html(mw_t('Log in and we will take you back to the homepage.')); ?></p>
                     </div>
                     <label>
-                        <span><?php echo esc_html(mw_t('Username')); ?></span>
+                        <span><?php echo esc_html(mw_t('Email or display name')); ?></span>
                         <input type="text" name="username" autocomplete="username" required>
                     </label>
                     <label>
@@ -44,11 +44,15 @@ get_header();
                 <form class="mw-auth-form" data-mw-register-form data-mw-auth-view="register">
                     <div class="mw-auth-heading">
                         <h2><?php echo esc_html(mw_t('Create your account')); ?></h2>
-                        <p><?php echo esc_html(mw_t('Register an account to save your favorite figures.')); ?></p>
+                        <p><?php echo esc_html(mw_t('After registration, open the activation email before logging in.')); ?></p>
                     </div>
                     <label>
-                        <span><?php echo esc_html(mw_t('Username')); ?></span>
-                        <input type="text" name="username" autocomplete="username" maxlength="40" required>
+                        <span><?php echo esc_html(mw_t('Display name')); ?></span>
+                        <input type="text" name="displayName" autocomplete="nickname" maxlength="40" required>
+                    </label>
+                    <label>
+                        <span><?php echo esc_html(mw_t('Email')); ?></span>
+                        <input type="email" name="email" autocomplete="email" required>
                     </label>
                     <label>
                         <span><?php echo esc_html(mw_t('Password')); ?></span>
