@@ -672,6 +672,7 @@ var MW_ADMIN = MW_ADMIN || {};
     }
     function renderReview(){
         var tabs = [
+            ['all', 'All'],
             ['pending', 'Pending'],
             ['needs_changes', 'Needs Changes'],
             ['approved', 'Approved'],

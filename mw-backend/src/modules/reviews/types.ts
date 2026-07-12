@@ -1,4 +1,4 @@
-export const REVIEW_STATUSES = ["pending", "approved", "rejected", "needs_changes", "resolved", "stale"] as const;
+export const REVIEW_STATUSES = ["pending", "approved", "rejected", "needs_changes", "resolved", "applied", "failed", "stale"] as const;
 export type ReviewStatus = (typeof REVIEW_STATUSES)[number];
 
 export const REVIEW_TYPES = ["jan_match", "figure_import", "rewrite", "image", "general", "image_review", "detail_review"] as const;
