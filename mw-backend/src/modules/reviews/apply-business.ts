@@ -2,6 +2,8 @@ import type { Redis } from "ioredis";
 import type { PrismaClient } from "@prisma/client";
 import { processAndStoreImage, upsertFigureImageRecord } from "../../modules/images/image-service.js";
 import { scanKeys } from "../../shared/cache/scan-keys.js";
+import { ApplyDependencyError, ApplyValidationError } from "./apply-errors.js";
+import type { FigureImportDTO, JanMatchDTO, RewriteDTO, ImageDTO, ImageReviewDTO } from "./apply-schemas.js";
 
 export interface ApplyContext {
   redis: Redis;
@@ -11,15 +13,6 @@ export interface ApplyContext {
 export interface ApplyActor {
   userId: string;
   displayName: string;
-}
-
-export interface ApplyInput {
-  context: ApplyContext;
-  item: any;
-  id: string;
-  actor: ApplyActor;
-  body: Record<string, unknown>;
-  action: string;
 }
 
 export interface ApplyFailure {
@@ -37,6 +30,7 @@ export interface ApplyOutput {
   imageId?: string | null;
   source?: string;
   processedCount?: number;
+  revision?: { id: string; versionNumber: number };
   failure?: ApplyFailure;
 }
 
@@ -50,57 +44,87 @@ async function resolveFigure(prisma: PrismaClient, item: any): Promise<any | nul
   return prisma.figure.findFirst({ where: figureWhere as any });
 }
 
-export async function applyFigureImport(input: ApplyInput): Promise<ApplyOutput> {
-  const { prisma } = input.context;
-  const payload = input.item.payload || {};
-  const figurePayload = payload.figure || {};
+export async function applyFigureImport(
+  context: ApplyContext,
+  item: any,
+  id: string,
+  actor: ApplyActor,
+  dto: FigureImportDTO,
+  action: string,
+): Promise<ApplyOutput> {
+  const { prisma } = context;
+  const { images, categoryIds, sculptorIds, characterIds, localized, releases, importImages, ...figureFields } = dto;
 
-  if (!figurePayload.slug || !figurePayload.name) {
-    throw Object.assign(new Error("MISSING_FIGURE_PAYLOAD"), { code: "MISSING_FIGURE_PAYLOAD" });
+  if (!figureFields.slug || !figureFields.name) {
+    throw new ApplyValidationError("slug and name are required for figure_import");
   }
 
-  const { categoryIds, sculptorIds, characterIds, images, localized, releases, releaseDate, ...figureData } = figurePayload;
-  const matchOr: any[] = [{ slug: figurePayload.slug }];
-  if (figurePayload.janCode) matchOr.push({ janCode: figurePayload.janCode });
-  const existingFigure = await prisma.figure.findFirst({
-    where: { isDeleted: false, OR: matchOr },
-    select: { id: true, slug: true },
-  });
+  const slugFig = figureFields.slug
+    ? await prisma.figure.findFirst({ where: { slug: figureFields.slug, isDeleted: false }, select: { id: true, slug: true, janCode: true } })
+    : null;
+  const janFig = figureFields.janCode
+    ? await prisma.figure.findFirst({ where: { janCode: figureFields.janCode, isDeleted: false }, select: { id: true, slug: true, janCode: true } })
+    : null;
 
-  const relationData: any = {
-    releaseDate: releaseDate ? new Date(releaseDate) : undefined,
-    categories: categoryIds ? { deleteMany: {}, create: categoryIds.map((categoryId: number) => ({ category: { connect: { id: categoryId } } })) } : undefined,
-    sculptors: sculptorIds ? { deleteMany: {}, create: sculptorIds.map((s: any) => ({ sculptor: { connect: { id: s.id } }, role: s.role, isPrimary: s.isPrimary ?? false })) } : undefined,
-    characters: characterIds ? { deleteMany: {}, create: characterIds.map((c: any) => ({ character: { connect: { id: c.id } }, isFeatured: c.isFeatured ?? false })) } : undefined,
-    localized: localized ? { deleteMany: {}, create: localized.map((loc: any) => ({ language: loc.language, title: loc.title, origin: loc.origin, character: loc.character, description: loc.description })) } : undefined,
-    releases: releases ? { deleteMany: {}, create: releases.map((rel: any) => ({ edition: rel.edition, releaseDate: rel.releaseDate ? new Date(rel.releaseDate) : undefined, priceJpy: rel.priceJpy ?? undefined, isRerelease: rel.isRerelease ?? false })) } : undefined,
+  if (slugFig && janFig && slugFig.id !== janFig.id) {
+    throw new ApplyDependencyError("figure", "FIGURE_IDENTITY_CONFLICT: slug and JAN point to different figures");
+  }
+
+  const existingFigure = slugFig || janFig;
+
+  const figureData: any = {
+    slug: figureFields.slug,
+    name: figureFields.name,
+    nameJp: figureFields.nameJp ?? null,
+    nameEn: figureFields.nameEn ?? null,
+    janCode: figureFields.janCode ?? null,
+    scale: figureFields.scale ?? null,
+    material: figureFields.material ?? null,
+    priceJpy: figureFields.priceJpy ?? null,
+    heightMm: figureFields.heightMm ?? null,
+    weightG: figureFields.weightG ?? null,
+    description: figureFields.description ?? null,
+    productLine: figureFields.productLine ?? null,
+    mfcId: figureFields.mfcId ?? null,
+    ageRating: figureFields.ageRating ?? null,
+    hobbySearchId: figureFields.hobbySearchId ?? null,
+    amiamiId: figureFields.amiamiId ?? null,
+    hljId: figureFields.hljId ?? null,
   };
-  Object.keys(relationData).forEach((key) => relationData[key] === undefined && delete relationData[key]);
+
+  if (figureFields.releaseDate) {
+    figureData.releaseDate = new Date(figureFields.releaseDate);
+  }
+
+  const relationData: any = {};
+  if (categoryIds) {
+    relationData.categories = { deleteMany: {}, create: categoryIds.map((categoryId: number) => ({ category: { connect: { id: categoryId } } })) };
+  }
+  if (sculptorIds) {
+    relationData.sculptors = { deleteMany: {}, create: sculptorIds.map((s: any) => ({ sculptor: { connect: { id: s.id } }, role: s.role, isPrimary: s.isPrimary ?? false })) };
+  }
+  if (characterIds) {
+    relationData.characters = { deleteMany: {}, create: characterIds.map((c: any) => ({ character: { connect: { id: c.id } }, isFeatured: c.isFeatured ?? false })) };
+  }
+  if (localized) {
+    relationData.localized = { deleteMany: {}, create: localized.map((loc: any) => ({ language: loc.language, title: loc.title, origin: loc.origin, character: loc.character, description: loc.description })) };
+  }
+  if (releases) {
+    relationData.releases = { deleteMany: {}, create: releases.map((rel: any) => ({ edition: rel.edition, releaseDate: rel.releaseDate ? new Date(rel.releaseDate) : undefined, priceJpy: rel.priceJpy ?? undefined, isRerelease: rel.isRerelease ?? false })) };
+  }
 
   const savedFigure = existingFigure
     ? await prisma.figure.update({ where: { id: existingFigure.id }, data: { ...figureData, ...relationData } })
-    : await prisma.figure.create({
-        data: {
-          ...figureData,
-          releaseDate: releaseDate ? new Date(releaseDate) : undefined,
-          categories: { create: categoryIds?.map((categoryId: number) => ({ category: { connect: { id: categoryId } } })) || [] },
-          sculptors: { create: sculptorIds?.map((s: any) => ({ sculptor: { connect: { id: s.id } }, role: s.role, isPrimary: s.isPrimary ?? false })) || [] },
-          characters: { create: characterIds?.map((c: any) => ({ character: { connect: { id: c.id } }, isFeatured: c.isFeatured ?? false })) || [] },
-          localized: { create: localized?.map((loc: any) => ({ language: loc.language, title: loc.title, origin: loc.origin, character: loc.character, description: loc.description })) || [] },
-          releases: { create: releases?.map((rel: any) => ({ edition: rel.edition, releaseDate: rel.releaseDate ? new Date(rel.releaseDate) : undefined, priceJpy: rel.priceJpy ?? undefined, isRerelease: rel.isRerelease ?? false })) || [] },
-        },
-      });
+    : await prisma.figure.create({ data: { ...figureData, ...relationData } });
 
   const imageImport = { created: 0, errors: [] as Array<{ source: string; error: string }> };
-  if (payload.importImages !== false && images && images.length > 0) {
-    const janCode = figurePayload.janCode || savedFigure.janCode || "no-jancode";
+  if (importImages !== false && images && images.length > 0) {
+    const janCode = figureFields.janCode || savedFigure.janCode || "no-jancode";
     for (let i = 0; i < images.length; i++) {
       const img = images[i];
       try {
         const imageRecords = await processAndStoreImage(img.source, janCode, prisma, {
-          alt: img.alt,
-          sortOrder: img.sortOrder ?? i,
-          figureId: savedFigure.id,
+          alt: img.alt, sortOrder: img.sortOrder ?? i, figureId: savedFigure.id,
         });
         imageImport.created += imageRecords.length;
       } catch (err: any) {
@@ -119,23 +143,181 @@ export async function applyFigureImport(input: ApplyInput): Promise<ApplyOutput>
   };
 }
 
-export async function applyImageReview(input: ApplyInput): Promise<ApplyOutput> {
-  const { prisma } = input.context;
-  const item = input.item;
-  const action = input.action;
+export async function applyJanMatch(
+  context: ApplyContext,
+  item: any,
+  id: string,
+  actor: ApplyActor,
+  dto: JanMatchDTO,
+  action: string,
+): Promise<ApplyOutput> {
+  const { prisma } = context;
+
+  if (!dto.janCode) {
+    throw new ApplyValidationError("janCode is required for jan_match");
+  }
+
+  const targetFig = await prisma.figure.findFirst({ where: { janCode: dto.janCode, isDeleted: false }, select: { id: true, slug: true } });
+  if (!targetFig) {
+    throw new ApplyDependencyError("figure", `FIGURE_NOT_FOUND: no figure with janCode ${dto.janCode}`);
+  }
+
+  const existing = await prisma.figure.findFirst({
+    where: { slug: item.figureSlug, isDeleted: false },
+    select: { id: true, slug: true, janCode: true },
+  });
+  if (!existing) {
+    throw new ApplyDependencyError("figure", "FIGURE_NOT_FOUND: source figure not found");
+  }
+
+  if (existing.id === targetFig.id) {
+    return { success: true, action: "jan_already_matched", figure: { id: String(existing.id), slug: existing.slug } };
+  }
+
+  await prisma.figure.update({
+    where: { id: existing.id },
+    data: { janCode: dto.janCode, parentId: targetFig.id },
+    select: { id: true },
+  });
+
+  return {
+    success: true,
+    action: "jan_matched",
+    figure: { id: String(existing.id), slug: existing.slug },
+  };
+}
+
+export async function applyRewrite(
+  context: ApplyContext,
+  item: any,
+  id: string,
+  actor: ApplyActor,
+  dto: RewriteDTO,
+  action: string,
+): Promise<ApplyOutput> {
+  const { prisma } = context;
+
+  const figure = await resolveFigure(prisma, item);
+  if (!figure) {
+    throw new ApplyDependencyError("revision", "FIGURE_NOT_FOUND");
+  }
+
+  const currentVersion = await prisma.revision.findFirst({
+    where: { figureId: figure.id },
+    orderBy: { versionNumber: "desc" },
+    select: { versionNumber: true },
+  });
+  const nextVersion = (currentVersion?.versionNumber || 0) + 1;
+
+  const revision = await prisma.revision.create({
+    data: {
+      figureId: figure.id,
+      contentMd: dto.contentMd || "",
+      summaryMd: dto.summaryMd || null,
+      keyPoints: dto.keyPoints || [],
+      relatedKeywords: dto.relatedKeywords || [],
+      versionNumber: nextVersion,
+      editSummary: dto.editSummary || `Apply rewrite review item ${id}`,
+      isActive: true,
+    },
+    select: { id: true, versionNumber: true },
+  });
+
+  await prisma.figure.update({
+    where: { id: figure.id },
+    data: { activeRevisionId: revision.id },
+  });
+
+  return {
+    success: true,
+    action: "rewrite_applied",
+    figure: { id: String(figure.id), slug: figure.slug },
+    revision: { id: String(revision.id), versionNumber: nextVersion },
+  };
+}
+
+export async function applyImage(
+  context: ApplyContext,
+  item: any,
+  id: string,
+  actor: ApplyActor,
+  dto: ImageDTO,
+  action: string,
+): Promise<ApplyOutput> {
+  const { prisma } = context;
+
+  const figure = await resolveFigure(prisma, item);
+  if (!figure) {
+    throw new ApplyDependencyError("image", "FIGURE_NOT_FOUND");
+  }
+
+  const janCode = figure.janCode || "no-jancode";
+  let firstImageId: string | null = null;
+  const imageImport = { created: 0, errors: [] as Array<{ source: string; error: string }> };
+
+  try {
+    const imageRecords = await processAndStoreImage(dto.source, janCode, prisma, {
+      alt: dto.alt, sortOrder: dto.sortOrder ?? 0, isNsfw: dto.isNsfw,
+      figureId: figure.id,
+    });
+    for (const rec of imageRecords) {
+      if (firstImageId === null && rec.sha256) {
+        const result = await upsertFigureImageRecord(prisma, {
+          figureId: figure.id, janCode: rec.janCode, sha256: rec.sha256,
+          size: rec.size, format: rec.format, width: rec.width, height: rec.height,
+          fileSize: rec.fileSize, alt: rec.alt || null, sortOrder: rec.sortOrder,
+          source: rec.source, isNsfw: rec.isNsfw,
+        });
+        firstImageId = String(result.image.id);
+      }
+    }
+    imageImport.created = imageRecords.length;
+  } catch (err: any) {
+    imageImport.errors.push({ source: dto.source, error: err?.message || "Image processing failed" });
+  }
+
+  if (imageImport.errors.length > 0) {
+    return {
+      success: false,
+      action: "image_failed",
+      figure: { id: String(figure.id), slug: figure.slug },
+      imageImport,
+      failure: { stage: "image_download", problems: imageImport.errors.map(e => e.error) },
+    };
+  }
+
+  return {
+    success: true,
+    action: "image_imported",
+    figure: { id: String(figure.id), slug: figure.slug },
+    imageId: firstImageId,
+    source: dto.source,
+    processedCount: imageImport.created,
+  };
+}
+
+export async function applyImageReview(
+  context: ApplyContext,
+  item: any,
+  id: string,
+  actor: ApplyActor,
+  dto: ImageReviewDTO,
+  action: string,
+): Promise<ApplyOutput> {
+  const { prisma } = context;
 
   if (action !== "approve_image") {
-    throw Object.assign(new Error("UNSUPPORTED_ACTION"), { code: "UNSUPPORTED_ACTION" });
+    throw new ApplyValidationError("UNSUPPORTED_ACTION: only approve_image is supported");
   }
 
   const figure = await resolveFigure(prisma, item);
   if (!figure) {
-    throw Object.assign(new Error("FIGURE_NOT_FOUND"), { code: "FIGURE_NOT_FOUND" });
+    throw new ApplyDependencyError("image", "FIGURE_NOT_FOUND");
   }
 
   const cand = item.candidateImage;
   if (!cand || !cand.source) {
-    throw Object.assign(new Error("MISSING_CANDIDATE_IMAGE"), { code: "MISSING_CANDIDATE_IMAGE" });
+    throw new ApplyValidationError("MISSING_CANDIDATE_IMAGE");
   }
 
   const existing = await prisma.figureImage.findFirst({
@@ -159,33 +341,22 @@ export async function applyImageReview(input: ApplyInput): Promise<ApplyOutput> 
 
   try {
     const imageRecords = await processAndStoreImage(cand.source, janCode, prisma, {
-      sortOrder: 0,
-      isNsfw: false,
-      figureId: figure.id,
+      sortOrder: 0, isNsfw: false, figureId: figure.id,
     });
     for (const rec of imageRecords) {
       if (firstImageId === null && rec.sha256) {
         const result = await upsertFigureImageRecord(prisma, {
-          figureId: figure.id,
-          janCode: rec.janCode,
-          sha256: rec.sha256,
-          size: rec.size,
-          format: rec.format,
-          width: rec.width,
-          height: rec.height,
-          fileSize: rec.fileSize,
-          alt: rec.alt || null,
-          sortOrder: rec.sortOrder,
-          source: rec.source,
-          isNsfw: rec.isNsfw || false,
+          figureId: figure.id, janCode: rec.janCode, sha256: rec.sha256,
+          size: rec.size, format: rec.format, width: rec.width, height: rec.height,
+          fileSize: rec.fileSize, alt: rec.alt || null, sortOrder: rec.sortOrder,
+          source: rec.source, isNsfw: rec.isNsfw,
         });
         firstImageId = String(result.image.id);
       }
     }
   } catch (err: any) {
     return {
-      success: false,
-      action: "image_approve_failed",
+      success: false, action: "image_approve_failed",
       figure: { id: String(figure.id), slug: figure.slug },
       failure: { stage: "image_download", problems: [err?.message || "Image download/process failed"] },
     };

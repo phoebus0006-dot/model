@@ -3,12 +3,23 @@ import type { PrismaClient } from "@prisma/client";
 import { tryAcquire, type LockLease } from "./apply-lock.js";
 import { ReviewNotFound, InvalidReviewState, ApplyLockConflict, ApplyDependencyError, ApplyValidationError } from "./apply-errors.js";
 import type { ApplyResult } from "./apply-types.js";
-import { applyFigureImport, applyImageReview, applyItemStatus, type ApplyContext, type ApplyActor } from "./apply-business.js";
+import { applyFigureImport, applyJanMatch, applyRewrite, applyImage, applyImageReview, applyItemStatus, type ApplyContext, type ApplyActor } from "./apply-business.js";
+import { APPLY_TYPE_SCHEMA_MAP } from "./apply-schemas.js";
+import type { TypedApplyDTO } from "./apply-types.js";
 
 export interface ApplyInput {
   reviewItemId: string;
   actor: ApplyActor;
   body: Record<string, unknown>;
+}
+
+function parseApplyBody(item: any, body: Record<string, unknown>): TypedApplyDTO {
+  const schema = APPLY_TYPE_SCHEMA_MAP[item.type];
+  if (!schema) {
+    throw new ApplyValidationError(`Unsupported review type: ${item.type}`);
+  }
+  const merged = { ...(item.payload || {}), ...body };
+  return schema.parse(merged) as TypedApplyDTO;
 }
 
 export class ReviewApplyService {
@@ -33,17 +44,26 @@ export class ReviewApplyService {
       }
       lease.assertHeld();
 
+      const dto = parseApplyBody(item, body);
       const context: ApplyContext = { redis: this.redis, prisma: this.prisma };
       const action = String(body.action || item.suggestedAction || "approve_image");
-      const applyInput = { context, item, id: reviewItemId, actor, body, action };
 
       let output;
       switch (item.type) {
         case "figure_import":
-          output = await applyFigureImport(applyInput);
+          output = await applyFigureImport(context, item, reviewItemId, actor, dto as any, action);
+          break;
+        case "jan_match":
+          output = await applyJanMatch(context, item, reviewItemId, actor, dto as any, action);
+          break;
+        case "rewrite":
+          output = await applyRewrite(context, item, reviewItemId, actor, dto as any, action);
+          break;
+        case "image":
+          output = await applyImage(context, item, reviewItemId, actor, dto as any, action);
           break;
         case "image_review":
-          output = await applyImageReview(applyInput);
+          output = await applyImageReview(context, item, reviewItemId, actor, dto as any, action);
           break;
         default:
           throw new ApplyValidationError(`Unsupported review type: ${item.type}`);

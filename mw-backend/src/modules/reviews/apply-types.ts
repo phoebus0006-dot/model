@@ -1,3 +1,5 @@
+import type { FigureImportDTO, JanMatchDTO, RewriteDTO, ImageDTO, ImageReviewDTO } from "./apply-schemas.js";
+
 export const APPLY_STAGES = [
   "VALIDATING", "FIGURE_WRITE", "RELATION_WRITE", "IMAGE_PROCESSING",
   "REVISION_WRITE", "CURRENT_REVISION_UPDATE", "REVIEW_STATUS_UPDATE", "CACHE_INVALIDATION",
@@ -17,3 +19,5 @@ export interface ApplyResult {
   code?: string;
   cacheInvalidationPending?: boolean;
 }
+
+export type TypedApplyDTO = FigureImportDTO | JanMatchDTO | RewriteDTO | ImageDTO | ImageReviewDTO;
