@@ -151,22 +151,30 @@ POST /admin/review/items/{id}/apply
 | `aria-expanded` | ❌ 移动端菜单按钮缺少 |
 | CSP nonce | ✅ 内联脚本使用 nonce |
 
-## 12. 建议的 Phase 13 优先级
+## 12. Phase 13 状态 (2026-07-12 更新)
 
-### P0 — 本周
-- [ ] 建立统一 API client（`src/api/client`），禁止组件内散落 fetch
-- [ ] 在 Home/Explorer/Gallery 实现 loading/empty/error/retry 状态
-- [ ] 添加 API client 单元测试和 BigInt ID 测试
+> ⚠️ **EMERGENCY RECOVERY IN PROGRESS**
+>
+> Phase 13 前端工作已暂停。所有前端改动已回滚至 Phase 12 基线 (commit a4c9d82)。
+> 专注前台恢复、后台统一、旧审核队列下线。
 
-### P1 — 短迭代
-- [ ] 清理死代码（删除 `main.js`, `main.css` 或归档）
-- [ ] 移除内联事件处理器（`onclick` → `addEventListener`）
-- [ ] 提取管理面板 CSS 至独立文件
-- [ ] 添加焦点管理（灯箱、菜单）
+### 回滚内容
+- 移除 `api-client.js`（统一 API client 原型）
+- 移除 `feature-flags.js`（特性开关原型）
+- 还原 `index.php` 至无骨架屏版本
+- 还原 `page-browse.php` 至 PHP 渲染版本
+- 还原 `main-v27.css` 至 Phase 12 版本
+- 删除 `frontend-api-client.test.ts`（36 个测试，因文件不存在而全部失效）
 
-### P2 — 持续改进
-- [ ] 引入简单打包器（esbuild/Vite）
-- [ ] 统一 API_BASE 配置（从环境变量读取）
-- [ ] 添加 toast 通知组件
-- [ ] 补充 `< 360px` 断点
-- [ ] 前端 lint 门
+### 当前状态
+- **Phase 13 frontend** = NOT IMPLEMENTED
+- **Admin review replacement** = NOT IMPLEMENTED (见 `EMERGENCY_UI_AND_ADMIN_RECOVERY`)
+- **Live deployment** = REGRESSED (需要生产环境验收)
+
+### 恢复后优先级
+- [ ] 前台经生产环境验证正常
+- [ ] 唯一后台入口 (page-admin.php + admin.js)
+- [ ] 旧审核队列下线 + 新状态机 UI
+- [ ] 真实审核闭环完成
+- [ ] 线上截图齐全
+- [ ] 再评估是否继续 Phase 13
