@@ -1,5 +1,6 @@
 import { FastifyInstance } from "fastify";
 import bcrypt from "bcryptjs";
+import { Prisma } from "@prisma/client";
 import { updateUserSchema, createUserSchema, passwordUpdateSchema, safeBigInt, isValidPassword } from "./schemas.js";
 
 async function ensureNotLastActiveAdmin(prisma: any, excludeUserId: bigint): Promise<boolean> {
@@ -25,6 +26,7 @@ export async function adminUserRoutes(app: FastifyInstance) {
     const data = updateUserSchema.parse(req.body);
     const currentUser = req.user;
 
+    const TX_OPTS = { isolationLevel: Prisma.TransactionIsolationLevel.Serializable, maxWait: 2000, timeout: 10000 };
     const result = await app.prisma.$transaction(async (tx: any) => {
       const existing = await tx.user.findUnique({ where: { id: userId } });
       if (!existing) return { status: 404, error: { code: "USER_NOT_FOUND" } };
@@ -55,7 +57,7 @@ export async function adminUserRoutes(app: FastifyInstance) {
         select: { id: true, email: true, displayName: true, role: true, isActive: true, emailVerifiedAt: true, createdAt: true },
       });
       return { status: 200, data: user };
-    });
+    }, TX_OPTS);
 
     if (result.error) {
       return reply.status(result.status).send({ success: false, error: result.error });
@@ -100,6 +102,7 @@ export async function adminUserRoutes(app: FastifyInstance) {
 
     const currentUser = req.user;
 
+    const TX_OPTS = { isolationLevel: Prisma.TransactionIsolationLevel.Serializable, maxWait: 2000, timeout: 10000 };
     const result = await app.prisma.$transaction(async (tx: any) => {
       const user = await tx.user.findUnique({ where: { id: userId } });
       if (!user) return { status: 404, error: { code: "USER_NOT_FOUND", message: "用户不存在" } };
@@ -120,7 +123,7 @@ export async function adminUserRoutes(app: FastifyInstance) {
       await tx.favorite.deleteMany({ where: { userId } });
       await tx.user.delete({ where: { id: userId } });
       return { status: 200, data: { message: "用户已删除" } };
-    });
+    }, TX_OPTS);
 
     if (result.error) {
       return reply.status(result.status).send({ success: false, error: result.error });

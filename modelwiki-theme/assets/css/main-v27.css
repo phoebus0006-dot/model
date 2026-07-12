@@ -1029,3 +1029,92 @@ select,input{font-family:inherit;font-size:.9rem}
   .mw-password-rules,.mw-space-grid{grid-template-columns:1fr}
   .mw-account-chip{display:none}
 }
+
+/* ==========================================================================
+   PHASE 13: SKELETON LOADING, EMPTY & ERROR STATES
+   ========================================================================== */
+.mw-skeleton-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+  gap:1.25rem;
+}
+.mw-skeleton-card{
+  background:var(--mw-card);
+  border-radius:var(--mw-radius);
+  overflow:hidden;
+  border:1px solid var(--mw-border);
+}
+.mw-skeleton-img{
+  aspect-ratio:3/4;
+  background:linear-gradient(90deg,#eee 25%,#f5f5f5 50%,#eee 75%);
+  background-size:200% 100%;
+  animation:mw-shimmer 1.5s ease-in-out infinite;
+}
+.mw-skeleton-text{
+  height:14px;
+  margin:.75rem .75rem .5rem;
+  background:linear-gradient(90deg,#eee 25%,#f5f5f5 50%,#eee 75%);
+  background-size:200% 100%;
+  animation:mw-shimmer 1.5s ease-in-out infinite;
+  border-radius:4px;
+}
+.mw-skeleton-text--short{
+  width:60%;
+  margin-top:0;
+  height:12px;
+}
+
+@keyframes mw-shimmer{
+  0%{background-position:200% 0}
+  100%{background-position:-200% 0}
+}
+
+.mw-empty-state{
+  text-align:center;
+  padding:3rem 1rem;
+  color:var(--mw-text-light);
+  font-size:.95rem;
+}
+
+.mw-error-state{
+  text-align:center;
+  padding:3rem 1rem;
+  color:var(--mw-accent);
+}
+.mw-error-state p{
+  font-size:.95rem;
+  margin-bottom:1rem;
+}
+
+.mw-retry-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:.35rem;
+  padding:.6rem 1.25rem;
+  background:var(--mw-accent);
+  color:#fff;
+  border:none;
+  border-radius:6px;
+  font-size:.9rem;
+  font-weight:600;
+  transition:var(--mw-transition);
+}
+.mw-retry-btn:hover{background:var(--mw-accent-hover)}
+
+.mw-featured{
+  padding:2.5rem 0;
+  border-top:1px solid var(--mw-border);
+}
+.mw-featured h2{
+  font-size:1.3rem;
+  margin-bottom:1.25rem;
+  font-weight:700;
+}
+
+@media(max-width:480px){
+  .mw-skeleton-grid{grid-template-columns:repeat(2,1fr);gap:.5rem}
+}
+
+@media(max-width:768px){
+  .mw-featured{padding:1.5rem 0}
+}
