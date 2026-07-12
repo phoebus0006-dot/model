@@ -19,11 +19,25 @@ export const DOWNLOAD_TIMEOUT = 15_000;
 export const MAX_REDIRECTS = 5;
 
 function getImageDir(janCode: string): string {
+  if (!validateJanCode(janCode)) {
+    throw new Error(`Invalid janCode: ${janCode}`);
+  }
   return path.join(ASSETS_PATH, "figures", janCode);
 }
 
-function getImageFilePath(janCode: string, sha256: string, size: ImageSize): string {
-  return path.join(getImageDir(janCode), `${sha256}_${size}.webp`);
+export function getImageFilePath(janCode: string, sha256: string, size: ImageSize): string {
+  if (!validateJanCode(janCode)) {
+    throw new Error(`Invalid janCode: ${janCode}`);
+  }
+  if (!validateSha256(sha256)) {
+    throw new Error(`Invalid sha256: ${sha256}`);
+  }
+  const resolvedPath = path.resolve(path.join(getImageDir(janCode), `${sha256}_${size}.webp`));
+  const allowedPrefix = path.resolve(path.join(ASSETS_PATH, "figures"));
+  if (!resolvedPath.startsWith(allowedPrefix)) {
+    throw new Error("Path traversal detected: resolved path outside figures directory");
+  }
+  return resolvedPath;
 }
 
 export function validateJanCode(janCode: string): boolean {
@@ -64,6 +78,15 @@ export interface ImageRecordData {
   isNsfw: boolean;
 }
 
+function collectTmpFiles(dir: string, prefix: string): string[] {
+  try {
+    const entries = fs.readdirSync(dir);
+    return entries.filter(e => e.startsWith(prefix)).map(e => path.join(dir, e));
+  } catch {
+    return [];
+  }
+}
+
 export async function processAndStoreImageFiles(
   buffer: Buffer, janCode: string, source: string,
   options?: { alt?: string; sortOrder?: number; isNsfw?: boolean }
@@ -75,39 +98,56 @@ export async function processAndStoreImageFiles(
   const metadata = await sharp(buffer).metadata();
   const originalWidth = metadata.width || 0;
   const results: ImageRecordData[] = [];
+  const writtenTmpPaths: string[] = [];
 
-  for (const [sizeName, config] of Object.entries(IMAGE_SIZES)) {
-    const filePath = getImageFilePath(janCode, sha256, sizeName as ImageSize);
-    if (fs.existsSync(filePath)) {
-      const stat = fs.statSync(filePath);
+  try {
+    for (const [sizeName, config] of Object.entries(IMAGE_SIZES)) {
+      const filePath = getImageFilePath(janCode, sha256, sizeName as ImageSize);
+      if (fs.existsSync(filePath)) {
+        const stat = fs.statSync(filePath);
+        results.push({
+          janCode, sha256, size: sizeName, format: "webp",
+          width: config.width || originalWidth, height: metadata.height || 0,
+          fileSize: stat.size, alt, sortOrder, source, isNsfw,
+        });
+        continue;
+      }
+      let processed = buffer;
+      if (config.width > 0) {
+        processed = await sharp(buffer).resize({ width: config.width, withoutEnlargement: true }).webp({ quality: config.quality }).toBuffer();
+      } else {
+        processed = await sharp(buffer).webp({ quality: config.quality }).toBuffer();
+      }
+      const tmpPath = filePath + ".tmp." + crypto.randomBytes(8).toString("hex");
+      fs.writeFileSync(tmpPath, processed);
+      writtenTmpPaths.push(tmpPath);
+      fs.renameSync(tmpPath, filePath);
       results.push({
         janCode, sha256, size: sizeName, format: "webp",
-        width: config.width || originalWidth, height: metadata.height || 0,
-        fileSize: stat.size, alt, sortOrder, source, isNsfw,
+        width: config.width || originalWidth,
+        height: metadata.height ? Math.round(metadata.height * (config.width ? config.width / originalWidth : 1)) : 0,
+        fileSize: processed.length, alt, sortOrder, source, isNsfw,
       });
-      continue;
     }
-    let processed = buffer;
-    if (config.width > 0) {
-      processed = await sharp(buffer).resize({ width: config.width, withoutEnlargement: true }).webp({ quality: config.quality }).toBuffer();
-    } else {
-      processed = await sharp(buffer).webp({ quality: config.quality }).toBuffer();
+  } finally {
+    for (const tmp of writtenTmpPaths) {
+      try {
+        if (fs.existsSync(tmp)) fs.unlinkSync(tmp);
+      } catch {}
     }
-    const tmpPath = filePath + ".tmp." + crypto.randomBytes(8).toString("hex");
-    fs.writeFileSync(tmpPath, processed);
-    fs.renameSync(tmpPath, filePath);
-    results.push({
-      janCode, sha256, size: sizeName, format: "webp",
-      width: config.width || originalWidth,
-      height: metadata.height ? Math.round(metadata.height * (config.width ? config.width / originalWidth : 1)) : 0,
-      fileSize: processed.length, alt, sortOrder, source, isNsfw,
-    });
   }
   return results;
 }
 
 export function getReviewImageFilePath(janCode: string, sha256: string, size: string): string {
-  return path.join(ASSETS_PATH, "figures", janCode, `${sha256}_${size}.webp`);
+  if (!validateJanCode(janCode)) throw new Error(`Invalid janCode: ${janCode}`);
+  if (!validateSha256(sha256)) throw new Error(`Invalid sha256: ${sha256}`);
+  const resolvedPath = path.resolve(path.join(ASSETS_PATH, "figures", janCode, `${sha256}_${size}.webp`));
+  const allowedPrefix = path.resolve(path.join(ASSETS_PATH, "figures"));
+  if (!resolvedPath.startsWith(allowedPrefix)) {
+    throw new Error("Path traversal detected: resolved path outside figures directory");
+  }
+  return resolvedPath;
 }
 
 export const REVIEW_IMAGE_SIZES = new Set(["raw", "detail", "thumb"]);
