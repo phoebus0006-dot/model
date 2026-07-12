@@ -126,9 +126,7 @@ add_filter('template_include', 'mw_figure_template_include');
 function mw_theme_scripts() {
     wp_enqueue_style('modelwiki-style', get_stylesheet_uri(), [], MODELWIKI_THEME_VERSION);
     wp_enqueue_style('modelwiki-main', get_template_directory_uri() . '/assets/css/main-v27.css', [], MODELWIKI_THEME_VERSION);
-    wp_enqueue_script('modelwiki-feature-flags', get_template_directory_uri() . '/assets/js/feature-flags.js', [], MODELWIKI_THEME_VERSION, true);
-    wp_enqueue_script('modelwiki-api-client', get_template_directory_uri() . '/assets/js/api-client.js', ['modelwiki-feature-flags'], MODELWIKI_THEME_VERSION, true);
-    wp_enqueue_script('modelwiki-main', get_template_directory_uri() . '/assets/js/main-v27.js', ['modelwiki-api-client'], MODELWIKI_THEME_VERSION, true);
+    wp_enqueue_script('modelwiki-main', get_template_directory_uri() . '/assets/js/main-v27.js', [], MODELWIKI_THEME_VERSION, true);
 }
 add_action('wp_enqueue_scripts', 'mw_theme_scripts');
 
