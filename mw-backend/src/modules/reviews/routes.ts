@@ -3,7 +3,7 @@ import crypto from "crypto";
 import { ReviewRepository } from "./repository.js";
 import { ReviewService, computeReviewEvidenceFingerprint, reviewDecisionKey, reviewDecisionMatchesQuery, projectReviewDecision, reviewFigureKey, reviewRiskKey } from "./service.js";
 import { reviewItemSchema, reviewUpdateSchema, reviewQuerySchema, reviewDecisionQuerySchema, reviewActionSchema, bulkCleanupSchema, reviewStatusSchema, reviewEditableFieldsSchema } from "./schemas.js";
-import { ACTION_STATUS_MAP, isSuppressingAction } from "./types.js";
+import { ACTION_STATUS_MAP, isSuppressingAction, type ReviewAction } from "./types.js";
 import { scanKeys } from "../../shared/cache/scan-keys.js";
 
 const ALL_STATUSES = "all";
@@ -174,25 +174,7 @@ export async function adminReviewRoutes(app: FastifyInstance) {
   });
 
   app.post("/review/items/:id/recheck", async (req: any, reply: any) => {
-    const { id } = req.params as { id: string };
-    const existingRaw = await app.redis.get("review:item:" + id);
-    if (!existingRaw) return reply.status(404).send({ success: false, error: { code: "REVIEW_ITEM_NOT_FOUND" } });
-    const item = JSON.parse(existingRaw);
-    const now = new Date().toISOString();
-    const problems: string[] = [];
-    const payload = item.payload || {};
-    const figure = await resolveReviewFigure(app.prisma, item, payload);
-    if (["image", "image_review", "rewrite", "jan_match", "detail_review"].includes(item.type) && !figure) problems.push("FIGURE_NOT_FOUND");
-    if (item.type === "image" && figure) {
-      const rows = await app.prisma.figureImage.findMany({ where: { figureId: figure.id }, orderBy: [{ sortOrder: "asc" }, { id: "asc" }] });
-      if (rows.length === 0) problems.push("仍然没有图片");
-    }
-    const hasDeterministicProblem = problems.length > 0 && !problems.some((p) => p.includes("需人工判断"));
-    const newStatus = problems.length === 0 ? "resolved" : hasDeterministicProblem ? "needs_changes" : item.status;
-    const noteText = problems.length === 0 ? "复检通过：" + now : "复检仍有问题：" + problems.join(";");
-    const updatedItem = { ...item, payload: { ...(item.payload || {}), reviewProblems: problems, lastCheckedAt: now }, status: newStatus, notes: item.notes ? item.notes + "\n" + noteText : noteText, updatedAt: now };
-    await app.redis.set("review:item:" + id, JSON.stringify(updatedItem));
-    return { success: true, data: { item: updatedItem, problems } };
+    return reply.status(410).send({ success: false, error: { code: "LEGACY_RECHECK_REMOVED", message: "This endpoint has been removed in favor of the new review lifecycle. Use POST /review/items/:id/action instead." } });
   });
 
   app.post("/review/items/:id/action", async (req: any, reply: any) => {
@@ -202,10 +184,13 @@ export async function adminReviewRoutes(app: FastifyInstance) {
     if (!existingRaw) return reply.status(404).send({ success: false, error: { code: "REVIEW_ITEM_NOT_FOUND" } });
     const item = JSON.parse(existingRaw);
     const now = new Date().toISOString();
-    const newStatus = ACTION_STATUS_MAP[actionBody] || item.status;
-    const actionNote = ACTION_STATUS_MAP[actionBody] ? actionBody : item.status;
+    const targetStatus = ACTION_STATUS_MAP[actionBody as ReviewAction];
+    if (!targetStatus) {
+      return reply.status(422).send({ success: false, error: { code: "UNSUPPORTED_ACTION", message: "Unsupported review action: " + actionBody } });
+    }
+    const newStatus = targetStatus;
     const reviewer = (req as any).user?.displayName || String((req as any).user?.userId || "");
-    const note = (reviewer ? "[" + reviewer + "] " : "") + "管理员" + actionNote;
+    const note = (reviewer ? "[" + reviewer + "] " : "") + actionBody;
     const userNote = (req.body || {}).notes ? "（" + (req.body || {}).notes + "）" : "";
     const isFinal = isSuppressingAction(actionBody);
     const updatedItem = { ...item, status: newStatus, evidenceFingerprint: item.evidenceFingerprint || computeReviewEvidenceFingerprint(item), decisionReason: isFinal ? ((req.body || {}).notes || null) : item.decisionReason, reviewer: isFinal ? (reviewer || null) : item.reviewer, decisionAt: isFinal ? now : item.decisionAt, notes: item.notes ? item.notes + "\n[" + now + "] " + note + userNote : "[" + now + "] " + note + userNote, payload: { ...(item.payload || {}), lastAction: actionBody, lastActionAt: now, evidenceFingerprint: item.evidenceFingerprint || computeReviewEvidenceFingerprint(item) }, updatedAt: now };
@@ -219,7 +204,7 @@ export async function adminReviewRoutes(app: FastifyInstance) {
         await app.redis.zadd("review:decisions", Date.now(), dk);
       }
     }
-    if (actionBody === "request_refetch") {
+    if (actionBody === "request_changes") {
       const fid = item.figureId ? String(item.figureId) : null;
       const jobId = Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
       const job = { id: jobId, attempts: 0, source: "manual", task: "fetch_item", runner: "local_browser", status: "queued", priority: 2, payload: { figureId: fid, figureSlug: item.figureSlug || "", reason: item.riskReason || "Refetch from review", reviewItemId: id, needImages: item.type !== "detail_review", needDetails: item.type === "detail_review" }, notes: "Created from review action", notBefore: new Date().toISOString(), maxAttempts: 3, automation: { provider: "manual", workflow: "review-refetch" }, createdAt: now, updatedAt: now };
@@ -227,9 +212,6 @@ export async function adminReviewRoutes(app: FastifyInstance) {
       await app.redis.zadd("crawler:jobs", Date.now() + 2 * 1_000_000_000, jobId);
       updatedItem.payload = { ...(updatedItem.payload || {}), crawlerJobId: jobId };
       await app.redis.set("review:item:" + id, JSON.stringify(updatedItem));
-    }
-    if (["approve_image", "reject_image", "keep_placeholder"].includes(actionBody) && item.figureSlug) {
-      await scanKeys(app.redis, "figures:detail:*");
     }
     return { success: true, data: { item: updatedItem, action: actionBody } };
   });

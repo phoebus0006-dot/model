@@ -4,7 +4,7 @@ import { applyFigureImport, applyJanMatch, applyRewrite, applyImage, applyImageR
 import { APPLY_TYPE_SCHEMA_MAP } from "./apply-schemas.js";
 
 export async function applyByType(context: ApplyContext, item: any, id: string, actor: ApplyActor, body: Record<string, unknown>) {
-  const action = String(body.action || item.suggestedAction || "approve_image");
+  const action = String(body.action || item.suggestedAction || "approve");
   const schema = APPLY_TYPE_SCHEMA_MAP[item.type];
   if (!schema) throw new Error(`Unsupported review type: ${item.type}`);
   const merged = { ...(item.payload || {}), ...body };

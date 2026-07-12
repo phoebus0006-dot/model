@@ -40,7 +40,7 @@ describeDb("PostgresReviewStore — real PostgreSQL", () => {
     const item = await store.create({ title: `Transition test ${testId}`, type: "general" });
     const result = await store.transition({
       id: item.id,
-      action: "approve_image",
+      action: "approve",
       targetStatus: "approved",
     });
     expect(result.success).toBe(true);
@@ -51,11 +51,11 @@ describeDb("PostgresReviewStore — real PostgreSQL", () => {
   it("rejects transition on version conflict", async () => {
     const item = await store.create({ title: `Conflict test ${testId}`, type: "general" });
     // First transition succeeds
-    await store.transition({ id: item.id, action: "approve_image", targetStatus: "approved" });
+    await store.transition({ id: item.id, action: "approve", targetStatus: "approved" });
     // Second transition with outdated version expectation
     const result = await store.transition({
       id: item.id,
-      action: "reject_image",
+      action: "reject",
       targetStatus: "rejected",
       expectedStatus: "pending",
     });

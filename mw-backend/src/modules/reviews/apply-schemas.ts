@@ -54,7 +54,7 @@ export const imagePayloadSchema = z.object({
 export type ImageDTO = z.infer<typeof imagePayloadSchema>;
 
 export const imageReviewPayloadSchema = z.object({
-  action: z.enum(["approve_image", "reject_image", "keep_placeholder"]).optional(),
+  action: z.enum(["approve", "reject", "keep_pending"]).optional(),
 }).strict();
 export type ImageReviewDTO = z.infer<typeof imageReviewPayloadSchema>;
 

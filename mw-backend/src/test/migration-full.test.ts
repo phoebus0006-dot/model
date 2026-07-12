@@ -88,11 +88,11 @@ describe("Redis review parser", () => {
 describe("Redis decision parser", () => {
   it("parses a suppression decision", () => {
     const event = parseRedisDecisionToEvent(
-      JSON.stringify({ reviewItemId: "item-1", action: "approve_image", status: "approved", reviewer: "Admin", decisionReason: "Looks good", decisionAt: "2026-01-01T00:00:00Z" }),
+      JSON.stringify({ reviewItemId: "item-1", action: "approve", status: "approved", reviewer: "Admin", decisionReason: "Looks good", decisionAt: "2026-01-01T00:00:00Z" }),
       "review:decision:id:42:image_low_count:abc"
     );
     expect(event).not.toBeNull();
-    expect(event!.action).toBe("approve_image");
+    expect(event!.action).toBe("approve");
     expect(event!.event).toBe("suppression");
   });
 

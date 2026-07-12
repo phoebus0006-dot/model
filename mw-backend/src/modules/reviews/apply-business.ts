@@ -314,8 +314,8 @@ export async function applyImageReview(
 ): Promise<ApplyOutput> {
   const { prisma } = context;
 
-  if (action !== "approve_image") {
-    throw new ApplyValidationError("UNSUPPORTED_ACTION: only approve_image is supported");
+  if (action !== "approve") {
+    throw new ApplyValidationError("UNSUPPORTED_ACTION: only approve is supported");
   }
 
   const figure = await resolveFigure(prisma, item);
@@ -380,14 +380,14 @@ export async function applyItemStatus(context: ApplyContext, id: string, item: a
   const problems = await evaluateReviewItem(context, item);
   const now = new Date().toISOString();
   const businessFailed = output.failure || problems.length > 0;
-  const newStatus = businessFailed ? "needs_changes" : "resolved";
+  const newStatus = businessFailed ? "failed" : "applied";
   const updatedItem = {
     ...item,
-    payload: { ...(item.payload || {}), reviewProblems: problems, lastCheckedAt: now },
+    payload: { ...(item.payload || {}), reviewProblems: problems, lastCheckedAt: now, failureStage: output.failure?.stage || null },
     status: newStatus,
     notes: problems.length === 0
-      ? (item.notes ? `${item.notes}\nApplied and rechecked at ${now}` : `Applied and rechecked at ${now}`)
-      : (item.notes ? `${item.notes}\nApplied but needs changes: ${problems.join("; ")}` : `Applied but needs changes: ${problems.join("; ")}`),
+      ? (item.notes ? `${item.notes}\nApplied at ${now}` : `Applied at ${now}`)
+      : (item.notes ? `${item.notes}\nApply failed: ${problems.join("; ")}` : `Apply failed: ${problems.join("; ")}`),
     updatedAt: now,
   };
   await context.verifyLock();

@@ -97,7 +97,7 @@ describe("PostgresReviewStore", () => {
         return fn(tx);
       });
       const store = makeStore();
-      const result = await store.transition({ id: "test-1", action: "approve_image", targetStatus: "approved" });
+      const result = await store.transition({ id: "test-1", action: "approve", targetStatus: "approved" });
       expect(result.success).toBe(true);
     });
 
@@ -111,7 +111,7 @@ describe("PostgresReviewStore", () => {
         return fn(tx);
       });
       const store = makeStore();
-      const result = await store.transition({ id: "missing", action: "approve_image", targetStatus: "approved" });
+      const result = await store.transition({ id: "missing", action: "approve", targetStatus: "approved" });
       expect(result.success).toBe(false);
       expect(result.code).toBe("NOT_FOUND");
     });
@@ -127,7 +127,7 @@ describe("PostgresReviewStore", () => {
         return fn(tx);
       });
       const store = makeStore();
-      const result = await store.transition({ id: "test-1", action: "approve_image", targetStatus: "approved" });
+      const result = await store.transition({ id: "test-1", action: "approve", targetStatus: "approved" });
       expect(result.success).toBe(false);
       expect(result.code).toBe("CONFLICT");
     });
@@ -144,7 +144,7 @@ describe("PostgresReviewStore", () => {
         return fn(tx);
       });
       const store = makeStore();
-      const result = await store.transition({ id: "test-1", action: "reject_image", targetStatus: "rejected" });
+      const result = await store.transition({ id: "test-1", action: "reject", targetStatus: "rejected" });
       expect(result.success).toBe(true);
     });
 
@@ -158,7 +158,7 @@ describe("PostgresReviewStore", () => {
         return fn(tx);
       });
       const store = makeStore();
-      const result = await store.transition({ id: "test-1", action: "reject_image", targetStatus: "rejected", expectedStatus: "pending" });
+      const result = await store.transition({ id: "test-1", action: "reject", targetStatus: "rejected", expectedStatus: "pending" });
       expect(result.success).toBe(false);
       expect(result.code).toBe("STATUS_CONFLICT");
     });

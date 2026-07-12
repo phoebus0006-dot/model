@@ -1,4 +1,4 @@
-export const REVIEW_STATUSES = ["pending", "approved", "rejected", "needs_changes", "resolved", "applied", "failed", "stale"] as const;
+export const REVIEW_STATUSES = ["pending", "needs_changes", "approved", "applying", "applied", "rejected", "failed", "archived", "stale"] as const;
 export type ReviewStatus = (typeof REVIEW_STATUSES)[number];
 
 export const REVIEW_TYPES = ["jan_match", "figure_import", "rewrite", "image", "general", "image_review", "detail_review"] as const;
@@ -14,8 +14,8 @@ export const REVIEW_RISK_TYPES = [
 export type ReviewRiskType = (typeof REVIEW_RISK_TYPES)[number];
 
 export const REVIEW_ACTIONS = [
-  "approve_image", "reject_image", "keep_placeholder", "mark_detail_ok",
-  "request_refetch", "dismiss_stale", "keep_pending",
+  "approve", "reject", "request_changes", "keep_pending",
+  "archive", "apply",
 ] as const;
 export type ReviewAction = (typeof REVIEW_ACTIONS)[number];
 
@@ -111,17 +111,16 @@ export interface ApplyResult {
 export type ReviewRecord = Record<string, unknown>;
 
 export const SUPPRESSING_ACTIONS: readonly ReviewAction[] = [
-  "approve_image", "reject_image", "keep_placeholder", "mark_detail_ok", "dismiss_stale",
+  "approve", "reject", "archive",
 ];
 
 export const ACTION_STATUS_MAP: Record<ReviewAction, ReviewStatus> = {
-  approve_image: "approved",
-  reject_image: "rejected",
-  keep_placeholder: "resolved",
-  mark_detail_ok: "resolved",
-  request_refetch: "needs_changes",
-  dismiss_stale: "resolved",
+  approve: "approved",
+  reject: "rejected",
+  request_changes: "needs_changes",
   keep_pending: "pending",
+  archive: "archived",
+  apply: "applying",
 };
 
 export function isSuppressingAction(action: string): boolean {

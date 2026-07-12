@@ -39,8 +39,8 @@ export class ReviewApplyService {
       const raw = await this.redis.get(`review:item:${reviewItemId}`);
       if (!raw) throw new ReviewNotFound(reviewItemId);
       const item = JSON.parse(raw);
-      if (item.status !== "pending" && item.status !== "needs_changes") {
-        throw new InvalidReviewState(item.status, "pending or needs_changes");
+      if (item.status !== "approved") {
+        throw new InvalidReviewState(item.status, "approved");
       }
       lease.assertHeld();
 
@@ -50,7 +50,7 @@ export class ReviewApplyService {
         prisma: this.prisma,
         verifyLock: () => lease.verifyHeld(this.redis),
       };
-      const action = String(body.action || item.suggestedAction || "approve_image");
+      const action = String(body.action || item.suggestedAction || "approve");
 
       let output;
       switch (item.type) {

@@ -87,8 +87,8 @@ describe("Review routes — contract (skipLifecycle, no DB/Redis)", () => {
 });
 
 describe("Review schemas — contract frozen", () => {
-  const reviewStatusSchemaValues = ["pending", "approved", "rejected", "needs_changes", "resolved", "stale"] as const;
-  const reviewActionSchemaValues = ["approve_image", "reject_image", "keep_placeholder", "mark_detail_ok", "request_refetch", "dismiss_stale", "keep_pending"] as const;
+  const reviewStatusSchemaValues = ["pending", "needs_changes", "approved", "applying", "applied", "rejected", "failed", "archived", "stale"] as const;
+  const reviewActionSchemaValues = ["approve", "reject", "request_changes", "keep_pending", "archive", "apply"] as const;
   const reviewTypeSchemaValues = ["jan_match", "figure_import", "rewrite", "image", "general", "image_review", "detail_review"] as const;
 
   it("valid review statuses match admin.ts definition", () => {
@@ -101,13 +101,12 @@ describe("Review schemas — contract frozen", () => {
   });
 
   it("valid review actions match admin.ts definition", () => {
-    expect(reviewActionSchemaValues).toContain("approve_image");
-    expect(reviewActionSchemaValues).toContain("reject_image");
-    expect(reviewActionSchemaValues).toContain("keep_placeholder");
-    expect(reviewActionSchemaValues).toContain("mark_detail_ok");
-    expect(reviewActionSchemaValues).toContain("request_refetch");
-    expect(reviewActionSchemaValues).toContain("dismiss_stale");
+    expect(reviewActionSchemaValues).toContain("approve");
+    expect(reviewActionSchemaValues).toContain("reject");
+    expect(reviewActionSchemaValues).toContain("request_changes");
     expect(reviewActionSchemaValues).toContain("keep_pending");
+    expect(reviewActionSchemaValues).toContain("archive");
+    expect(reviewActionSchemaValues).toContain("apply");
   });
 
   it("valid review types match admin.ts definition", () => {
@@ -128,13 +127,12 @@ describe("Review schemas — contract frozen", () => {
 
   it("action->status map matches admin.ts", () => {
     const actionStatusMap: Record<string, string> = {
-      approve_image: "approved",
-      reject_image: "rejected",
-      keep_placeholder: "resolved",
-      mark_detail_ok: "resolved",
-      request_refetch: "needs_changes",
-      dismiss_stale: "resolved",
+      approve: "approved",
+      reject: "rejected",
+      request_changes: "needs_changes",
       keep_pending: "pending",
+      archive: "archived",
+      apply: "applying",
     };
     for (const action of reviewActionSchemaValues) {
       expect(actionStatusMap[action]).toBeDefined();
@@ -142,14 +140,12 @@ describe("Review schemas — contract frozen", () => {
   });
 
   it("isSuppressingReviewDecision matches admin.ts", () => {
-    const isSuppressingReviewDecision = (action: string) =>
-      ["approve_image", "reject_image", "keep_placeholder", "mark_detail_ok", "dismiss_stale"].includes(action);
-    expect(isSuppressingReviewDecision("approve_image")).toBe(true);
-    expect(isSuppressingReviewDecision("reject_image")).toBe(true);
-    expect(isSuppressingReviewDecision("keep_placeholder")).toBe(true);
-    expect(isSuppressingReviewDecision("mark_detail_ok")).toBe(true);
-    expect(isSuppressingReviewDecision("dismiss_stale")).toBe(true);
+    const isSuppressingReviewDecision = (action: string): boolean =>
+      ["approve", "reject", "archive"].includes(action);
+    expect(isSuppressingReviewDecision("approve")).toBe(true);
+    expect(isSuppressingReviewDecision("reject")).toBe(true);
+    expect(isSuppressingReviewDecision("archive")).toBe(true);
+    expect(isSuppressingReviewDecision("apply")).toBe(false);
     expect(isSuppressingReviewDecision("keep_pending")).toBe(false);
-    expect(isSuppressingReviewDecision("request_refetch")).toBe(false);
   });
 });

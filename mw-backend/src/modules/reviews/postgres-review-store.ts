@@ -94,7 +94,7 @@ export class PostgresReviewStore implements ReviewStore {
             version: { increment: 1 },
             reviewer: reviewer || existing.reviewer,
             decisionReason: reason || existing.decisionReason,
-            decisionAt: ["approved", "rejected", "resolved"].includes(targetStatus) ? new Date() : existing.decisionAt,
+            decisionAt: ["approved", "rejected", "applied", "failed", "archived"].includes(targetStatus) ? new Date() : existing.decisionAt,
             payload: payload != null ? (payload as any) : existing.payload,
             updatedAt: new Date(),
           },

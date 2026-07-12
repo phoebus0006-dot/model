@@ -381,7 +381,7 @@ describe("image_review apply", () => {
     ]);
     vi.mocked(upsertFigureImageRecord).mockResolvedValue({ image: { id: BigInt(55) } } as any);
 
-    const result = await applyImageReview(ctx, reviewItem(), "item-1", defaultActor, {}, "approve_image");
+    const result = await applyImageReview(ctx, reviewItem(), "item-1", defaultActor, {}, "approve");
 
     expect(result.success).toBe(true);
     expect(result.action).toBe("image_approved");
@@ -393,19 +393,19 @@ describe("image_review apply", () => {
     ctx.prisma.figure.findFirst.mockResolvedValue({ id: BigInt(1), slug: "review-fig", janCode: "j123" });
     ctx.prisma.figureImage.findFirst.mockResolvedValue({ id: BigInt(10), source: "http://example.com/candidate.jpg" });
 
-    const result = await applyImageReview(ctx, reviewItem(), "item-1", defaultActor, {}, "approve_image");
+    const result = await applyImageReview(ctx, reviewItem(), "item-1", defaultActor, {}, "approve");
 
     expect(result.success).toBe(true);
     expect(result.action).toBe("already_approved");
     expect(ctx.prisma.figureImage.update).toHaveBeenCalled();
   });
 
-  it("throws UNSUPPORTED_ACTION for non-approve_image action", async () => {
+  it("throws UNSUPPORTED_ACTION for non-approve action", async () => {
     const ctx = makeContext();
     ctx.prisma.figure.findFirst.mockResolvedValue({ id: BigInt(1), slug: "review-fig" });
 
     await expect(
-      applyImageReview(ctx, reviewItem(), "item-1", defaultActor, {}, "reject_image"),
+      applyImageReview(ctx, reviewItem(), "item-1", defaultActor, {}, "reject"),
     ).rejects.toThrow(ApplyValidationError);
   });
 
@@ -414,7 +414,7 @@ describe("image_review apply", () => {
     ctx.prisma.figure.findFirst.mockResolvedValue({ id: BigInt(1), slug: "no-cand" });
 
     await expect(
-      applyImageReview(ctx, { ...defaultItem, type: "image_review", figureSlug: "no-cand" }, "item-1", defaultActor, {}, "approve_image"),
+      applyImageReview(ctx, { ...defaultItem, type: "image_review", figureSlug: "no-cand" }, "item-1", defaultActor, {}, "approve"),
     ).rejects.toThrow(ApplyValidationError);
   });
 
@@ -424,7 +424,7 @@ describe("image_review apply", () => {
     ctx.prisma.figureImage.findFirst.mockResolvedValue(null);
     vi.mocked(processAndStoreImage).mockRejectedValue(new Error("Timeout"));
 
-    const result = await applyImageReview(ctx, reviewItem(), "item-1", defaultActor, {}, "approve_image");
+    const result = await applyImageReview(ctx, reviewItem(), "item-1", defaultActor, {}, "approve");
 
     expect(result.success).toBe(false);
     expect(result.action).toBe("image_approve_failed");
@@ -435,7 +435,7 @@ describe("image_review apply", () => {
     ctx.prisma.figure.findFirst.mockResolvedValue(null);
 
     await expect(
-      applyImageReview(ctx, reviewItem({ figureSlug: "missing" }), "item-1", defaultActor, {}, "approve_image"),
+      applyImageReview(ctx, reviewItem({ figureSlug: "missing" }), "item-1", defaultActor, {}, "approve"),
     ).rejects.toThrow(ApplyDependencyError);
   });
 });
@@ -484,7 +484,7 @@ describe("success=false propagation", () => {
 
     const result = await applyImageReview(
       ctx, { ...defaultItem, type: "image_review", figureSlug: "fail", candidateImage: { source: "http://bad.com/img.jpg" } },
-      "item-1", defaultActor, {}, "approve_image",
+      "item-1", defaultActor, {}, "approve",
     );
 
     expect(result.success).toBe(false);

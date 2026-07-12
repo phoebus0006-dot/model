@@ -62,13 +62,12 @@ const reviewRiskTypeSchema = z.enum([
   "general_risk",
 ]);
 const reviewActionSchema = z.enum([
-  "approve_image",
-  "reject_image",
-  "keep_placeholder",
-  "mark_detail_ok",
-  "request_refetch",
-  "dismiss_stale",
+  "approve",
+  "reject",
+  "request_changes",
   "keep_pending",
+  "archive",
+  "apply",
 ]);
 
 const reviewItemSchema = z.object({
