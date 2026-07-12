@@ -325,7 +325,7 @@ h1{font-size:2rem}h3{font-size:1.25rem}
         {id:'users',label:'用户管理',icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>'}
     ];
     var ROLES = {admin:'管理员',editor:'编辑',viewer:'访客',user:'用户'};
-    var ROLE_OPTIONS = [{v:'admin',l:'管理员'},{v:'editor',l:'编辑'},{v:'viewer',l:'访客'}];
+    var ROLE_OPTIONS = [{v:'admin',l:'Admin'},{v:'editor',l:'Editor'},{v:'viewer',l:'Viewer'}];
     var ENTITY_CONFIG = {
         categories:{label:'分类',endpoint:'/categories',fields:[
             {name:'slug',label:'Slug',required:true},{name:'name',label:'名称',required:true},

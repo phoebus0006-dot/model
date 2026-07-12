@@ -249,7 +249,6 @@ model FigureCharacter {
 
 model User {
   id           BigInt   @id @default(autoincrement())
-  email        String?  @unique
   passwordHash String?  @map("password_hash")
   displayName  String   @map("display_name")
   avatarUrl    String?  @map("avatar_url")
@@ -257,9 +256,6 @@ model User {
   wechatOpenid String?  @unique @map("wechat_openid")
   role         String   @default("user")
   isActive     Boolean  @default(true) @map("is_active")
-  emailVerifiedAt DateTime? @map("email_verified_at")
-  emailVerifyTokenHash String? @map("email_verify_token_hash")
-  emailVerifyExpiresAt DateTime? @map("email_verify_expires_at")
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 

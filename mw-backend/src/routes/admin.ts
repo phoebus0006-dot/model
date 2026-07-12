@@ -1580,7 +1580,7 @@ export async function adminRoutes(app: FastifyInstance) {
   app.get("/users", async () => {
     const prisma = app.prisma as any;
     const users = await prisma.user.findMany({
-      select: { id: true, email: true, displayName: true, role: true, isActive: true, emailVerifiedAt: true, createdAt: true },
+      select: { id: true, displayName: true, role: true, isActive: true, createdAt: true },
       orderBy: { createdAt: "desc" },
     });
     return { success: true, data: users };
@@ -1605,7 +1605,7 @@ export async function adminRoutes(app: FastifyInstance) {
     const user = await (app.prisma as any).user.update({
       where: { id: userId },
       data,
-      select: { id: true, email: true, displayName: true, role: true, isActive: true, emailVerifiedAt: true, createdAt: true },
+      select: { id: true, displayName: true, role: true, isActive: true, createdAt: true },
     });
     return { success: true, data: user };
   });
@@ -1647,8 +1647,8 @@ export async function adminRoutes(app: FastifyInstance) {
 
     const passwordHash = await bcrypt.hash(data.password, 12);
     const user = await (app.prisma as any).user.create({
-      data: { displayName: data.username, passwordHash, role: data.role, emailVerifiedAt: new Date(), isActive: true },
-      select: { id: true, displayName: true, role: true, isActive: true, emailVerifiedAt: true, createdAt: true },
+      data: { displayName: data.username, passwordHash, role: data.role, isActive: true },
+      select: { id: true, displayName: true, role: true, isActive: true, createdAt: true },
     });
     return reply.status(201).send({ success: true, data: user });
   });
