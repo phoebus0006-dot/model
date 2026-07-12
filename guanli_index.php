@@ -367,7 +367,7 @@ h1{font-size:2rem}h3{font-size:1.25rem}
         loginError: null, loginUsername: '',
         showModal: null, idleTimer: null, idleTriggered: false,
         keepPendingId: null, keepPendingReason: '',
-        newUserForm: {email:'',displayName:'',password:'',role:'viewer'}
+        newUserForm: {username:'',password:'',role:'viewer'}
     };
 
     function resetIdle(){ if(state.token && !state.idleTriggered){ clearTimeout(state.idleTimer); state.idleTimer = setTimeout(idleLogout, IDLE_TIMEOUT); } }
@@ -738,14 +738,11 @@ h1{font-size:2rem}h3{font-size:1.25rem}
 
     function handleCreateUser(){
         var f = state.newUserForm;
-        if(!f.email){ addAlert('warning','请输入邮箱'); return; }
-        if(!f.displayName){ addAlert('warning','请输入用户名'); return; }
+        if(!f.username){ addAlert('warning','请输入用户名'); return; }
         if(!f.password || f.password.length < 8){ addAlert('warning','密码至少8个字符'); return; }
-        var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if(!emailRegex.test(f.email)){ addAlert('warning','邮箱格式不正确'); return; }
         setLoading('createUser', true);
-        api('/admin/users', 'POST', {email:f.email, displayName:f.displayName, password:f.password, role:f.role}).then(function(r){
-            if(r.success){ addAlert('success','用户创建成功'); state.newUserForm = {email:'',displayName:'',password:'',role:'viewer'}; closeModal(); loadUsers(); }
+        api('/admin/users', 'POST', {username:f.username, password:f.password, role:f.role}).then(function(r){
+            if(r.success){ addAlert('success','用户创建成功'); state.newUserForm = {username:'',password:'',role:'viewer'}; closeModal(); loadUsers(); }
             else addAlert('error', getErrorMessage(r, '创建失败'));
         }).catch(function(){ addAlert('error','创建失败，请稍后重试'); }).then(function(){ setLoading('createUser', false); });
     }
@@ -1049,7 +1046,7 @@ h1{font-size:2rem}h3{font-size:1.25rem}
         }
         if(state.showModal === 'createUser'){
             var f = state.newUserForm;
-            return '<div class="admin-modal-overlay open" data-close-modal><div class="admin-modal admin-animate"><div class="admin-modal-title">添加用户</div><div class="admin-form-group"><label class="admin-form-label">邮箱 *</label><input type="email" id="nu-email" class="admin-form-input no-icon" placeholder="user@example.com" value="'+esc(f.email)+'"></div><div class="admin-form-group"><label class="admin-form-label">用户名 *</label><input type="text" id="nu-displayName" class="admin-form-input no-icon" placeholder="显示名称" value="'+esc(f.displayName)+'"></div><div class="admin-form-group"><label class="admin-form-label">密码 *</label>'+pwdInput('nu-password','nu-password','至少8个字符')+'</div><div class="admin-form-group"><label class="admin-form-label">角色</label><select id="nu-role" class="admin-form-input no-icon">'+ROLE_OPTIONS.map(function(o){return '<option value="'+o.v+'"'+(f.role===o.v?' selected':'')+'>'+o.l+'</option>';}).join('')+'</select></div><div class="admin-modal-actions"><button class="admin-btn" data-close-modal>取消</button><button class="admin-btn admin-btn-primary" id="create-user-btn"'+(state.loading.createUser?' disabled':'')+'>'+(state.loading.createUser?renderSpinner()+' 创建中...':'确认创建')+'</button></div></div></div>';
+            return '<div class="admin-modal-overlay open" data-close-modal><div class="admin-modal admin-animate"><div class="admin-modal-title">添加用户</div><div class="admin-form-group"><label class="admin-form-label">登录账号 (用户名) *</label><input type="text" id="nu-username" class="admin-form-input no-icon" placeholder="admin" value="'+esc(f.username || '')+'"></div><div class="admin-form-group"><label class="admin-form-label">密码 *</label>'+pwdInput('nu-password','nu-password','至少8个字符')+'</div><div class="admin-form-group"><label class="admin-form-label">角色</label><select id="nu-role" class="admin-form-input no-icon">'+ROLE_OPTIONS.map(function(o){return '<option value="'+o.v+'"'+(f.role===o.v?' selected':'')+'>'+o.l+'</option>';}).join('')+'</select></div><div class="admin-modal-actions"><button class="admin-btn" data-close-modal>取消</button><button class="admin-btn admin-btn-primary" id="create-user-btn"'+(state.loading.createUser?' disabled':'')+'>'+(state.loading.createUser?renderSpinner()+' 创建中...':'确认创建')+'</button></div></div></div>';
         }
         if(state.showModal === 'keepPending'){
             return '<div class="admin-modal-overlay open" data-close-modal><div class="admin-modal admin-animate" style="max-width:440px"><div class="admin-modal-title">无法判断</div><div class="admin-form-group"><label class="admin-form-label">无法判断的原因：</label><textarea id="kp-reason" class="admin-form-input" style="min-height:80px;resize:vertical" placeholder="请描述无法判断的原因">'+esc(state.keepPendingReason)+'</textarea></div><div class="admin-modal-actions"><button class="admin-btn" data-close-modal>取消</button><button class="admin-btn admin-btn-primary" id="kp-submit-btn"'+(state.loading.keepPending?' disabled':'')+'>'+(state.loading.keepPending?renderSpinner()+' 提交中...':'保持待审')+'</button></div></div></div>';
@@ -1304,13 +1301,13 @@ h1{font-size:2rem}h3{font-size:1.25rem}
     }
 
     function renderUsers(){
-        var header = '<div class="admin-card admin-animate"><div class="admin-card-header"><div class="admin-card-title">用户列表 ('+state.users.length+')</div><button class="admin-btn admin-btn-primary admin-btn-sm" id="add-user-btn">添加用户</button></div><div style="overflow-x:auto"><table class="admin-table"><thead><tr><th>用户名</th><th>邮箱</th><th>角色</th><th>状态</th><th style="min-width:180px">操作</th></tr></thead><tbody>';
+        var header = '<div class="admin-card admin-animate"><div class="admin-card-header"><div class="admin-card-title">用户列表 ('+state.users.length+')</div><button class="admin-btn admin-btn-primary admin-btn-sm" id="add-user-btn">添加用户</button></div><div style="overflow-x:auto"><table class="admin-table"><thead><tr><th>登录账号 (用户名)</th><th>角色</th><th>状态</th><th style="min-width:180px">操作</th></tr></thead><tbody>';
         if(state.loading.users && state.users.length === 0) return renderLoading();
         if(state.users.length === 0) return header + '</tbody></table></div></div><div class="admin-empty"><p>暂无用户</p></div>';
         var html = header;
         state.users.forEach(function(u){
             var isSelf = state.user && String(state.user.id) === String(u.id);
-            html += '<tr><td>'+esc(u.displayName||'-')+'</td><td>'+esc(u.email||'-')+'</td><td><select class="admin-form-input no-icon" style="width:auto;padding:4px 8px;font-size:.8125rem" data-user-role="'+u.id+'">'+ROLE_OPTIONS.map(function(o){return '<option value="'+o.v+'"'+(u.role===o.v?' selected':'')+'>'+o.l+'</option>';}).join('')+'</select></td><td><span class="admin-badge admin-badge-'+(u.isActive?'active':'inactive')+'">'+(u.isActive?'正常':'禁用')+'</span></td><td style="white-space:nowrap"><button class="admin-btn admin-btn-sm" data-reset-password="'+u.id+'">重置密码</button>'+(isSelf?' <span class="admin-badge admin-badge-editor" style="margin-left:4px">当前</span>':' <button class="admin-btn admin-btn-danger admin-btn-sm" data-delete-user="'+u.id+'"        data-delete-user-name="'+esc(u.displayName||u.email)+'"'+(state.loading['delUser_'+u.id]?' disabled':'')+'>'+(state.loading['delUser_'+u.id]?renderSpinner()+' 删除中':'删除')+'</button>')+'</td></tr>';
+            html += '<tr><td>'+esc(u.displayName||'-')+'</td><td><select class="admin-form-input no-icon" style="width:auto;padding:4px 8px;font-size:.8125rem" data-user-role="'+u.id+'">'+ROLE_OPTIONS.map(function(o){return '<option value="'+o.v+'"'+(u.role===o.v?' selected':'')+'>'+o.l+'</option>';}).join('')+'</select></td><td><span class="admin-badge admin-badge-'+(u.isActive?'active':'inactive')+'">'+(u.isActive?'正常':'禁用')+'</span></td><td style="white-space:nowrap"><button class="admin-btn admin-btn-sm" data-reset-password="'+u.id+'">重置密码</button>'+(isSelf?' <span class="admin-badge admin-badge-editor" style="margin-left:4px">当前</span>':' <button class="admin-btn admin-btn-danger admin-btn-sm" data-delete-user="'+u.id+'"        data-delete-user-name="'+esc(u.displayName||u.email)+'"'+(state.loading['delUser_'+u.id]?' disabled':'')+'>'+(state.loading['delUser_'+u.id]?renderSpinner()+' 删除中':'删除')+'</button>')+'</td></tr>';
         });
         return html + '</tbody></table></div></div>';
     }
@@ -1450,10 +1447,10 @@ h1{font-size:2rem}h3{font-size:1.25rem}
         var cpb = document.getElementById('change-pwd-btn'); if(cpb) cpb.addEventListener('click', handleChangePassword);
 
         var cub = document.getElementById('create-user-btn'); if(cub) cub.addEventListener('click', handleCreateUser);
-        var addUserBtn = document.getElementById('add-user-btn'); if(addUserBtn) addUserBtn.addEventListener('click', function(){ state.newUserForm = {email:'',displayName:'',password:'',role:'viewer'}; showModal('createUser'); });
+        var addUserBtn = document.getElementById('add-user-btn'); if(addUserBtn) addUserBtn.addEventListener('click', function(){ state.newUserForm = {username:'',password:'',role:'viewer'}; showModal('createUser'); });
 
         if(state.showModal === 'createUser'){
-            ['email','displayName','password','role'].forEach(function(field){
+            ['username','password','role'].forEach(function(field){
                 var el = document.getElementById('nu-'+field);
                 if(el){
                     var eventType = (field==='role') ? 'change' : 'input';

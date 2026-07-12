@@ -1632,9 +1632,8 @@ export async function adminRoutes(app: FastifyInstance) {
 
   app.post("/users", async (req: any, reply: any) => {
     const schema = z.object({
-      email: z.string().email(),
+      username: z.string().min(1),
       password: z.string().min(1),
-      displayName: z.string().min(1),
       role: z.enum(["admin", "editor", "viewer"]).default("viewer"),
     });
     const data = schema.parse(req.body);
@@ -1643,13 +1642,13 @@ export async function adminRoutes(app: FastifyInstance) {
       return reply.status(422).send({ success: false, error: { code: "WEAK_PASSWORD", message: "密码需至少8位且包含大小写字母和特殊字符" } });
     }
 
-    const existing = await app.prisma.user.findUnique({ where: { email: data.email } });
-    if (existing) return reply.status(409).send({ success: false, error: { code: "EMAIL_EXISTS", message: "邮箱已被使用" } });
+    const existing = await app.prisma.user.findFirst({ where: { displayName: data.username } });
+    if (existing) return reply.status(409).send({ success: false, error: { code: "USERNAME_EXISTS", message: "用户名已被使用" } });
 
     const passwordHash = await bcrypt.hash(data.password, 12);
     const user = await (app.prisma as any).user.create({
-      data: { email: data.email, passwordHash, displayName: data.displayName, role: data.role, emailVerifiedAt: new Date() },
-      select: { id: true, email: true, displayName: true, role: true, isActive: true, emailVerifiedAt: true, createdAt: true },
+      data: { displayName: data.username, passwordHash, role: data.role, emailVerifiedAt: new Date(), isActive: true },
+      select: { id: true, displayName: true, role: true, isActive: true, emailVerifiedAt: true, createdAt: true },
     });
     return reply.status(201).send({ success: true, data: user });
   });
