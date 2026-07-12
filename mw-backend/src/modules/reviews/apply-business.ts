@@ -8,6 +8,7 @@ import type { FigureImportDTO, JanMatchDTO, RewriteDTO, ImageDTO, ImageReviewDTO
 export interface ApplyContext {
   redis: Redis;
   prisma: PrismaClient;
+  verifyLock(): Promise<void>;
 }
 
 export interface ApplyActor {
@@ -113,6 +114,7 @@ export async function applyFigureImport(
     relationData.releases = { deleteMany: {}, create: releases.map((rel: any) => ({ edition: rel.edition, releaseDate: rel.releaseDate ? new Date(rel.releaseDate) : undefined, priceJpy: rel.priceJpy ?? undefined, isRerelease: rel.isRerelease ?? false })) };
   }
 
+  await context.verifyLock();
   const savedFigure = existingFigure
     ? await prisma.figure.update({ where: { id: existingFigure.id }, data: { ...figureData, ...relationData } })
     : await prisma.figure.create({ data: { ...figureData, ...relationData } });
@@ -123,6 +125,7 @@ export async function applyFigureImport(
     for (let i = 0; i < images.length; i++) {
       const img = images[i];
       try {
+        await context.verifyLock();
         const imageRecords = await processAndStoreImage(img.source, janCode, prisma, {
           alt: img.alt, sortOrder: img.sortOrder ?? i, figureId: savedFigure.id,
         });
@@ -174,6 +177,7 @@ export async function applyJanMatch(
     return { success: true, action: "jan_already_matched", figure: { id: String(existing.id), slug: existing.slug } };
   }
 
+  await context.verifyLock();
   await prisma.figure.update({
     where: { id: existing.id },
     data: { janCode: dto.janCode, parentId: targetFig.id },
@@ -209,6 +213,7 @@ export async function applyRewrite(
   });
   const nextVersion = (currentVersion?.versionNumber || 0) + 1;
 
+  await context.verifyLock();
   const revision = await prisma.revision.create({
     data: {
       figureId: figure.id,
@@ -223,6 +228,7 @@ export async function applyRewrite(
     select: { id: true, versionNumber: true },
   });
 
+  await context.verifyLock();
   await prisma.figure.update({
     where: { id: figure.id },
     data: { activeRevisionId: revision.id },
@@ -256,12 +262,14 @@ export async function applyImage(
   const imageImport = { created: 0, errors: [] as Array<{ source: string; error: string }> };
 
   try {
+    await context.verifyLock();
     const imageRecords = await processAndStoreImage(dto.source, janCode, prisma, {
       alt: dto.alt, sortOrder: dto.sortOrder ?? 0, isNsfw: dto.isNsfw,
       figureId: figure.id,
     });
     for (const rec of imageRecords) {
       if (firstImageId === null && rec.sha256) {
+        await context.verifyLock();
         const result = await upsertFigureImageRecord(prisma, {
           figureId: figure.id, janCode: rec.janCode, sha256: rec.sha256,
           size: rec.size, format: rec.format, width: rec.width, height: rec.height,
@@ -326,6 +334,7 @@ export async function applyImageReview(
   });
 
   if (existing) {
+    await context.verifyLock();
     await prisma.figureImage.update({
       where: { id: existing.id },
       data: {
@@ -340,11 +349,13 @@ export async function applyImageReview(
   let firstImageId: string | null = null;
 
   try {
+    await context.verifyLock();
     const imageRecords = await processAndStoreImage(cand.source, janCode, prisma, {
       sortOrder: 0, isNsfw: false, figureId: figure.id,
     });
     for (const rec of imageRecords) {
       if (firstImageId === null && rec.sha256) {
+        await context.verifyLock();
         const result = await upsertFigureImageRecord(prisma, {
           figureId: figure.id, janCode: rec.janCode, sha256: rec.sha256,
           size: rec.size, format: rec.format, width: rec.width, height: rec.height,
@@ -379,7 +390,9 @@ export async function applyItemStatus(context: ApplyContext, id: string, item: a
       : (item.notes ? `${item.notes}\nApplied but needs changes: ${problems.join("; ")}` : `Applied but needs changes: ${problems.join("; ")}`),
     updatedAt: now,
   };
+  await context.verifyLock();
   await context.redis.set(`review:item:${id}`, JSON.stringify(updatedItem));
+  await context.verifyLock();
   await scanKeys(context.redis as any, "figures:*");
   return newStatus;
 }

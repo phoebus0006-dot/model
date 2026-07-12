@@ -45,7 +45,11 @@ export class ReviewApplyService {
       lease.assertHeld();
 
       const dto = parseApplyBody(item, body);
-      const context: ApplyContext = { redis: this.redis, prisma: this.prisma };
+      const context: ApplyContext = {
+        redis: this.redis,
+        prisma: this.prisma,
+        verifyLock: () => lease.verifyHeld(this.redis),
+      };
       const action = String(body.action || item.suggestedAction || "approve_image");
 
       let output;
