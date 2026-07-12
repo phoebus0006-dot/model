@@ -6,7 +6,10 @@ import { fileURLToPath } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const rootDir = join(__dirname, "..", "..");
+
+const rootDir = process.argv.includes("--rootDir")
+  ? process.argv[process.argv.indexOf("--rootDir") + 1]
+  : join(__dirname, "..", "..");
 
 const php = readFileSync(join(rootDir, "guanli_index.php"), "utf-8");
 const adminTs = readFileSync(join(rootDir, "mw-backend", "src", "routes", "admin.ts"), "utf-8");
@@ -26,7 +29,6 @@ for (const [name, pattern, content] of checks) {
   }
 }
 
-// Extract JS from script tag — avoids mangling SVG-in-string-literals
 const scriptMatch = php.match(/<script>([\s\S]*?)<\/script>/g);
 if (scriptMatch) {
   let allJs = scriptMatch.map(block => {
@@ -34,7 +36,6 @@ if (scriptMatch) {
     return inner;
   }).join("\n");
 
-  // Strip PHP short tags and HTML that survived the script tag extraction
   allJs = allJs.replace(/<\?php[\s\S]*?\?>/g, "");
 
   if (allJs.trim().length > 100) {
