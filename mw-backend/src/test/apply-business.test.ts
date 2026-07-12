@@ -711,7 +711,7 @@ describe("review status write failure", () => {
       success: false, action: "image_failed", failure: { stage: "image_download", problems: ["failed"] },
     });
 
-    expect(status).toBe("needs_changes");
+    expect(status).toBe("failed");
   });
 
   it("sets status to resolved on clean output", async () => {
@@ -722,7 +722,7 @@ describe("review status write failure", () => {
       success: true, action: "figure_created",
     });
 
-    expect(status).toBe("resolved");
+    expect(status).toBe("applied");
   });
 });
 

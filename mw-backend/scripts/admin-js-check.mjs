@@ -11,17 +11,23 @@ const rootDir = process.argv.includes("--rootDir")
   ? process.argv[process.argv.indexOf("--rootDir") + 1]
   : join(__dirname, "..", "..");
 
-const php = readFileSync(join(rootDir, "guanli_index.php"), "utf-8");
+const adminJsPath = join(rootDir, "modelwiki-theme", "assets", "js", "admin.js");
+let adminJs = "";
+try {
+  adminJs = readFileSync(adminJsPath, "utf-8");
+} catch (e) {
+  console.log(`FAIL: Could not read admin.js at ${adminJsPath}`);
+}
 const adminTs = readFileSync(join(rootDir, "mw-backend", "src", "routes", "admin.ts"), "utf-8");
 const reviewsTs = readFileSync(join(rootDir, "mw-backend", "src", "modules", "reviews", "routes.ts"), "utf-8");
 
 const checks = [
-  ["guanli keep_pending action string", "keep_pending", php],
+  ["admin.js keep_pending action string", "keep_pending", adminJs],
   ["reviews.ts decisionReason field", "decisionReason", reviewsTs],
 ];
 let allOk = true;
 for (const [name, pattern, content] of checks) {
-  if (content.includes(pattern)) {
+  if (content && content.includes(pattern)) {
     console.log(`PASS: "${name}"`);
   } else {
     console.log(`FAIL: "${name}" — pattern "${pattern}" not found`);
@@ -29,33 +35,16 @@ for (const [name, pattern, content] of checks) {
   }
 }
 
-const scriptMatch = php.match(/<script>([\s\S]*?)<\/script>/g);
-if (scriptMatch) {
-  let allJs = scriptMatch.map(block => {
-    const inner = block.replace(/<script>/, "").replace(/<\/script>/, "");
-    return inner;
-  }).join("\n");
-
-  allJs = allJs.replace(/<\?php[\s\S]*?\?>/g, "");
-
-  if (allJs.trim().length > 100) {
-    const tmp = join(tmpdir(), `admin-js-syntax-${Date.now()}.js`);
-    writeFileSync(tmp, allJs, "utf-8");
-    try {
-      execSync(`node --check "${tmp}"`, { stdio: "pipe", encoding: "utf-8", timeout: 10000 });
-      console.log("PASS: admin JS syntax check (script-tag extraction)");
-    } catch (e) {
-      const stderr = e.stderr || "";
-      const syntaxErrorLine = (stderr.split("\n").filter(l => l.includes("SyntaxError"))[0] || "").trim();
-      console.log(`FAIL: admin JS syntax check — ${syntaxErrorLine || "SyntaxError in extracted JS"}`);
-      allOk = false;
-    }
-    try { unlinkSync(tmp); } catch {}
-  } else {
-    console.log("SKIP: JS syntax check (extracted JS too short)");
+if (adminJs) {
+  try {
+    execSync(`node --check "${adminJsPath}"`, { stdio: "pipe", encoding: "utf-8", timeout: 10000 });
+    console.log("PASS: admin JS syntax check (node --check)");
+  } catch (e) {
+    const stderr = e.stderr || "";
+    const syntaxErrorLine = (stderr.split("\n").filter(l => l.includes("SyntaxError"))[0] || "").trim();
+    console.log(`FAIL: admin JS syntax check — ${syntaxErrorLine || "SyntaxError in admin.js"}`);
+    allOk = false;
   }
-} else {
-  console.log("SKIP: JS syntax check (no <script> block found)");
 }
 
 console.log(allOk ? "admin-js-check: ALL PASS" : "admin-js-check: FAILED");

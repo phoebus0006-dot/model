@@ -239,7 +239,7 @@ export class ReviewService {
         skipped.push(id);
         continue;
       }
-      if (item.status !== "resolved" && item.status !== "stale") {
+      if (item.status !== "applied" && item.status !== "failed" && item.status !== "stale") {
         skipped.push(id);
         continue;
       }

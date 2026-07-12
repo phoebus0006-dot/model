@@ -96,7 +96,8 @@ describe("Review schemas — contract frozen", () => {
     expect(reviewStatusSchemaValues).toContain("approved");
     expect(reviewStatusSchemaValues).toContain("rejected");
     expect(reviewStatusSchemaValues).toContain("needs_changes");
-    expect(reviewStatusSchemaValues).toContain("resolved");
+    expect(reviewStatusSchemaValues).toContain("applied");
+    expect(reviewStatusSchemaValues).toContain("failed");
     expect(reviewStatusSchemaValues).toContain("stale");
   });
 

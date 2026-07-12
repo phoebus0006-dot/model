@@ -16,9 +16,11 @@ describe("admin-js-check", () => {
     expect(result).toContain("ALL PASS");
   });
 
-  it("detects missing keep_pending in PHP", () => {
-    const php = readFileSync(PHP_PATH, "utf-8");
-    expect(php).toContain("keep_pending");
+  it("detects missing keep_pending in admin.js", () => {
+    const adminJsPath = join(__dirname, "..", "..", "..", "modelwiki-theme", "assets", "js", "admin.js");
+    let content = "";
+    try { content = readFileSync(adminJsPath, "utf-8"); } catch(e){}
+    expect(content).toContain("keep_pending");
   });
 
   it("detects missing decisionReason in reviews routes", () => {
@@ -33,18 +35,19 @@ const BAD_SYNTAX_JS = Array(20).fill("var x = 1;").join("\n") + "\n" + "var y = 
 describe("admin-js-check fixture tests", () => {
   const FIXTURE = join(__dirname, "..", "..", "..", "tmp-test-admin-fixture");
 
-  function setUpFixture(phpContent: string, adminContent?: string, reviewsContent?: string) {
+  function setUpFixture(adminJsContent: string, adminContent?: string, reviewsContent?: string) {
     rmSync(FIXTURE, { recursive: true, force: true });
     mkdirSync(join(FIXTURE, "mw-backend", "src", "routes"), { recursive: true });
     mkdirSync(join(FIXTURE, "mw-backend", "src", "modules", "reviews"), { recursive: true });
-    writeFileSync(join(FIXTURE, "guanli_index.php"), phpContent, "utf-8");
+    mkdirSync(join(FIXTURE, "modelwiki-theme", "assets", "js"), { recursive: true });
+    writeFileSync(join(FIXTURE, "modelwiki-theme", "assets", "js", "admin.js"), adminJsContent, "utf-8");
     writeFileSync(join(FIXTURE, "mw-backend", "src", "routes", "admin.ts"), adminContent || "// admin routes", "utf-8");
     writeFileSync(join(FIXTURE, "mw-backend", "src", "modules", "reviews", "routes.ts"), reviewsContent || "export const decisionReason = true;", "utf-8");
   }
 
-  it("exits 0 with valid PHP script block", () => {
-    const php = `<?php $action = 'keep_pending'; ?><html><script>${VALID_JS}</script></html>`;
-    setUpFixture(php);
+  it("exits 0 with valid JS", () => {
+    const adminJs = `const action = 'keep_pending';\n${VALID_JS}`;
+    setUpFixture(adminJs);
     try {
       const result = execSync(`node "${SCRIPT}" --rootDir "${FIXTURE}"`, { encoding: "utf-8", timeout: 10000 });
       expect(result).toContain("ALL PASS");
@@ -54,8 +57,8 @@ describe("admin-js-check fixture tests", () => {
   });
 
   it("exits non-zero and prints FAILED with SyntaxError", () => {
-    const php = `<?php $action = 'keep_pending'; ?><html><script>${BAD_SYNTAX_JS}</script></html>`;
-    setUpFixture(php);
+    const adminJs = `const action = 'keep_pending';\n${BAD_SYNTAX_JS}`;
+    setUpFixture(adminJs);
     try {
       const r = execSync(`node "${SCRIPT}" --rootDir "${FIXTURE}"`, { encoding: "utf-8", timeout: 10000 });
       expect(r).toContain("FAILED");
