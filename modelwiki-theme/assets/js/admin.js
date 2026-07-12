@@ -47,6 +47,8 @@ var MW_ADMIN = MW_ADMIN || {};
         figuresPage: 1,
         reviewItems: [],
         reviewStatus: 'pending',
+        reviewDetail: null,
+        reviewDetailLoading: false,
         users: [],
         importStatus: null,
         alerts: [],
@@ -139,6 +141,84 @@ var MW_ADMIN = MW_ADMIN || {};
         }).catch(function(){}).then(function(){
             setLoading('review', false);
         });
+    }
+
+    function loadReviewDetail(id){
+        var found = null;
+        for(var i = 0; i < state.reviewItems.length; i++){
+            if(state.reviewItems[i].id === id){
+                found = state.reviewItems[i];
+                break;
+            }
+        }
+        if(found){
+            state.reviewDetail = found;
+            setLoading('reviewDetail', false);
+            render();
+            return;
+        }
+        setLoading('reviewDetail', true);
+        api('/admin/review/items?status=all').then(function(r){
+            if(r.success){
+                var items = r.data || [];
+                for(var i = 0; i < items.length; i++){
+                    if(items[i].id === id){
+                        state.reviewDetail = items[i];
+                        break;
+                    }
+                }
+            }
+        }).catch(function(){}).then(function(){
+            setLoading('reviewDetail', false);
+            render();
+        });
+    }
+
+    function renderReviewDetail(){
+        var item = state.reviewDetail;
+        if(!item) return '<div class="admin-modal-overlay"><div class="admin-modal"><div class="admin-empty"><p>Item not found</p><button class="admin-btn admin-btn-sm" id="review-detail-close">Close</button></div></div></div>';
+        var notes = (item.notes || '').split('\n').filter(Boolean).map(function(n){
+            return '<div style="padding:4px 0;font-size:.8125rem;color:var(--mw-text-secondary);border-bottom:1px solid var(--mw-border-light)">'+esc(n)+'</div>';
+        }).join('');
+        var payload = item.payload || {};
+        var candidateHtml = '<pre style="font-size:.75rem;max-height:300px;overflow:auto;background:var(--mw-bg-alt);padding:12px;border-radius:6px;white-space:pre-wrap">'+esc(JSON.stringify(payload, null, 2))+'</pre>';
+        var imagesHtml = '';
+        if(payload.images && Array.isArray(payload.images)){
+            imagesHtml = '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">';
+            payload.images.forEach(function(img){
+                var src = '/api/v1/admin/review/image-proxy?url=' + encodeURIComponent(img.url || img.source || '');
+                imagesHtml += '<div style="width:120px;text-align:center">' +
+                    '<img src="'+esc(src)+'" alt="" style="width:120px;height:120px;object-fit:cover;border-radius:6px;background:var(--mw-bg-alt)" onerror="this.style.display=\'none\'">' +
+                    '<div style="font-size:.6875rem;color:var(--mw-text-tertiary);overflow:hidden;text-overflow:ellipsis">'+esc(img.alt || '')+'</div></div>';
+            });
+            imagesHtml += '</div>';
+        }
+        return '<div class="admin-modal-overlay">' +
+            '<div class="admin-modal" style="max-width:800px;max-height:90vh;overflow-y:auto">' +
+                '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">' +
+                    '<h3 style="font-size:1rem">Review Detail: '+esc(item.title || item.id)+'</h3>' +
+                    '<button class="admin-btn admin-btn-sm" id="review-detail-close">✕</button>' +
+                '</div>' +
+                '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">' +
+                    '<div><strong>Type</strong><br><span class="admin-badge admin-badge-queued">'+esc(item.type)+'</span></div>' +
+                    '<div><strong>Status</strong><br><span class="admin-badge admin-badge-active">'+esc(item.status)+'</span></div>' +
+                    '<div><strong>Source</strong><br>'+esc(item.source || item.automation?.provider || '-')+'</div>' +
+                    '<div><strong>Created</strong><br>'+formatDate(item.createdAt)+'</div>' +
+                    (item.figureSlug ? '<div><strong>Target Figure</strong><br><a href="'+HOME_URL+'figure/'+esc(item.figureSlug)+'/" target="_blank">'+esc(item.figureSlug)+'</a></div>' : '') +
+                    (item.figureId ? '<div><strong>Figure ID</strong><br>'+esc(String(item.figureId))+'</div>' : '') +
+                    (item.riskType ? '<div style="grid-column:1/-1"><strong>Risk Type</strong><br>'+esc(item.riskType)+'</div>' : '') +
+                '</div>' +
+                '<div style="margin-bottom:16px"><strong>Candidate Data</strong></div>' +
+                '<div style="margin-bottom:16px">'+candidateHtml+'</div>' +
+                (imagesHtml ? '<div style="margin-bottom:16px"><strong>Candidate Images</strong>'+imagesHtml+'</div>' : '') +
+                (notes ? '<div style="margin-bottom:16px"><strong>Event History</strong><div style="margin-top:8px;max-height:200px;overflow-y:auto">'+notes+'</div></div>' : '') +
+                '<div style="display:flex;gap:8px;border-top:1px solid var(--mw-border);padding-top:16px">' +
+                    '<button class="admin-btn admin-btn-success admin-btn-sm" data-review-action="'+esc(item.id)+'" data-review-status="approved">Apply</button> ' +
+                    '<button class="admin-btn admin-btn-sm" data-review-action="'+esc(item.id)+'" data-review-status="needs_changes">Needs Changes</button> ' +
+                    '<button class="admin-btn admin-btn-danger admin-btn-sm" data-review-action="'+esc(item.id)+'" data-review-status="rejected">Reject</button>' +
+                '</div>' +
+            '</div>' +
+        '</div>';
     }
 
     function loadUsers(){
@@ -271,20 +351,26 @@ var MW_ADMIN = MW_ADMIN || {};
         });
     }
 
-    function handleReviewStatus(id, status){
+    function handleReviewStatus(id, action){
         var endpoint = '/admin/review/items/' + encodeURIComponent(id);
-        var request = status === 'approved'
-            ? api(endpoint + '/apply', 'POST', {})
-            : api(endpoint, 'PUT', {status: status});
-        request.then(function(r){
+        var actionMap = {
+            'approved':      {name: 'approve_image',   endpoint: endpoint + '/apply', method: 'POST', body: {}},
+            'applied':       {name: 'applied',          endpoint: endpoint + '/apply', method: 'POST', body: {}},
+            'rejected':      {name: 'reject_image',    endpoint: endpoint + '/action', method: 'POST', body: {action: 'reject_image'}},
+            'needs_changes': {name: 'request_refetch', endpoint: endpoint + '/action', method: 'POST', body: {action: 'request_refetch'}},
+            'resolved':      {name: 'mark_detail_ok',  endpoint: endpoint + '/action', method: 'POST', body: {action: 'mark_detail_ok'}},
+            'keep_pending':  {name: 'keep_pending',    endpoint: endpoint + '/action', method: 'POST', body: {action: 'keep_pending'}},
+        };
+        var mapped = actionMap[action] || actionMap.resolved;
+        api(mapped.endpoint, mapped.method, mapped.body).then(function(r){
             if(r.success){
-                addAlert('success', status === 'approved' ? 'Review item applied' : 'Review item updated');
+                addAlert('success', 'Review ' + mapped.name + ' OK');
                 loadReviewItems();
             } else {
-                addAlert('error', r.error?.message || r.error?.code || 'Review update failed');
+                addAlert('error', r.error?.message || r.error?.code || 'Review action failed');
             }
         }).catch(function(err){
-            addAlert('error', err.message || 'Review update failed');
+            addAlert('error', err.message || 'Review action failed');
         });
     }
 
@@ -590,6 +676,8 @@ var MW_ADMIN = MW_ADMIN || {};
             ['needs_changes', 'Needs Changes'],
             ['approved', 'Approved'],
             ['rejected', 'Rejected'],
+            ['applied', 'Applied'],
+            ['failed', 'Failed'],
             ['resolved', 'Resolved']
         ];
         var content = '<div class="admin-search-bar" style="justify-content:space-between">' +
@@ -609,7 +697,7 @@ var MW_ADMIN = MW_ADMIN || {};
             return content + '<div class="admin-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg><p>No review items</p></div>';
         }
 
-        content += '<div class="admin-card admin-animate"><div style="overflow-x:auto"><table class="admin-table"><thead><tr><th>Type</th><th>Title</th><th>Confidence</th><th>Candidate</th><th>Source</th><th>Actions</th></tr></thead><tbody>';
+        content += '<div class="admin-card admin-animate"><div style="overflow-x:auto"><table class="admin-table"><thead><tr><th>Type</th><th>Title</th><th>Confidence</th><th>Candidate</th><th>Source</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
         state.reviewItems.forEach(function(item){
             var payload = item.payload || {};
             var candidate = '';
@@ -621,30 +709,45 @@ var MW_ADMIN = MW_ADMIN || {};
                 '</div>';
             } else if(item.type === 'rewrite'){
                 candidate = '<div style="max-width:420px;white-space:normal;color:var(--mw-text-secondary)">'+esc((payload.summaryMd || payload.contentMd || '').slice(0, 240))+'</div>';
+            } else if(item.type === 'figure_import'){
+                candidate = '<div style="font-size:.875rem">' +
+                    '<strong>'+esc(payload.name || payload.slug || '-')+'</strong>' +
+                    '<div style="color:var(--mw-text-secondary)">JAN: '+esc(payload.janCode || '-')+'</div>' +
+                '</div>';
+            } else if(item.type === 'image' || item.type === 'image_review'){
+                var imgSrc = item.figureSlug ? '/api/v1/admin/review/image-proxy?url=' + encodeURIComponent(payload.source || '') : '';
+                candidate = '<div style="display:flex;align-items:center;gap:8px">';
+                if(payload.source) candidate += '<img src="'+esc(imgSrc)+'" alt="" style="width:48px;height:48px;object-fit:cover;border-radius:4px;background:var(--mw-bg-alt)" onerror="this.style.display=\'none\'">';
+                candidate += '<span style="font-size:.75rem;color:var(--mw-text-secondary)">'+esc(payload.source || payload.url || '')+'</span></div>';
             } else {
                 candidate = '<code style="font-size:.75rem;white-space:normal">'+esc(payloadPreviewText(payload, 260))+'</code>';
             }
             var figureLink = item.figureSlug ? '<div><a href="'+HOME_URL+'figure/'+esc(item.figureSlug)+'/">'+esc(item.figureSlug)+'</a></div>' : '';
             var confidence = item.confidence == null ? '-' : Math.round(Number(item.confidence) * 100) + '%';
             var canApply = item.type === 'jan_match' || item.type === 'rewrite' || item.type === 'figure_import' || item.type === 'image';
+            var statusBadge = 'admin-badge-' + (item.status === 'pending' ? 'queued' : item.status === 'approved' ? 'active' : item.status === 'rejected' ? 'error' : item.status === 'applied' || item.status === 'resolved' ? 'completed' : item.status === 'failed' ? 'error' : 'queued');
             content += '<tr>' +
                 '<td><span class="admin-badge admin-badge-queued">'+esc(item.type)+'</span></td>' +
                 '<td><strong>'+esc(item.title)+'</strong>'+figureLink+'<div style="color:var(--mw-text-tertiary);font-size:.75rem">'+formatDate(item.createdAt)+'</div></td>' +
                 '<td>'+confidence+'</td>' +
                 '<td>'+candidate+'</td>' +
                 '<td>'+esc(item.source || item.automation?.provider || '-')+'</td>' +
-                '<td style="white-space:nowrap">' +
-                    '<button class="admin-btn admin-btn-success admin-btn-sm" data-review-action="'+esc(item.id)+'" data-review-status="'+(canApply ? 'approved' : 'resolved')+'">'+(canApply ? 'Apply' : 'Resolve')+'</button> ' +
+                '<td><span class="admin-badge '+statusBadge+'">'+esc(item.status)+'</span></td>' +
+                '<td style="white-space:nowrap">';
+            if(item.status === 'pending' || item.status === 'needs_changes'){
+                content += '<button class="admin-btn admin-btn-success admin-btn-sm" data-review-action="'+esc(item.id)+'" data-review-status="'+(canApply ? 'approved' : 'resolved')+'">'+(canApply ? 'Apply' : 'Resolve')+'</button> ' +
                     '<button class="admin-btn admin-btn-sm" data-review-action="'+esc(item.id)+'" data-review-status="needs_changes">Needs Changes</button> ' +
-                    '<button class="admin-btn admin-btn-danger admin-btn-sm" data-review-action="'+esc(item.id)+'" data-review-status="rejected">Reject</button>' +
-                '</td>' +
-            '</tr>';
+                    '<button class="admin-btn admin-btn-danger admin-btn-sm" data-review-action="'+esc(item.id)+'" data-review-status="rejected">Reject</button>';
+            } else if(item.status === 'approved'){
+                content += '<button class="admin-btn admin-btn-primary admin-btn-sm" data-review-action="'+esc(item.id)+'" data-review-status="approved">Apply Now</button>';
+            } else {
+                content += '<span style="color:var(--mw-text-tertiary);font-size:.8125rem">—</span>';
+            }
+            content += ' <button class="admin-btn admin-btn-sm admin-btn-outline" data-review-detail="'+esc(item.id)+'">Detail</button>';
+            content += '</td></tr>';
         });
         content += '</tbody></table></div></div>';
 
-        content += '<div class="admin-card admin-animate" style="margin-top:24px"><div class="admin-card-header"><div class="admin-card-title">Automation Notes</div></div><div class="admin-card-body">' +
-            '<div class="admin-alert admin-alert-info">n8n or Hermes can call /api/v1/admin/review/items to submit crawler candidates, rewrite drafts, and QA findings, then update each item after automation or human review.</div>' +
-        '</div></div>';
         return content;
     }
 
@@ -806,6 +909,11 @@ var MW_ADMIN = MW_ADMIN || {};
             return renderLogin();
         }
 
+        var modalHtml = '';
+        if(state.reviewDetail){
+            modalHtml = renderReviewDetail();
+        }
+
         var sectionContent = '';
         switch(state.activeSection){
             case 'dashboard': sectionContent = renderDashboard(); break;
@@ -839,7 +947,8 @@ var MW_ADMIN = MW_ADMIN || {};
                     renderAlerts() +
                     sectionContent +
                 '</div>' +
-            '</div>';
+            '</div>' +
+            modalHtml;
     }
 
     function render(){
@@ -921,9 +1030,28 @@ var MW_ADMIN = MW_ADMIN || {};
         var reviewActions = document.querySelectorAll('[data-review-action]');
         reviewActions.forEach(function(btn){
             btn.addEventListener('click', function(){
-                handleReviewStatus(this.getAttribute('data-review-action'), this.getAttribute('data-review-status'));
+                var id = this.getAttribute('data-review-action');
+                var status = this.getAttribute('data-review-status');
+                state.reviewDetail = null;
+                handleReviewStatus(id, status);
             });
         });
+
+        var reviewDetailBtns = document.querySelectorAll('[data-review-detail]');
+        reviewDetailBtns.forEach(function(btn){
+            btn.addEventListener('click', function(){
+                var id = this.getAttribute('data-review-detail');
+                loadReviewDetail(id);
+            });
+        });
+
+        var reviewDetailClose = document.getElementById('review-detail-close');
+        if(reviewDetailClose){
+            reviewDetailClose.addEventListener('click', function(){
+                state.reviewDetail = null;
+                render();
+            });
+        }
 
         var mfcImportBtn = document.getElementById('mfc-import-btn');
         if(mfcImportBtn) mfcImportBtn.addEventListener('click', handleMfcImport);

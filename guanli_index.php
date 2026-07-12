@@ -1,15 +1,10 @@
 <?php
-header('Content-Type: text/html; charset=utf-8');
-header('X-Content-Type-Options: nosniff');
-header('X-XSS-Protection: 1; mode=block');
-header('Referrer-Policy: strict-origin-when-cross-origin');
-header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'");
-header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
-header('Permissions-Policy: camera=(), microphone=(), geolocation=()');
+header('HTTP/1.1 301 Moved Permanently');
+header('Location: /admin/');
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Pragma: no-cache');
+exit;
 ?>
-<!DOCTYPE html>
 <html lang="zh-CN" data-theme="light">
 <head>
 <meta charset="UTF-8">

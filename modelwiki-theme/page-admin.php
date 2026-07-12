@@ -662,6 +662,10 @@ h4{font-size:1.125rem}
     z-index:45
 }
 .admin-overlay.open{display:block}
+.admin-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:50;display:flex;align-items:center;justify-content:center;padding:20px}
+.admin-modal{background:var(--mw-card,#fff);border-radius:var(--mw-radius-lg,12px);padding:24px;max-width:600px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.15);overflow-y:auto}
+.admin-btn-outline{background:transparent;border:1px solid var(--mw-border,#e2e8f0);color:var(--mw-text,#1e293b)}
+.admin-btn-outline:hover{background:var(--mw-bg-alt,#f1f5f9)}
 
 @keyframes admin-fade-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .admin-animate{animation:admin-fade-in 0.3s ease both}
