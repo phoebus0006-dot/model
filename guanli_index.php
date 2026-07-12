@@ -838,7 +838,7 @@ h1{font-size:2rem}h3{font-size:1.25rem}
         if(cf.title) return cf.title;
         var p = item.payload || {};
         var fig = p.figure || {};
-        return p.figureTitle || p.figureName || fig.name || p.name || item.figureTitle || item.figureSlug || '-';
+        return p.figureTitle || p.figureName || fig.name || p.name || item.figureTitle || item.figureSlug || '未知手办';
     }
 
     function reviewFigureSlug(item){
@@ -865,10 +865,13 @@ h1{font-size:2rem}h3{font-size:1.25rem}
             .then(function(blob){
                 var objectUrl = URL.createObjectURL(blob);
                 imgEl.src = objectUrl;
-                imgEl.onload = function(){ URL.revokeObjectURL(objectUrl); };
-                // Show the link fallback
+                // 不在这里立即 revokeObjectURL，让放大镜复用它
                 var link = imgEl.closest('a');
-                if(link) link.style.display = '';
+                if(link) {
+                    link.style.display = '';
+                    link.href = objectUrl;
+                    link.setAttribute('data-review-lightbox', objectUrl);
+                }
             })
             .catch(function(){
                 imgEl.style.display = 'none';
@@ -974,10 +977,11 @@ h1{font-size:2rem}h3{font-size:1.25rem}
                 ['当前描述长度', cfDetail.descriptionLength != null ? cfDetail.descriptionLength + ' 字符' : '—'],
                 ['当前规格数量', cfDetail.validSpecCount != null ? cfDetail.validSpecCount + ' 项' : '—'],
             ]);
+            if(snap.description){
+                html += '<div class="admin-subtle" style="margin-top:8px;padding:8px;background:var(--mw-warning-soft);border-radius:var(--mw-radius-sm);max-height:120px;overflow-y:auto"><strong>原始描述 (抓取证据)：</strong><br>'+esc(shortText(snap.description, 300))+'</div>';
+            }
             if(cfDetail.descriptionSnapshot){
-                html += '<div class="admin-subtle" style="margin-top:8px;padding:8px;background:var(--mw-bg);border-radius:var(--mw-radius-sm);max-height:120px;overflow-y:auto"><strong>当前描述：</strong><br>'+esc(shortText(cfDetail.descriptionSnapshot, 300))+'</div>';
-            } else if(snap.description){
-                html += '<div class="admin-subtle" style="margin-top:8px;padding:8px;background:var(--mw-bg);border-radius:var(--mw-radius-sm);max-height:120px;overflow-y:auto"><strong>原始描述：</strong><br>'+esc(shortText(snap.description, 300))+'</div>';
+                html += '<div class="admin-subtle" style="margin-top:8px;padding:8px;background:var(--mw-bg-alt);border-radius:var(--mw-radius-sm);max-height:120px;overflow-y:auto"><strong>当前描述 (数据库)：</strong><br>'+esc(shortText(cfDetail.descriptionSnapshot, 300))+'</div>';
             }
         } else if(item.type === 'rewrite'){
             html += reviewKv([
@@ -1254,6 +1258,13 @@ h1{font-size:2rem}h3{font-size:1.25rem}
             var title = slug ? '<a href="'+HOME_URL+'figure/'+esc(slug)+'/" target="_blank" rel="noopener noreferrer">'+esc(titleText)+'</a>' : esc(titleText);
             var status = '<span class="admin-badge '+reviewBadgeClass(item.status)+'">'+reviewStatusName(item.status)+'</span>';
             var source = '<div>'+esc(src)+'</div><div style="font-size:.75rem;color:var(--mw-text-tertiary);margin-top:4px">创建 '+formatDate(item.createdAt)+'</div>';
+            if(item.notes) {
+                var notes = String(item.notes).split('\n').pop() || '';
+                source += '<div class="admin-subtle" style="margin-top:4px;white-space:normal;word-break:break-all">最后记录: '+esc(shortText(notes, 80))+'</div>';
+            }
+            if(item.payload && item.payload.lastActionAt) {
+                source += '<div style="font-size:.75rem;color:var(--mw-text-tertiary);margin-top:2px">操作时间 '+formatDate(item.payload.lastActionAt)+'</div>';
+            }
             var rowLoading = state.loading['reviewAction_' + id];
             var actions = '';
             if(item.type === 'image_review'){

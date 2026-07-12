@@ -102,6 +102,8 @@ const reviewItemSchema = z.object({
   suggestedAction: reviewActionSchema.optional(),
   payload: z.any().optional(),
   notes: z.string().optional(),
+  evidenceFingerprint: z.string().optional(),
+  forceReopen: z.boolean().optional(),
   automation: z.object({
     provider: z.enum(["n8n", "hermes", "manual", "other"]).default("manual"),
     workflow: z.string().optional(),
@@ -587,16 +589,59 @@ export async function adminRoutes(app: FastifyInstance) {
   app.post("/review/items", async (req: any, reply: any) => {
     const data = reviewItemSchema.parse(req.body);
     const now = new Date().toISOString();
+    
+    // Generate evidenceFingerprint if not provided
+    let fingerprint = data.evidenceFingerprint;
+    if (!fingerprint) {
+      const parts = [data.type, data.figureId || data.figureSlug || "no-fig"];
+      if (data.type === "image_review" || data.type === "image") {
+        parts.push(data.riskType || "no-risk");
+        parts.push(data.candidateImage?.url || data.candidateImage?.source || "no-image");
+      } else if (data.type === "detail_review") {
+        parts.push(data.riskType || "no-risk");
+        parts.push(data.detailSnapshot?.description || "no-desc");
+      } else if (data.type === "jan_match") {
+        parts.push(data.payload?.janCode || "no-jan");
+      } else if (data.type === "figure_import") {
+        parts.push(data.payload?.sourceUrl || "no-url");
+      } else {
+        parts.push(data.title);
+      }
+      fingerprint = crypto.createHash("sha256").update(parts.join("|")).digest("hex");
+    }
+
+    // Duplicate suppression (Phase 2)
+    if (!data.forceReopen && fingerprint) {
+      const existingId = await app.redis.get(`review:fingerprint:${fingerprint}`);
+      if (existingId) {
+        const existingRaw = await app.redis.get(`review:item:${existingId}`);
+        if (existingRaw) {
+          try {
+            const existing = JSON.parse(existingRaw);
+            // Ignore if it's the exact same fingerprint.
+            // If it's still pending, it just stays pending. If it was resolved, we don't reopen it.
+            // Just return success:true and suppressed:true
+            return reply.status(200).send({ success: true, data: existing, suppressed: true, reason: "Duplicate evidenceFingerprint" });
+          } catch {}
+        }
+      }
+    }
+
     const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const item = {
       id,
       ...data,
+      evidenceFingerprint: fingerprint,
       createdAt: now,
       updatedAt: now,
     };
 
     await app.redis.set(`review:item:${id}`, JSON.stringify(item));
     await app.redis.zadd("review:items", Date.now(), id);
+    if (fingerprint) {
+      await app.redis.set(`review:fingerprint:${fingerprint}`, id);
+    }
+    
     return reply.status(201).send({ success: true, data: item });
   });
 
