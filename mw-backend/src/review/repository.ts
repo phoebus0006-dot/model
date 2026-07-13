@@ -354,8 +354,8 @@ export class ReviewRepository {
         data: {
           reviewItemId: opts.reviewItemId,
           action: String(opts.action),
-          statusBefore,
-          statusAfter,
+          previousStatus: statusBefore,
+          nextStatus: statusAfter,
           reviewerId: opts.reviewerId ?? null,
           reviewerRole: String(opts.reviewerRole),
           decisionReason: opts.decisionReason ?? null,
@@ -392,8 +392,8 @@ export class ReviewRepository {
       decision: {
         id: tx.decision.id.toString(),
         action: tx.decision.action,
-        statusBefore: tx.decision.statusBefore,
-        statusAfter: tx.decision.statusAfter,
+        statusBefore: tx.decision.previousStatus,
+        statusAfter: tx.decision.nextStatus,
         crawlerJobId: tx.decision.crawlerJobId,
         createdAt: tx.decision.createdAt.toISOString(),
       },
