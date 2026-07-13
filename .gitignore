@@ -18,6 +18,8 @@ credentials.json
 *.bak
 *.backup
 *.backup.*
+# Prisma migrations ARE source code (must be tracked)
+!mw-backend/prisma/migrations/**/*.sql
 
 # Node
 node_modules/
