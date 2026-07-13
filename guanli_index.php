@@ -1,13 +1,56 @@
 <?php
-header('Content-Type: text/html; charset=utf-8');
-header('X-Content-Type-Options: nosniff');
-header('X-XSS-Protection: 1; mode=block');
-header('Referrer-Policy: strict-origin-when-cross-origin');
-header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'");
-header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
-header('Permissions-Policy: camera=(), microphone=(), geolocation=()');
-header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
-header('Pragma: no-cache');
+// Allow standalone mode (MW_ADMIN_STANDALONE env var set by nginx /admin/ location)
+// to bypass the ABSPATH guard, since /admin/ is served directly by PHP-FPM without WordPress loading.
+if (!defined('ABSPATH') && empty($_SERVER['MW_ADMIN_STANDALONE']) && !getenv('MW_ADMIN_STANDALONE')) exit;
+/**
+ * 管理后台单页应用 (SPA)
+ * ======================
+ *
+ * URL: /guanli/
+ *
+ * 这是一个纯客户端渲染的管理界面，PHP 只负责输出 HTML 骨架和 JSON 初始数据。
+ * 所有 CRUD 操作通过 admin.js 调用 API 完成。
+ *
+ * 安全：
+ *   - PHP 端只输出 HTML，不暴露敏感数据
+ *   - 认证完全由 API 端处理（JWT token）
+ *   - 支持独立模式（MW_ADMIN_STANDALONE 环境变量）用于本地开发
+ *
+ * @package ModelWiki
+ * @since   2.0.0
+ * @version 3.7.0
+ */
+$is_standalone = !empty($_SERVER['MW_ADMIN_STANDALONE']) || getenv('MW_ADMIN_STANDALONE');
+if ($is_standalone) {
+    // In standalone mode WordPress is NOT loaded, so provide minimal fallbacks for WP helper functions
+    // used later in this template (esc_attr, esc_url, sanitize_text_field, get_template_directory_uri).
+    if (!function_exists('esc_attr')) {
+        function esc_attr($text) { return htmlspecialchars((string)$text, ENT_QUOTES, 'UTF-8'); }
+    }
+    if (!function_exists('esc_html')) {
+        function esc_html($text) { return htmlspecialchars((string)$text, ENT_QUOTES, 'UTF-8'); }
+    }
+    if (!function_exists('esc_url')) {
+        function esc_url($url) { return htmlspecialchars((string)$url, ENT_QUOTES, 'UTF-8'); }
+    }
+    if (!function_exists('sanitize_text_field')) {
+        function sanitize_text_field($value) { return trim(strip_tags((string)$value)); }
+    }
+    if (!function_exists('get_template_directory_uri')) {
+        function get_template_directory_uri() { return '/wp-content/themes/modelwiki'; }
+    }
+    $api_base = '/api/v1';
+    $theme = isset($_COOKIE['mw_theme']) ? sanitize_text_field($_COOKIE['mw_theme']) : 'light';
+    $home_url = '/';
+} else {
+    $mw_api_url = function_exists('get_option') ? get_option('mw_api_url', '/api/v1') : '/api/v1';
+    if (strpos($mw_api_url, 'http://api:') === 0 || strpos($mw_api_url, 'http://127.') === 0) {
+        $mw_api_url = '/api/v1';
+    }
+    $api_base = $mw_api_url;
+    $theme = function_exists('get_theme_mod') ? esc_attr(get_theme_mod('mw_theme', 'light')) : 'light';
+    $home_url = function_exists('home_url') ? home_url('/') : '/';
+}
 ?>
 <!DOCTYPE html>
 <html lang="zh-CN" data-theme="light">
@@ -234,6 +277,15 @@ h1{font-size:2rem}h3{font-size:1.25rem}
 .admin-review-problems ul{margin:6px 0 0 18px}
 .admin-review-pill{display:inline-flex;align-items:center;padding:2px 8px;border-radius:var(--mw-radius-full);background:var(--mw-bg-alt);color:var(--mw-text-secondary);font-size:.75rem;font-weight:600;margin:2px 4px 2px 0}
 .admin-review-list{margin:0;padding-left:18px;font-size:.8125rem;color:var(--mw-text-secondary)}
+.admin-review-section{border:1px solid var(--mw-border);border-radius:var(--mw-radius-sm);padding:10px 12px;margin-top:8px;background:var(--mw-card)}
+.admin-review-section:first-child{margin-top:0}
+.admin-review-section-title{font-size:.6875rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--mw-text-tertiary);margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid var(--mw-border-light)}
+.admin-review-section-body{font-size:.8125rem;color:var(--mw-text-secondary)}
+.admin-review-section-body .admin-kv{grid-template-columns:110px 1fr}
+.admin-review-section-current{border-left:3px solid var(--mw-accent)}
+.admin-review-section-candidate{border-left:3px solid #6366F1}
+.admin-review-section-evidence{border-left:3px solid var(--mw-text-tertiary)}
+.admin-review-section-decision{border-left:3px solid var(--mw-success)}
 
 .admin-spinner{width:20px;height:20px;border:2px solid var(--mw-border);border-top-color:var(--mw-accent);border-radius:50%;animation:admin-spin 0.6s linear infinite}
 @keyframes admin-spin{to{transform:rotate(360deg)}}
@@ -306,9 +358,13 @@ h1{font-size:2rem}h3{font-size:1.25rem}
 <div id="admin-app"></div>
 <div id="idle-overlay" class="admin-idle-overlay"><div class="admin-idle-card admin-animate"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--mw-warning)" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="0.5" fill="var(--mw-warning)" stroke="none"/></svg><h3>会话已超时</h3><p>由于长时间无操作，您已被自动退出登录</p><button class="admin-btn admin-btn-primary" data-resume-session>重新登录</button></div></div>
 <script>
+    window.MW_API_BASE = "<?php echo esc_js($api_base); ?>";
+    window.MW_THEME = "<?php echo esc_js($theme); ?>";
+    window.MW_HOME_URL = "<?php echo esc_js($home_url); ?>";
+
 
 (function(){
-    var API_BASE = '/api/v1';
+    var API_BASE = window.MW_API_BASE || '/api/v1';
     var HOME_URL = '/';
     var IDLE_TIMEOUT = 30 * 60 * 1000;
 
@@ -367,7 +423,13 @@ h1{font-size:2rem}h3{font-size:1.25rem}
         loginError: null, loginUsername: '',
         showModal: null, idleTimer: null, idleTriggered: false,
         keepPendingId: null, keepPendingReason: '',
-        newUserForm: {username:'',password:'',role:'viewer'}
+        newUserForm: {username:'',password:'',role:'viewer'},
+        // Phase 3: action safety — inflight dedup keyed by `${id}:${action}`
+        inflight: {},
+        // AbortController per inflight review action, aborted on page switch
+        reviewActionControllers: typeof Map !== 'undefined' ? new Map() : {},
+        // Object URL cache keyed by remote URL (reused across re-renders, revoked on leaving review)
+        reviewObjectUrls: {}
     };
 
     function resetIdle(){ if(state.token && !state.idleTriggered){ clearTimeout(state.idleTimer); state.idleTimer = setTimeout(idleLogout, IDLE_TIMEOUT); } }
@@ -385,11 +447,12 @@ h1{font-size:2rem}h3{font-size:1.25rem}
         render();
     }
 
-    function api(endpoint, method, body, withAuth){
+    function api(endpoint, method, body, withAuth, signal){
         var opts = {method: method || 'GET', headers: {}};
         if(body !== undefined && body !== null) opts.headers['Content-Type'] = 'application/json';
         if(withAuth !== false && state.token) opts.headers['Authorization'] = 'Bearer ' + state.token;
         if(body !== undefined && body !== null) opts.body = JSON.stringify(body);
+        if(signal) opts.signal = signal;
         return fetch(API_BASE + endpoint, opts).then(function(r){
             if(r.status === 401 && withAuth !== false){ logout(); throw new Error('Session expired'); }
             return r.json();
@@ -411,6 +474,11 @@ h1{font-size:2rem}h3{font-size:1.25rem}
     function setLoading(key, val){ state.loading[key] = val; render(); }
 
     function switchSection(id){
+        // Phase 3: on leaving review, abort stale review action requests and revoke object URLs
+        if(state.activeSection === 'review' && id !== 'review'){
+            abortReviewActions();
+            revokeReviewObjectUrls();
+        }
         state.activeSection = id; state.editingEntity = null; state.figureEditSlug = null; state.figureEdit = null; state.reviewEditId = null; state.reviewEditTitle = ''; render();
         if(id === 'dashboard') loadStats(); if(id === 'figures') loadFigures();
         if(ENTITY_CONFIG[id]) loadEntity(id);
@@ -444,6 +512,86 @@ h1{font-size:2rem}h3{font-size:1.25rem}
                 // Image count shown as ... (no per-item API calls)
             } else addAlert('error', getErrorMessage(r, '复核队列加载失败'));
         }).catch(function(){ addAlert('error','复核队列加载失败'); }).then(function(){ setLoading('review', false); });
+    }
+
+    // Phase 3: action safety helpers — inflight dedup, AbortController, object URL lifecycle
+    function reviewActionKey(id, action){ return String(id) + ':' + String(action); }
+    function isReviewActionInflight(id, action){ return !!state.inflight[reviewActionKey(id, action)]; }
+    function abortReviewActions(){
+        if(state.reviewActionControllers && typeof state.reviewActionControllers.forEach === 'function'){
+            state.reviewActionControllers.forEach(function(ctrl, key){
+                try { if(ctrl && typeof ctrl.abort === 'function') ctrl.abort(); } catch(e){}
+            });
+            state.reviewActionControllers.clear();
+        }
+        state.inflight = {};
+    }
+    function revokeReviewObjectUrls(){
+        if(state.reviewObjectUrls){
+            Object.keys(state.reviewObjectUrls).forEach(function(remoteUrl){
+                try { URL.revokeObjectURL(state.reviewObjectUrls[remoteUrl]); } catch(e){}
+            });
+        }
+        state.reviewObjectUrls = {};
+    }
+
+    // Unified review action handler with: double-click guard, inflight dedup (id+action),
+    // AbortController (aborted on page switch), API call (no local spoofing), local item refresh on success.
+    function handleReviewAction(id, action, opts){
+        opts = opts || {};
+        if(!id || !action) return;
+        // Inflight dedup: same id+action already in flight — do not re-send
+        if(isReviewActionInflight(id, action)) return;
+        // Double-click guard: disable all action buttons for this item
+        state.inflight[reviewActionKey(id, action)] = true;
+        setLoading('reviewAction_' + id, true);
+
+        var controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+        if(controller && state.reviewActionControllers && typeof state.reviewActionControllers.set === 'function'){
+            state.reviewActionControllers.set(reviewActionKey(id, action), controller);
+        }
+
+        var endpoint = action === 'approve_image'
+            ? '/admin/review/items/' + encodeURIComponent(id) + '/apply'
+            : '/admin/review/items/' + encodeURIComponent(id) + '/action';
+        var body = action === 'approve_image' ? {action:'approve_image'} : {action: action};
+        if(opts.notes) body.notes = opts.notes;
+
+        var signal = controller ? controller.signal : undefined;
+        var aborted = false;
+
+        api(endpoint, 'POST', body, true, signal).then(function(r){
+            if(r && r.success){
+                var successMsg = opts.successMsg || ({
+                    approve_image: '图片已批准为主图',
+                    reject_image: '已拒绝候选图',
+                    keep_placeholder: '已保留占位图',
+                    request_refetch: '已请求重抓',
+                    keep_pending: '已标记为无法判断，保留待审状态',
+                    mark_detail_ok: '已确认详情无误',
+                    mark_needs_manual_edit: '已标记需人工编辑'
+                })[action] || '操作成功';
+                addAlert('success', successMsg);
+                if(opts.onSuccess) opts.onSuccess();
+                // Refresh the page data (no full image re-fetch — object URL cache persists)
+                loadReviewItems();
+            } else if(r && r.error && r.error.code === 'VALIDATION_ERROR' && action === 'mark_needs_manual_edit'){
+                // Backend schema may not yet include mark_needs_manual_edit — surface a clear message
+                addAlert('warning', '后端暂不支持该操作（mark_needs_manual_edit），等待集成 Agent 补充');
+            } else {
+                addAlert('error', getErrorMessage(r, '操作失败'));
+            }
+        }).catch(function(err){
+            if(err && (err.name === 'AbortError' || aborted)){ aborted = true; return; } // stale request aborted — silent
+            addAlert('error', '操作请求失败');
+        }).then(function(){
+            delete state.inflight[reviewActionKey(id, action)];
+            if(state.reviewActionControllers && typeof state.reviewActionControllers.delete === 'function'){
+                state.reviewActionControllers.delete(reviewActionKey(id, action));
+            }
+            if(opts.onFinally) opts.onFinally();
+            setLoading('reviewAction_' + id, false);
+        });
     }
     function loadUsers(){ setLoading('users',true); api('/admin/users').then(function(r){ if(r.success) state.users = r.data || []; }).catch(function(){}).then(function(){ setLoading('users', false); }); }
     function loadEntity(section){
@@ -801,6 +949,21 @@ h1{font-size:2rem}h3{font-size:1.25rem}
         return m[t] || t || '一般风险';
     }
 
+    // Phase 1+2: canonical action display names (contract §4)
+    function reviewActionName(a){
+        var m = {
+            approve_image: '批准候选图',
+            reject_image: '拒绝候选图',
+            keep_placeholder: '保留占位图',
+            mark_detail_ok: '详情确认无误',
+            mark_needs_manual_edit: '需人工编辑',
+            request_refetch: '请求重抓',
+            keep_pending: '保持待审',
+            dismiss_stale: '标记已处理',
+        };
+        return m[a] || a || '';
+    }
+
     function compactPayload(value){
         if(Array.isArray(value)) return value.map(compactPayload);
         if(value && typeof value === 'object'){
@@ -853,6 +1016,19 @@ h1{font-size:2rem}h3{font-size:1.25rem}
 
     function loadReviewImage(imgEl, url){
         if(!imgEl || !url) return;
+        // Phase 3: object URL lifecycle — cache per remote URL, reuse on re-render,
+        // revoke only when leaving the review section (revokeReviewObjectUrls).
+        // This ensures preview and lightbox share the SAME object URL (no mismatch).
+        if(state.reviewObjectUrls[url]){
+            imgEl.src = state.reviewObjectUrls[url];
+            var link0 = imgEl.closest('a');
+            if(link0){
+                link0.style.display = '';
+                link0.href = state.reviewObjectUrls[url];
+                link0.setAttribute('data-review-lightbox', state.reviewObjectUrls[url]);
+            }
+            return;
+        }
         var proxyUrl = API_BASE + '/admin/review/image-proxy?url=' + encodeURIComponent(url);
         fetch(proxyUrl, {headers: {'Authorization': 'Bearer ' + (state.token || '')}})
             .then(function(r){
@@ -861,8 +1037,10 @@ h1{font-size:2rem}h3{font-size:1.25rem}
             })
             .then(function(blob){
                 var objectUrl = URL.createObjectURL(blob);
+                state.reviewObjectUrls[url] = objectUrl;
                 imgEl.src = objectUrl;
-                // 不在这里立即 revokeObjectURL，让放大镜复用它
+                // Preview (<img src>) and lightbox (link href + data-review-lightbox)
+                // MUST use the same objectUrl — never diverge (contract §11).
                 var link = imgEl.closest('a');
                 if(link) {
                     link.style.display = '';
@@ -873,7 +1051,10 @@ h1{font-size:2rem}h3{font-size:1.25rem}
             .catch(function(){
                 imgEl.style.display = 'none';
                 var link = imgEl.closest('a');
-                if(link) link.querySelector('.proxy-fallback').style.display = 'inline';
+                if(link){
+                    var fb = link.querySelector('.proxy-fallback');
+                    if(fb) fb.style.display = 'inline';
+                }
             });
     }
 
@@ -928,96 +1109,171 @@ h1{font-size:2rem}h3{font-size:1.25rem}
         return rows;
     }
 
-    function renderReviewCandidate(item){
+    function renderReviewSection(title, bodyHtml, cls){
+        if(!bodyHtml) return '';
+        return '<div class="admin-review-section' + (cls ? ' admin-review-section-' + cls : '') + '">' +
+            '<div class="admin-review-section-title">' + esc(title) + '</div>' +
+            '<div class="admin-review-section-body">' + bodyHtml + '</div></div>';
+    }
+
+    // Section 1: Original Evidence — frozen snapshot at creation time (item.originalEvidence / item.payload)
+    function renderOriginalEvidence(item){
         var p = compactPayload(item.payload || {});
-        var html = '<div class="admin-review-card">';
+        var orig = item.originalEvidence || p.originalEvidence || {};
+        var rows = [];
         if(item.type === 'image' || item.type === 'image_review'){
-            var cand = item.candidateImage || p.candidateImage || null;
-            var candidates = p.candidates || p.candidateImages || p.processedImages || p.images || [];
-            var riskName = reviewRiskTypeName(item.riskType);
-            var imgCount = (item.currentFigure && item.currentFigure.imageCount != null) ? item.currentFigure.imageCount + ' 张' : (item._imageCount != null ? item._imageCount + ' 张' : '...');
-            html += reviewKv([
-                ['风险类型', riskName],
-                ['当前图片数', imgCount],
-                ['风险原因', item.riskReason || p.issue || p.issueType || p.reason || '需要人工确认'],
-                ['建议操作', item.suggestedAction || p.suggestion || p.action || p.recommendation || ''],
-                ['图片来源', cand ? (cand.source || cand.url || '') : (candidates.length > 0 ? candidates[0].source || candidates[0].url || '' : '')],
-                ['尺寸', cand ? ((cand.width||'-')+' x '+(cand.height||'-')) : ''],
-            ]);
-            if(cand && cand.source){
-                var imgUrl = cand.url || cand.source;
-                html += '<div style="margin:8px 0;display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start">';
-                var proxyUrl = reviewProxyUrl(cand.url || cand.source);
-                html += '<a href="'+escAttr(proxyUrl)+'" target="_blank" rel="noopener noreferrer" data-review-lightbox="'+escAttr(proxyUrl)+'" data-review-image-url="'+escAttr(cand.url || cand.source)+'" style="' + (cand.url || cand.source ? '' : 'display:none') + ';cursor:zoom-in"><img src="" style="max-height:180px;max-width:240px;object-fit:cover;border-radius:var(--mw-radius-sm);border:1px solid var(--mw-border)" alt="候选图"><span class="proxy-fallback" style="display:none;font-size:.75rem;color:var(--mw-text-secondary);padding:8px">点击查看候选图</span></a>';
-                if(item.currentPublicImage && item.currentPublicImage.source){
-                    html += '<div style="opacity:0.7"><div class="admin-subtle" style="margin-bottom:4px">当前公开图</div><img src="'+escAttr(reviewProxyUrl(item.currentPublicImage.source))+'" style="max-height:120px;max-width:160px;object-fit:cover;border-radius:var(--mw-radius-sm);border:1px solid var(--mw-border)" alt="当前公开图" onerror="this.style.display=\'none\'"></div>';
-                }
-                html += '</div>';
-            } else {
-                html += sourcePills(candidates);
-            }
-            if(item.riskType && (item.riskType.indexOf('user_photo') >= 0 || item.riskType.indexOf('collection') >= 0 || item.riskType.indexOf('room') >= 0 || item.riskType.indexOf('banner') >= 0)){
-                html += '<div class="admin-review-problems" style="border-color:rgba(245,158,11,0.35);background:var(--mw-warning-soft);color:#92400e"><strong>⚠ 疑似非商品图</strong><p>'+esc(item.riskReason || '系统标记为疑似非标准商品图，请人工确认是否可作为主图')+'</p></div>';
-            }
+            if(orig.imageCount != null) rows.push(['原始图片数', orig.imageCount + ' 张']);
+            else if(p.originalImageCount != null) rows.push(['原始图片数', p.originalImageCount + ' 张']);
+            if(Array.isArray(orig.imageIds) && orig.imageIds.length) rows.push(['原始图片 ID', shortText(orig.imageIds.join(', '), 120)]);
+            if(orig.primaryImageId != null) rows.push(['原始主图 ID', orig.primaryImageId]);
+            if(orig.capturedAt) rows.push(['抓取时间', formatDate(orig.capturedAt)]);
+            if(p.issue) rows.push(['问题', shortText(p.issue, 180)]);
+            if(p.reason) rows.push(['原因', shortText(p.reason, 180)]);
+            if(p.issueType) rows.push(['问题类型', p.issueType]);
+            if(p.originalWidth != null || p.originalHeight != null) rows.push(['原始尺寸', (p.originalWidth||'-')+' x '+(p.originalHeight||'-')]);
         } else if(item.type === 'detail_review'){
             var snap = item.detailSnapshot || p.detailSnapshot || {};
             var specCount = snap.specCount || (snap.specs ? (Array.isArray(snap.specs) ? snap.specs.length : 0) : 0);
             var descLen = (snap.description || '').length;
-            var cf = item.currentFigure || {};
-            var cfDetail = cf.detail || {};
-            html += reviewKv([
-                ['风险类型', reviewRiskTypeName(item.riskType)],
-                ['风险原因', item.riskReason || ''],
-                ['建议操作', item.suggestedAction || ''],
-                ['原始描述长度', descLen > 0 ? descLen + ' 字符' : '无描述'],
-                ['原始规格数量', specCount > 0 ? specCount + ' 项' : '无规格'],
-                ['当前描述长度', cfDetail.descriptionLength != null ? cfDetail.descriptionLength + ' 字符' : '—'],
-                ['当前规格数量', cfDetail.validSpecCount != null ? cfDetail.validSpecCount + ' 项' : '—'],
-            ]);
+            rows.push(['原始描述长度', descLen > 0 ? descLen + ' 字符' : '无描述']);
+            rows.push(['原始规格数量', specCount > 0 ? specCount + ' 项' : '无规格']);
             if(snap.description){
-                html += '<div class="admin-subtle" style="margin-top:8px;padding:8px;background:var(--mw-warning-soft);border-radius:var(--mw-radius-sm);max-height:120px;overflow-y:auto"><strong>原始描述 (抓取证据)：</strong><br>'+esc(shortText(snap.description, 300))+'</div>';
+                return reviewKv(rows) + '<div class="admin-subtle" style="margin-top:8px;padding:8px;background:var(--mw-warning-soft);border-radius:var(--mw-radius-sm);max-height:120px;overflow-y:auto"><strong>原始描述 (抓取证据)：</strong><br>'+esc(shortText(snap.description, 300))+'</div>';
             }
-            if(cfDetail.descriptionSnapshot){
-                html += '<div class="admin-subtle" style="margin-top:8px;padding:8px;background:var(--mw-bg-alt);border-radius:var(--mw-radius-sm);max-height:120px;overflow-y:auto"><strong>当前描述 (数据库)：</strong><br>'+esc(shortText(cfDetail.descriptionSnapshot, 300))+'</div>';
-            }
-        } else if(item.type === 'rewrite'){
-            html += reviewKv([
-                ['洗稿摘要', shortText(p.summaryMd || p.summary || p.description || p.contentMd || p.content, 220)],
-                ['模型', p.model || (item.automation && item.automation.workflow)],
-                ['质量分', p.qualityScore == null ? null : p.qualityScore]
-            ]);
         } else if(item.type === 'figure_import'){
             var fig = p.figure || p;
-            html += reviewKv([
-                ['候选名称', fig.name || p.name],
-                ['Slug', fig.slug || p.slug],
-                ['制造商', fig.manufacturerName || p.manufacturer || p.manufacturerName],
-                ['来源链接', p.sourceUrl || p.url],
-                ['图片数', Array.isArray(fig.images || p.images) ? (fig.images || p.images).length + ' 张' : null]
-            ]);
+            rows.push(['候选名称', fig.name || p.name]);
+            rows.push(['Slug', fig.slug || p.slug]);
+            rows.push(['制造商', fig.manufacturerName || p.manufacturer || p.manufacturerName]);
+            rows.push(['来源链接', p.sourceUrl || p.url]);
+            rows.push(['图片数', Array.isArray(fig.images || p.images) ? (fig.images || p.images).length + ' 张' : null]);
         } else if(item.type === 'jan_match'){
-            html += reviewKv([
-                ['JAN', p.janCode || p.jan],
-                ['匹配来源', p.source || p.provider || 'HobbySearch'],
-                ['匹配结果', p.name || p.title || p.hobbySearchName || p.hobbySearchId]
-            ]);
+            rows.push(['JAN', p.janCode || p.jan]);
+            rows.push(['匹配来源', p.source || p.provider || 'HobbySearch']);
+            rows.push(['匹配结果', p.name || p.title || p.hobbySearchName || p.hobbySearchId]);
+        } else if(item.type === 'rewrite'){
+            rows.push(['洗稿摘要', shortText(p.summaryMd || p.summary || p.description || p.contentMd || p.content, 220)]);
+            rows.push(['模型', p.model || (item.automation && item.automation.workflow)]);
+            rows.push(['质量分', p.qualityScore == null ? null : p.qualityScore]);
         } else {
-            var rows = readablePayloadRows(p);
-            html += rows.length ? reviewKv(rows) : '<div class="admin-subtle">没有可展示的结构化字段，需要上游补充候选摘要。</div>';
+            rows = readablePayloadRows(p);
         }
-        html += reviewProblemsHtml(item);
-        if(item.type === 'image' || item.type === 'image_review'){
-            var sharedWarn = item.sharedCandidateWarning || item.payload.sharedCandidateWarning;
-            if(sharedWarn){
-                html += '<div class="admin-review-problems" style="border-color:rgba(245,158,11,0.35);background:var(--mw-warning-soft);color:#92400e"><strong>⚠ 共享候选图片警示</strong>';
-                if(sharedWarn.sharedCount != null) html += '<p>共享次数：'+esc(sharedWarn.sharedCount)+'</p>';
-                if(sharedWarn.sharedFigureIds) html += '<p>共享手办 ID：'+esc(Array.isArray(sharedWarn.sharedFigureIds)?sharedWarn.sharedFigureIds.join(', '):sharedWarn.sharedFigureIds)+'</p>';
-                if(sharedWarn.source) html += '<p>来源：'+esc(sharedWarn.source)+'</p>';
-                if(sharedWarn.sourceId) html += '<p>来源 ID：'+esc(sharedWarn.sourceId)+'</p>';
-                if(sharedWarn.url) html += '<p>图片 URL：<span style="word-break:break-all">'+esc(sharedWarn.url)+'</span></p>';
-                html += '<p style="font-size:.75rem;margin-top:4px">警示仅作提示，不禁用批准操作</p></div>';
+        if(!rows.length) return '<div class="admin-subtle">无原始证据</div>';
+        return reviewKv(rows);
+    }
+
+    // Section 2: Current State — live figure state from API (item.currentFigure / item.currentStateSnapshot)
+    function renderCurrentState(item){
+        var cf = item.currentFigure || {};
+        var snap = item.currentStateSnapshot || {};
+        var rows = [];
+        // Current title (real, from API)
+        var title = cf.title || snap.title || '';
+        if(title) rows.push(['当前标题', shortText(title, 120)]);
+        else if(cf.slug) rows.push(['Slug', cf.slug]);
+        // Current real image count
+        var imgCount = cf.imageCount != null ? cf.imageCount : (snap.imageCount != null ? snap.imageCount : null);
+        if(imgCount != null) rows.push(['当前图片数', imgCount + ' 张']);
+        if(item.type === 'detail_review'){
+            var cfDetail = cf.detail || {};
+            if(cfDetail.descriptionLength != null) rows.push(['当前描述长度', cfDetail.descriptionLength + ' 字符']);
+            else if(snap.descriptionLength != null) rows.push(['当前描述长度', snap.descriptionLength + ' 字符']);
+            if(cfDetail.validSpecCount != null) rows.push(['当前规格数', cfDetail.validSpecCount + ' 项']);
+            else if(snap.validSpecCount != null) rows.push(['当前规格数', snap.validSpecCount + ' 项']);
+            if(cfDetail.descriptionSnapshot){
+                return reviewKv(rows) + '<div class="admin-subtle" style="margin-top:8px;padding:8px;background:var(--mw-bg-alt);border-radius:var(--mw-radius-sm);max-height:120px;overflow-y:auto"><strong>当前描述 (数据库)：</strong><br>'+esc(shortText(cfDetail.descriptionSnapshot, 300))+'</div>';
             }
         }
+        // Current primary image thumbnail
+        var primaryHtml = '';
+        var primary = cf.primaryImage || snap.primaryImage || null;
+        if(primary && (primary.apiUrl || primary.imageId)){
+            var imgUrl = primary.apiUrl || (API_BASE + '/figures/images/' + primary.imageId);
+            primaryHtml = '<div style="margin-top:8px"><div class="admin-subtle" style="margin-bottom:4px">当前主图</div><img src="'+escAttr(imgUrl)+'" style="max-height:120px;max-width:160px;object-fit:cover;border-radius:var(--mw-radius-sm);border:1px solid var(--mw-border)" alt="当前主图" onerror="this.style.display=\'none\'"></div>';
+        }
+        var problemsHtml = reviewProblemsHtml(item);
+        if(!rows.length && !primaryHtml && !problemsHtml) return '<div class="admin-subtle">无当前状态</div>';
+        return reviewKv(rows) + primaryHtml + problemsHtml;
+    }
+
+    // Section 3: Candidate — candidateImage source/url/width/height/imageId (contract §11 identity)
+    function renderCandidate(item){
+        var p = compactPayload(item.payload || {});
+        if(item.type !== 'image' && item.type !== 'image_review'){
+            // Non-image types: candidate = the proposed content summary
+            if(item.type === 'detail_review'){
+                return reviewKv([
+                    ['风险类型', reviewRiskTypeName(item.riskType)],
+                    ['风险原因', shortText(item.riskReason || '', 200)],
+                    ['建议操作', item.suggestedAction ? reviewActionName(item.suggestedAction) : ''],
+                ]);
+            }
+            return '<div class="admin-subtle">该类型无候选图</div>';
+        }
+        var cand = item.candidateImage || p.candidateImage || null;
+        var candidates = p.candidates || p.candidateImages || p.processedImages || p.images || [];
+        var riskName = reviewRiskTypeName(item.riskType);
+        var rows = [
+            ['风险类型', riskName],
+            ['风险原因', shortText(item.riskReason || p.issue || p.issueType || p.reason || '需要人工确认', 200)],
+            ['建议操作', item.suggestedAction ? reviewActionName(item.suggestedAction) : (p.suggestion || p.action || p.recommendation || '')],
+            ['图片来源', cand ? (cand.source || cand.url || '') : (candidates.length > 0 ? candidates[0].source || candidates[0].url || '' : '')],
+            ['尺寸', cand ? ((cand.width||'-')+' x '+(cand.height||'-')) : ''],
+            ['候选图 ID', cand && cand.imageId ? String(cand.imageId) : (item.sourceId ? String(item.sourceId) : '')],
+            ['指纹', item.evidenceFingerprint ? String(item.evidenceFingerprint).slice(0, 12) + '…' : ''],
+        ];
+        var html = reviewKv(rows);
+        if(cand && cand.source){
+            // Preview and lightbox MUST use the same candidate asset URL (contract §11).
+            // loadReviewImage() sets both <img src> and link href to the same object URL.
+            var proxyUrl = reviewProxyUrl(cand.url || cand.source);
+            html += '<div style="margin:8px 0;display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start">';
+            html += '<a href="'+escAttr(proxyUrl)+'" target="_blank" rel="noopener noreferrer" data-review-lightbox="'+escAttr(proxyUrl)+'" data-review-image-url="'+escAttr(cand.url || cand.source)+'" style="' + (cand.url || cand.source ? '' : 'display:none') + ';cursor:zoom-in"><img src="" style="max-height:180px;max-width:240px;object-fit:cover;border-radius:var(--mw-radius-sm);border:1px solid var(--mw-border)" alt="候选图"><span class="proxy-fallback" style="display:none;font-size:.75rem;color:var(--mw-text-secondary);padding:8px">点击查看候选图</span></a>';
+            if(item.currentPublicImage && item.currentPublicImage.source){
+                html += '<div style="opacity:0.7"><div class="admin-subtle" style="margin-bottom:4px">当前公开图</div><img src="'+escAttr(reviewProxyUrl(item.currentPublicImage.source))+'" style="max-height:120px;max-width:160px;object-fit:cover;border-radius:var(--mw-radius-sm);border:1px solid var(--mw-border)" alt="当前公开图" onerror="this.style.display=\'none\'"></div>';
+            }
+            html += '</div>';
+        } else {
+            html += sourcePills(candidates);
+        }
+        if(item.riskType && (item.riskType.indexOf('user_photo') >= 0 || item.riskType.indexOf('collection') >= 0 || item.riskType.indexOf('room') >= 0 || item.riskType.indexOf('banner') >= 0)){
+            html += '<div class="admin-review-problems" style="border-color:rgba(245,158,11,0.35);background:var(--mw-warning-soft);color:#92400e"><strong>⚠ 疑似非商品图</strong><p>'+esc(item.riskReason || '系统标记为疑似非标准商品图，请人工确认是否可作为主图')+'</p></div>';
+        }
+        var sharedWarn = item.sharedCandidateWarning || p.sharedCandidateWarning;
+        if(sharedWarn){
+            html += '<div class="admin-review-problems" style="border-color:rgba(245,158,11,0.35);background:var(--mw-warning-soft);color:#92400e"><strong>⚠ 共享候选图片警示</strong>';
+            if(sharedWarn.sharedCount != null) html += '<p>共享次数：'+esc(sharedWarn.sharedCount)+'</p>';
+            if(sharedWarn.sharedFigureIds) html += '<p>共享手办 ID：'+esc(Array.isArray(sharedWarn.sharedFigureIds)?sharedWarn.sharedFigureIds.join(', '):sharedWarn.sharedFigureIds)+'</p>';
+            if(sharedWarn.source) html += '<p>来源：'+esc(sharedWarn.source)+'</p>';
+            if(sharedWarn.sourceId) html += '<p>来源 ID：'+esc(sharedWarn.sourceId)+'</p>';
+            if(sharedWarn.url) html += '<p>图片 URL：<span style="word-break:break-all">'+esc(sharedWarn.url)+'</span></p>';
+            html += '<p style="font-size:.75rem;margin-top:4px">警示仅作提示，不禁用批准操作</p></div>';
+        }
+        return html;
+    }
+
+    // Section 4: Decision History — lastAction, decisionReason, reviewerId, decisionAt (contract §6, §12)
+    function renderDecisionHistory(item){
+        var p = item.payload || {};
+        var rows = [];
+        var lastAction = item.lastAction || p.lastAction;
+        if(lastAction) rows.push(['最后操作', reviewActionName(lastAction)]);
+        var decisionReason = item.decisionReason || p.decisionReason;
+        if(decisionReason) rows.push(['决定理由', shortText(decisionReason, 200)]);
+        var reviewerId = item.reviewerId || p.reviewerId;
+        if(reviewerId != null && reviewerId !== '') rows.push(['审核人 ID', String(reviewerId)]);
+        var decisionAt = item.decisionAt || p.decisionAt;
+        if(decisionAt) rows.push(['决定时间', formatDate(decisionAt)]);
+        if(!rows.length) return '<div class="admin-subtle">无决定历史</div>';
+        return reviewKv(rows);
+    }
+
+    function renderReviewCandidate(item){
+        var html = '<div class="admin-review-card">';
+        html += renderReviewSection('原始证据 / Original Evidence', renderOriginalEvidence(item), 'evidence');
+        html += renderReviewSection('当前状态 / Current State', renderCurrentState(item), 'current');
+        html += renderReviewSection('候选 / Candidate', renderCandidate(item), 'candidate');
+        html += renderReviewSection('决定历史 / Decision History', renderDecisionHistory(item), 'decision');
         return html + '</div>';
     }
 
@@ -1262,6 +1518,8 @@ h1{font-size:2rem}h3{font-size:1.25rem}
             if(item.payload && item.payload.lastActionAt) {
                 source += '<div style="font-size:.75rem;color:var(--mw-text-tertiary);margin-top:2px">操作时间 '+formatDate(item.payload.lastActionAt)+'</div>';
             }
+            // Phase 3: decision fields (lastAction, decisionReason, reviewerId, decisionAt) now shown
+            // in the card's "决定历史 / Decision History" section — not duplicated here.
             var rowLoading = state.loading['reviewAction_' + id];
             var actions = '';
             if(item.type === 'image_review'){
@@ -1273,8 +1531,10 @@ h1{font-size:2rem}h3{font-size:1.25rem}
                     '<button class="admin-btn admin-btn-sm" data-review-id="'+esc(id)+'" data-review-action="keep_pending"'+(rowLoading?' disabled':'')+'>无法判断</button>' +
                 '</div>';
             } else if(item.type === 'detail_review'){
+                // Phase 3: added mark_needs_manual_edit (7 actions total, contract §3)
                 actions = '<div class="admin-inline-actions">' +
                     '<button class="admin-btn admin-btn-primary admin-btn-sm" data-review-id="'+esc(id)+'" data-review-action="mark_detail_ok"'+(rowLoading?' disabled':'')+'>详情OK</button>' +
+                    '<button class="admin-btn admin-btn-sm" data-review-id="'+esc(id)+'" data-review-action="mark_needs_manual_edit"'+(rowLoading?' disabled':'')+'>需人工编辑</button>' +
                     '<button class="admin-btn admin-btn-sm" data-review-id="'+esc(id)+'" data-review-action="request_refetch"'+(rowLoading?' disabled':'')+'>重抓</button>' +
                     '<button class="admin-btn admin-btn-sm" data-review-id="'+esc(id)+'" data-review-action="keep_pending"'+(rowLoading?' disabled':'')+'>无法判断</button>' +
                 '</div>';
@@ -1336,12 +1596,13 @@ h1{font-size:2rem}h3{font-size:1.25rem}
 
     function render(){ var app = document.getElementById('admin-app'); if(app) app.innerHTML = renderApp(); bindEvents(); loadReviewImages(); }
 
-    var _loadedImgUrls = {};
+    // Phase 3: re-render safe image loader. No per-URL "already loaded" guard —
+    // loadReviewImage() caches the object URL in state.reviewObjectUrls and reuses
+    // it, so re-render sets the same src without a duplicate network request.
     function loadReviewImages(){
         document.querySelectorAll('[data-review-image-url]').forEach(function(el){
             var url = el.getAttribute('data-review-image-url');
-            if(!url || _loadedImgUrls[url]) return;
-            _loadedImgUrls[url] = true;
+            if(!url) return;
             var img = el.querySelector('img');
             if(img) loadReviewImage(img, url);
         });
@@ -1394,49 +1655,30 @@ h1{font-size:2rem}h3{font-size:1.25rem}
                 var id = this.getAttribute('data-review-id');
                 var action = this.getAttribute('data-review-action');
                 if(!id || !action) return;
-                if(action === 'approve_image'){
-                    if(!confirm('确定要批准该候选图片为主图吗？')) return;
-                    setLoading('reviewAction_'+id, true);
-                    api('/admin/review/items/'+encodeURIComponent(id)+'/apply', 'POST', {action:'approve_image'}).then(function(r){
-                        if(r.success){ addAlert('success','图片已批准为主图'); loadReviewItems(); }
-                        else addAlert('error', getErrorMessage(r, '批准失败'));
-                    }).catch(function(){ addAlert('error','批准请求失败'); }).then(function(){ setLoading('reviewAction_'+id, false); });
-                } else {
-                    var confirmMsg = action === 'reject_image' ? '确定拒绝该候选图吗？' :
-                        action === 'keep_placeholder' ? '确定保留当前占位图吗？' :
-                        action === 'mark_detail_ok' ? '确定该详情无误吗？' :
-                        action === 'dismiss_stale' ? '确定标记为已处理吗？' :
-                        action === 'request_refetch' ? '确定请求爬虫重新抓取吗？' :
-                        action === 'keep_pending' ? '标记为无法判断，保留待审状态吗？' : '';
-                    if(confirmMsg && !confirm(confirmMsg)) return;
-                    if(action === 'keep_pending'){
-                        state.keepPendingId = id;
-                        state.keepPendingReason = '';
-                        state.showModal = 'keepPending';
-                        render();
-                        setTimeout(function(){
-                            var ta = document.getElementById('kp-reason');
-                            if(ta) ta.focus();
-                            var submitBtn = document.getElementById('kp-submit-btn');
-                            if(submitBtn) submitBtn.addEventListener('click', function(){
-                                var reason = document.getElementById('kp-reason').value || '';
-                                state.loading.keepPending = true;
-                                render();
-                                var kid = state.keepPendingId;
-                                api('/admin/review/items/'+encodeURIComponent(kid)+'/action', 'POST', {action:'keep_pending', notes:reason}).then(function(r){
-                                    if(r.success){ addAlert('success','已标记为无法判断，保留待审状态'); state.showModal = null; loadReviewItems(); }
-                                    else addAlert('error', getErrorMessage(r, '操作失败'));
-                                }).catch(function(){ addAlert('error','操作请求失败'); }).then(function(){ state.loading.keepPending = false; render(); });
-                            });
-                        }, 50);
-                        return;
-                    }
-                    setLoading('reviewAction_'+id, true);
-                    api('/admin/review/items/'+encodeURIComponent(id)+'/action', 'POST', {action:action}).then(function(r){
-                        if(r.success){ addAlert('success','操作成功'); loadReviewItems(); }
-                        else addAlert('error', getErrorMessage(r, '操作失败'));
-                    }).catch(function(){ addAlert('error','操作请求失败'); }).then(function(){ setLoading('reviewAction_'+id, false); });
+                // Phase 3: double-click guard — if this (id,action) is already inflight, ignore
+                if(isReviewActionInflight(id, action)) return;
+                var confirmMsg = action === 'approve_image' ? '确定要批准该候选图片为主图吗？' :
+                    action === 'reject_image' ? '确定拒绝该候选图吗？' :
+                    action === 'keep_placeholder' ? '确定保留当前占位图吗？' :
+                    action === 'mark_detail_ok' ? '确定该详情无误吗？' :
+                    action === 'mark_needs_manual_edit' ? '确定标记为需人工编辑吗？' :
+                    action === 'request_refetch' ? '确定请求爬虫重新抓取吗？' :
+                    action === 'keep_pending' ? '标记为无法判断，保留待审状态吗？' : '';
+                if(confirmMsg && !confirm(confirmMsg)) return;
+                if(action === 'keep_pending'){
+                    state.keepPendingId = id;
+                    state.keepPendingReason = '';
+                    state.showModal = 'keepPending';
+                    render();
+                    setTimeout(function(){
+                        var ta = document.getElementById('kp-reason');
+                        if(ta) ta.focus();
+                    }, 50);
+                    return;
                 }
+                // Unified handler: inflight dedup (id+action), AbortController (aborted on page switch),
+                // button disabled during action, API call (no local spoofing), loadReviewItems() on success.
+                handleReviewAction(id, action);
             });
             });
 
@@ -1461,6 +1703,28 @@ h1{font-size:2rem}h3{font-size:1.25rem}
                     else state.newUserForm[field] = el.value || '';
                 }
             });
+        }
+
+        // Phase 3: keep_pending modal — re-bind after every render.
+        // Uses handleReviewAction() for inflight dedup + AbortController + double-click guard.
+        if(state.showModal === 'keepPending'){
+            var kpBtn = document.getElementById('kp-submit-btn');
+            if(kpBtn) kpBtn.addEventListener('click', function(){
+                if(state.loading.keepPending) return; // double-click guard
+                var reason = document.getElementById('kp-reason');
+                var reasonVal = reason ? reason.value : '';
+                var kid = state.keepPendingId;
+                if(!kid) return;
+                state.loading.keepPending = true;
+                render();
+                handleReviewAction(kid, 'keep_pending', {
+                    notes: reasonVal,
+                    onSuccess: function(){ state.showModal = null; },
+                    onFinally: function(){ state.loading.keepPending = false; }
+                });
+            });
+            var kpReason = document.getElementById('kp-reason');
+            if(kpReason) kpReason.addEventListener('input', function(e){ state.keepPendingReason = e.target.value; });
         }
 
         // CSP-safe click delegation for data-* attributes
