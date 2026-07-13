@@ -21,6 +21,7 @@ import { authRoutes } from "./routes/auth.js";
 import { imageRoutes } from "./routes/images.js";
 import { communityRoutes } from "./routes/community.js";
 import Redis from "ioredis";
+import { installRedisFlushGuard } from "./security/redisGuard.js";
 
 Object.defineProperty(BigInt.prototype, "toJSON", { value: function () { return Number(this); }, writable: true, configurable: true });
 
@@ -37,6 +38,13 @@ async function main() {
 
   app.decorate("prisma", prisma);
   app.decorate("redis", redis);
+
+  // Phase 1+2 runtime-security: install FLUSHDB/FLUSHALL guard on the Redis
+  // client. Contract §14: "FLUSHDB / FLUSHALL are forbidden everywhere; the
+  // codebase MUST NOT call them, and a runtime guard MUST reject any attempt."
+  // This blocks both direct method calls (redis.flushdb()) and raw
+  // sendCommand({ name: "FLUSHDB" }) calls. Non-removable once installed.
+  installRedisFlushGuard(redis);
 
   const corsOrigins = process.env.CORS_ORIGINS
     ? process.env.CORS_ORIGINS.split(",").map((origin) => origin.trim()).filter(Boolean)

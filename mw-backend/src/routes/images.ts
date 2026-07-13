@@ -9,6 +9,7 @@ import path from "path";
 import sharp from "sharp";
 import dns from "dns";
 import os from "os";
+import { scanKeys } from "../security/redisGuard.js";
 
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
 const DOWNLOAD_TIMEOUT = 15_000; // 15 seconds
@@ -29,32 +30,57 @@ interface DownloadResult {
 }
 
 // ===== 安全：URL校验，防止SSRF =====
+// Phase 1+2 runtime-security hardening:
+//   - 169.254.0.0/16 (link-local, includes cloud metadata IPs 169.254.169.254)
+//   - IPv4-mapped IPv6 in hex form (::ffff:0a:00:01) in addition to dotted form
+//   - IPv6 unspecified address (::) and full-zero variants
+//   - Exported for test coverage (src/security/ssrf.test.ts)
 const BLOCKED_HOSTS = new Set([
   "localhost", "127.0.0.1", "0.0.0.0", "::1",
   "169.254.169.254",
   "metadata.google.internal",
 ]);
 
-function isPrivateIp(ip: string): boolean {
+export function isPrivateIp(ip: string): boolean {
+  if (!ip || typeof ip !== "string") return false;
+  const lower = ip.toLowerCase();
   // IPv4
-  const parts = ip.split(".").map(Number);
+  const parts = lower.split(".").map(Number);
   if (parts.length === 4 && parts.every(p => !isNaN(p))) {
-    if (parts[0] === 10) return true;
-    if (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) return true;
-    if (parts[0] === 192 && parts[1] === 168) return true;
-    if (parts[0] === 100 && parts[1] >= 64 && parts[1] <= 127) return true;
-    if (parts[0] === 0) return true;
-    if (parts[0] === 127) return true;
-    if (parts[0] >= 224) return true;
+    if (parts[0] === 10) return true;                                    // 10.0.0.0/8
+    if (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) return true; // 172.16.0.0/12
+    if (parts[0] === 192 && parts[1] === 168) return true;               // 192.168.0.0/16
+    if (parts[0] === 100 && parts[1] >= 64 && parts[1] <= 127) return true; // 100.64.0.0/10 (CGNAT)
+    if (parts[0] === 0) return true;                                     // 0.0.0.0/8
+    if (parts[0] === 127) return true;                                   // 127.0.0.0/8 (loopback)
+    if (parts[0] === 169 && parts[1] === 254) return true;               // 169.254.0.0/16 (link-local + metadata)
+    if (parts[0] >= 224) return true;                                    // 224.0.0.0/4 (multicast + reserved)
     return false;
   }
   // IPv6
-  if (ip === "::1" || ip === "0:0:0:0:0:0:0:1") return true;
-  if (ip.startsWith("fc") || ip.startsWith("fd") || ip.startsWith("FE80:") || ip.startsWith("fe80:")) return true;
-  if (ip.startsWith("ff") || ip.startsWith("FF")) return true;
-  // Check if it's an IPv6 mapped IPv4 (e.g. ::ffff:10.0.0.1)
-  const v4match = ip.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/i);
-  if (v4match) return isPrivateIp(v4match[1]);
+  if (lower === "::1" || lower === "0:0:0:0:0:0:0:1") return true;       // loopback
+  if (lower === "::" || lower === "0:0:0:0:0:0:0:0") return true;        // unspecified
+  if (lower.startsWith("fc") || lower.startsWith("fd")) return true;     // fc00::/7 (ULA)
+  if (lower.startsWith("fe80:") || lower.startsWith("fe9") ||
+      lower.startsWith("fea") || lower.startsWith("feb")) return true;   // fe80::/10 (link-local)
+  if (lower.startsWith("ff")) return true;                               // ff00::/8 (multicast)
+  // IPv4-mapped IPv6 in dotted-decimal form (::ffff:10.0.0.1)
+  const v4matchDotted = lower.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/i);
+  if (v4matchDotted) return isPrivateIp(v4matchDotted[1]);
+  // IPv4-mapped IPv6 in hex form (::ffff:0a:00:01) — also covers ::ffff:0:0:0:0
+  const v4matchHex = lower.match(/^::ffff:([0-9a-f]{1,4}):([0-9a-f]{1,4})$/i);
+  if (v4matchHex) {
+    const hi = parseInt(v4matchHex[1], 16);
+    const lo = parseInt(v4matchHex[2], 16);
+    const a = (hi >> 8) & 0xff;
+    const b = hi & 0xff;
+    const c = (lo >> 8) & 0xff;
+    const d = lo & 0xff;
+    return isPrivateIp(`${a}.${b}.${c}.${d}`);
+  }
+  // IPv4-compatible IPv6 (::10.0.0.1 or ::0a:00:01) — deprecated but still seen
+  const v4compatDotted = lower.match(/^::(\d+\.\d+\.\d+\.\d+)$/i);
+  if (v4compatDotted) return isPrivateIp(v4compatDotted[1]);
   return false;
 }
 
@@ -390,10 +416,11 @@ async function resolveStorageJanCode(app: FastifyInstance, figureId: number, jan
 }
 
 async function invalidateFigureImageCaches(app: FastifyInstance) {
-  const detailKeys = await app.redis.keys("figures:detail:*");
-  if (detailKeys.length > 0) await app.redis.del(...detailKeys);
-  const listKeys = await app.redis.keys("figures:list:*");
-  if (listKeys.length > 0) await app.redis.del(...listKeys);
+  // Phase 1+2 runtime-security: use SCAN instead of KEYS (contract §14).
+  const detailKeys = await scanKeys(app.redis, "figures:detail:*");
+  if (detailKeys.length > 0) await app.redis.unlink(...detailKeys);
+  const listKeys = await scanKeys(app.redis, "figures:list:*");
+  if (listKeys.length > 0) await app.redis.unlink(...listKeys);
 }
 
 export async function imageRoutes(app: FastifyInstance) {
