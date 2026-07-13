@@ -8,6 +8,8 @@ import sharp from "sharp";
 import crypto from "crypto";
 import { processAndStoreImage, upsertFigureImageRecord, downloadImage, validateImageUrl } from "./images.js";
 import { scanKeys } from "../security/redisGuard.js";
+import { DomainReviewRepository, IllegalReviewTransitionError } from "../domain/review/repository.js";
+import { CrawlerJobRepository, isTerminalStatus as isCrawlerJobTerminal } from "../crawler/stateMachine.js";
 
 const aigcSchema = z.object({
   figureId: z.number().int().positive(),
@@ -35,7 +37,7 @@ const updateUserSchema = z.object({
   isActive: z.boolean().optional(),
 });
 
-const reviewStatusSchema = z.enum(["pending", "approved", "rejected", "needs_changes", "resolved", "stale"]);
+const reviewStatusSchema = z.enum(["pending", "needs_changes", "resolved", "rejected", "archived"]);
 const queryReviewStatusSchema = z.union([reviewStatusSchema, z.literal("all")]);
 const reviewTypeSchema = z.enum(["jan_match", "figure_import", "rewrite", "image", "general", "image_review", "detail_review"]);
 // Review risk types (Track RQ): unified vocabulary for crawler/agent uncertain content
@@ -60,6 +62,7 @@ const reviewActionSchema = z.enum([
   "reject_image",
   "keep_placeholder",
   "mark_detail_ok",
+  "mark_needs_manual_edit",
   "request_refetch",
   "dismiss_stale",
   "keep_pending",
@@ -362,7 +365,7 @@ async function evaluateReviewItem(app: FastifyInstance, item: any) {
   return problems;
 }
 const crawlerRunnerSchema = z.enum(["server_safe", "local_browser", "proxy_browser", "manual"]);
-const crawlerJobStatusSchema = z.enum(["queued", "claimed", "running", "succeeded", "failed", "deferred", "cancelled"]);
+const crawlerJobStatusSchema = z.enum(["created", "queued", "claimed", "running", "completed", "failed", "deferred"]);
 
 const crawlerJobSchema = z.object({
   source: z.string().min(1),
@@ -406,6 +409,768 @@ const crawlerClaimSchema = z.object({
   limit: z.coerce.number().int().min(1).max(10).default(1),
 });
 
+// === Action → Status mapping (contract §4) ===
+const ACTION_TO_STATUS: Record<string, string> = {
+  approve_image: "resolved",
+  reject_image: "rejected",
+  keep_placeholder: "resolved",
+  mark_detail_ok: "resolved",
+  mark_needs_manual_edit: "needs_changes",
+  request_refetch: "needs_changes",
+  keep_pending: "pending",
+  dismiss_stale: "archived",
+};
+
+// === Helper: compute current figure state for enrichment (query-time, §12) ===
+async function computeFigureState(app: FastifyInstance, figureId: bigint | null, figureSlug: string | null): Promise<any> {
+  if (!figureId && !figureSlug) return null;
+  const where = figureId ? { id: figureId, isDeleted: false } : { slug: String(figureSlug), isDeleted: false };
+  const fig = await app.prisma.figure.findFirst({
+    where,
+    select: {
+      id: true, slug: true, name: true, description: true,
+      scale: true, material: true, priceJpy: true, releaseDate: true, heightMm: true,
+      manufacturer: { select: { name: true } },
+      series: { select: { name: true } },
+      images: { take: 1, orderBy: [{ sortOrder: "asc" }, { id: "asc" }], select: { id: true, width: true, height: true, data: true } },
+      _count: { select: { images: true } },
+    },
+  });
+  if (!fig) return null;
+  const primaryImage = (fig.images || []).length > 0 ? fig.images[0] : null;
+  const primaryMeta: any = primaryImage?.data || {};
+  const specFields = [fig.scale, fig.material, fig.priceJpy, fig.releaseDate, fig.heightMm, fig.manufacturer?.name, fig.series?.name].filter((f: any) => f != null);
+  return {
+    id: String(fig.id),
+    title: fig.name || "",
+    slug: fig.slug,
+    imageCount: fig._count?.images ?? 0,
+    primaryImage: primaryImage ? {
+      imageId: String(primaryImage.id),
+      sourceKind: String(primaryMeta.source_kind || ""),
+      width: primaryImage.width,
+      height: primaryImage.height,
+      apiUrl: `/api/v1/figures/images/${primaryImage.id}`,
+    } : null,
+    detail: {
+      descriptionLength: (fig.description || "").length,
+      descriptionSnapshot: (fig.description || "").slice(0, 200),
+      validSpecCount: specFields.length,
+      missingFields: [],
+    },
+  };
+}
+
+// === Helper: check if fingerprint has a human ReviewDecision (§9) ===
+async function hasHumanDecision(app: FastifyInstance, fingerprint: string): Promise<boolean> {
+  const count = await app.prisma.reviewDecision.count({
+    where: { evidenceFingerprint: fingerprint },
+  });
+  return count > 0;
+}
+
+// === Helper: compute evidenceChanged by comparing original evidence with current state (§10) ===
+async function computeEvidenceChanged(app: FastifyInstance, item: any): Promise<boolean> {
+  const original = item.originalEvidence || item.payload || {};
+  const figureId = item.figureId ? BigInt(String(item.figureId)) : null;
+  const figureSlug = item.figureSlug ? String(item.figureSlug) : null;
+  if (!figureId && !figureSlug) return false;
+
+  const fig = await app.prisma.figure.findFirst({
+    where: figureId ? { id: figureId, isDeleted: false } : { slug: figureSlug!, isDeleted: false },
+    select: {
+      id: true, description: true, scale: true, material: true,
+      images: { select: { id: true }, orderBy: [{ sortOrder: "asc" }, { id: "asc" }] },
+    },
+  });
+  if (!fig) return true; // figure missing → evidence changed
+
+  // Check image set change
+  const currentImageIds = fig.images.map((img: any) => String(img.id)).sort();
+  const originalImageIds = Array.isArray(original.imageIds)
+    ? original.imageIds.map((id: any) => String(id)).sort()
+    : [];
+  if (originalImageIds.length > 0 && JSON.stringify(currentImageIds) !== JSON.stringify(originalImageIds)) return true;
+
+  // Check description change
+  if (typeof original.description === "string" && original.description !== (fig.description || "")) return true;
+
+  // Check approved image missing
+  if (original.primaryImageId) {
+    const approvedExists = fig.images.some((img: any) => String(img.id) === String(original.primaryImageId));
+    if (!approvedExists) return true;
+  }
+
+  return false;
+}
+
+// === Helper: serialize review item for API output (BigInt-safe, string IDs) ===
+function serializeReviewItem(row: any): any {
+  const out: any = { ...row };
+  for (const key of ["figureId", "reviewerId"]) {
+    if (out[key] != null && typeof out[key] === "bigint") {
+      out[key] = out[key].toString();
+    }
+  }
+  if (out.id && typeof row.id === "bigint") {
+    out.id = row.id.toString();
+  }
+  for (const key of ["createdAt", "updatedAt", "decisionAt"]) {
+    if (out[key] instanceof Date) out[key] = out[key].toISOString();
+  }
+  return out;
+}
+
+// === Review Routes (exported for integration testing) ===
+// PostgreSQL is the source of truth; Redis is cache/index/lock only.
+export async function registerReviewRoutes(app: FastifyInstance) {
+  // GET /review/items — PG source of truth with _count.images, take:1 primary image
+  app.get("/review/items", async (req: any, reply: any) => {
+    const query = reviewQuerySchema.parse(req.query || {});
+    const statusFilter = query.status || "pending";
+    const showAll = statusFilter === ALL_STATUSES;
+
+    // Try Redis cache first (TTL 60s) — PG is still source of truth
+    const cacheKey = `review:list:${statusFilter}:${query.type || ""}:${query.riskType || ""}:${query.suggestedAction || ""}:${query.limit}:${query.offset}`;
+    const cached = await app.redis.get(cacheKey);
+
+    let items: any[] = [];
+    let total = 0;
+    let fromCache = false;
+
+    if (cached) {
+      try {
+        const parsed = JSON.parse(cached);
+        items = parsed.items || [];
+        total = parsed.total || 0;
+        fromCache = true;
+      } catch {}
+    }
+
+    if (!fromCache) {
+      // PG is the source of truth
+      const where: any = {};
+      if (!showAll) {
+        where.status = statusFilter;
+      }
+      if (query.type) where.type = query.type;
+      if (query.riskType) where.riskType = query.riskType;
+      if (query.suggestedAction) where.suggestedAction = query.suggestedAction;
+
+      const offset = query.offset || 0;
+      const [rows, count] = await Promise.all([
+        app.prisma.reviewItem.findMany({
+          where,
+          orderBy: { createdAt: "desc" },
+          take: query.limit,
+          skip: offset,
+        }),
+        app.prisma.reviewItem.count({ where }),
+      ]);
+      items = rows.map((r: any) => serializeReviewItem(r));
+      total = count;
+
+      // Cache the list (TTL 60s) — PG remains source of truth
+      await app.redis.set(cacheKey, JSON.stringify({ items, total }), "EX", 60);
+    }
+
+    // Legacy fallback: if PG has no items, check Redis for legacy data
+    let legacy = false;
+    if (items.length === 0 && total === 0 && !fromCache) {
+      const legacyIds = await app.redis.zrevrange("review:items", 0, -1);
+      const legacyItems: any[] = [];
+      for (const id of legacyIds) {
+        const raw = await app.redis.get(`review:item:${id}`);
+        if (!raw) continue;
+        try {
+          const item = JSON.parse(raw);
+          if (!showAll && item.status !== statusFilter) continue;
+          if (query.type && item.type !== query.type) continue;
+          if (query.riskType && item.riskType !== query.riskType) continue;
+          if (query.suggestedAction && item.suggestedAction !== query.suggestedAction) continue;
+          legacyItems.push(item);
+        } catch {}
+      }
+      if (legacyItems.length > 0) {
+        items = legacyItems;
+        total = legacyItems.length;
+        legacy = true;
+      }
+    }
+
+    // Enrich items with current figure state (batch, no N+1)
+    const slugSet = new Set<string>();
+    const idSet = new Set<bigint>();
+    for (const item of items) {
+      if (item.figureSlug) slugSet.add(item.figureSlug);
+      if (item.figureId) idSet.add(BigInt(item.figureId));
+    }
+    const figures: any[] = [];
+    if (idSet.size > 0) {
+      const byId = await app.prisma.figure.findMany({
+        where: { id: { in: [...idSet] }, isDeleted: false },
+        select: {
+          id: true, slug: true, name: true, description: true,
+          scale: true, material: true, priceJpy: true, releaseDate: true, heightMm: true,
+          manufacturer: { select: { name: true } },
+          series: { select: { name: true } },
+          images: { take: 1, orderBy: [{ sortOrder: "asc" }, { id: "asc" }] },
+          _count: { select: { images: true } },
+        },
+      });
+      figures.push(...byId);
+    }
+    if (slugSet.size > 0) {
+      const bySlug = await app.prisma.figure.findMany({
+        where: { slug: { in: [...slugSet] }, isDeleted: false },
+        select: {
+          id: true, slug: true, name: true, description: true,
+          scale: true, material: true, priceJpy: true, releaseDate: true, heightMm: true,
+          manufacturer: { select: { name: true } },
+          series: { select: { name: true } },
+          images: { take: 1, orderBy: [{ sortOrder: "asc" }, { id: "asc" }] },
+          _count: { select: { images: true } },
+        },
+      });
+      for (const fig of bySlug) {
+        if (!figures.some(f => f.id === fig.id)) figures.push(fig);
+      }
+    }
+    const figureMap = new Map<string, any>();
+    for (const fig of figures) {
+      figureMap.set(fig.slug, fig);
+      figureMap.set(String(fig.id), fig);
+    }
+
+    for (const item of items) {
+      const fig = figureMap.get(item.figureSlug) || figureMap.get(String(item.figureId));
+      if (fig) {
+        const primaryImage = (fig.images || []).length > 0 ? fig.images[0] : null;
+        const primaryMeta = primaryImage?.data || {};
+        const specFields = [fig.scale, fig.material, fig.priceJpy, fig.releaseDate, fig.heightMm, fig.manufacturer?.name, fig.series?.name].filter((f: any) => f != null);
+        item.currentFigure = {
+          id: String(fig.id),
+          title: fig.name || "",
+          slug: fig.slug,
+          imageCount: fig._count?.images ?? 0,
+          primaryImage: primaryImage ? {
+            imageId: String(primaryImage.id),
+            sourceKind: String(primaryMeta.source_kind || ""),
+            width: primaryImage.width,
+            height: primaryImage.height,
+            apiUrl: primaryImage ? `/api/v1/figures/images/${primaryImage.id}` : null,
+          } : null,
+          detail: {
+            descriptionLength: (fig.description || "").length,
+            descriptionSnapshot: (fig.description || "").slice(0, 200),
+            validSpecCount: specFields.length,
+            missingFields: [],
+          },
+        };
+      }
+      // Mark original evidence separately from current state
+      item.originalEvidence = item.originalEvidence || item.payload || null;
+    }
+
+    return {
+      success: true,
+      data: items,
+      meta: { count: items.length, total, limit: query.limit, offset: query.offset || 0, defaultStatus: statusFilter, legacy },
+    };
+  });
+
+  // GET /review/items/:id — single item with real-time current state
+  app.get("/review/items/:id", async (req: any, reply: any) => {
+    const { id } = req.params as { id: string };
+
+    // PG is source of truth (with Redis read-through cache via DomainReviewRepository)
+    const repo = new DomainReviewRepository(app.prisma, app.redis);
+    const item = await repo.getById(id);
+    if (item) {
+      const figureId = item.figureId ? BigInt(String(item.figureId)) : null;
+      const figureSlug = item.figureSlug ? String(item.figureSlug) : null;
+      const currentState = await computeFigureState(app, figureId, figureSlug);
+      return {
+        success: true,
+        data: {
+          ...item,
+          originalEvidence: item.originalEvidence || item.payload || null,
+          currentState,
+        },
+      };
+    }
+
+    // Legacy fallback: check Redis
+    const raw = await app.redis.get(`review:item:${id}`);
+    if (raw) {
+      try {
+        const legacyItem = JSON.parse(raw);
+        const figureId = legacyItem.figureId ? BigInt(String(legacyItem.figureId)) : null;
+        const figureSlug = legacyItem.figureSlug ? String(legacyItem.figureSlug) : null;
+        const currentState = await computeFigureState(app, figureId, figureSlug);
+        return {
+          success: true,
+          data: {
+            ...legacyItem,
+            originalEvidence: legacyItem.payload || null,
+            currentState,
+            legacy: true,
+          },
+        };
+      } catch {}
+    }
+
+    return reply.status(404).send({ success: false, error: { code: "REVIEW_ITEM_NOT_FOUND" } });
+  });
+
+  // GET /review/stats — PG source of truth
+  app.get("/review/stats", async () => {
+    const statusCounts = await app.prisma.reviewItem.groupBy({
+      by: ["status"],
+      _count: { id: true },
+    });
+
+    const stats: Record<string, number> = {
+      total: 0,
+      pending: 0,
+      needs_changes: 0,
+      resolved: 0,
+      rejected: 0,
+      archived: 0,
+      pending_image_review: 0,
+      pending_detail_review: 0,
+      pending_rewrite: 0,
+      pending_figure_import: 0,
+    };
+
+    for (const row of statusCounts) {
+      const s = row.status;
+      const count = row._count?.id ?? 0;
+      stats.total += count;
+      if (s === "pending") stats.pending += count;
+      else if (s === "needs_changes") stats.needs_changes += count;
+      else if (s === "resolved") stats.resolved += count;
+      else if (s === "rejected") stats.rejected += count;
+      else if (s === "archived") stats.archived += count;
+    }
+
+    // Pending by type
+    const pendingByType = await app.prisma.reviewItem.groupBy({
+      by: ["type"],
+      where: { status: "pending" },
+      _count: { id: true },
+    });
+    for (const row of pendingByType) {
+      const t = row.type;
+      const count = row._count?.id ?? 0;
+      if (t === "image_review") stats.pending_image_review = count;
+      else if (t === "detail_review") stats.pending_detail_review = count;
+      else if (t === "rewrite") stats.pending_rewrite = count;
+      else if (t === "figure_import") stats.pending_figure_import = count;
+    }
+
+    return { success: true, data: stats };
+  });
+
+  // POST /review/items — create with enhanced duplicate suppression (§9)
+  app.post("/review/items", async (req: any, reply: any) => {
+    const data = reviewItemSchema.parse(req.body);
+    const repo = new DomainReviewRepository(app.prisma, app.redis);
+
+    // Build domain input from API input
+    const domainInput: any = {
+      type: data.type,
+      title: data.title,
+      figureId: data.figureId,
+      figureSlug: data.figureSlug,
+      riskType: data.riskType,
+      riskReason: data.riskReason,
+      status: data.status,
+      priority: data.priority,
+      confidence: data.confidence,
+      source: data.source,
+      sourceId: data.sourceId,
+      suggestedAction: data.suggestedAction,
+      payload: data.payload,
+      notes: data.notes,
+      evidenceFingerprint: data.evidenceFingerprint,
+      forceReopen: data.forceReopen,
+      automation: data.automation,
+      candidateImage: data.candidateImage,
+      currentPublicImage: data.currentPublicImage,
+      detailSnapshot: data.detailSnapshot,
+      // Canonical evidence fields
+      candidateAsset: data.candidateImage ? {
+        source: data.candidateImage.source,
+        url: data.candidateImage.url,
+        imageId: data.candidateImage.imageId,
+        width: data.candidateImage.width,
+        height: data.candidateImage.height,
+      } : undefined,
+    };
+
+    // Compute canonical fingerprint for suppression check
+    const canonicalFp = repo.computeFingerprint(domainInput);
+
+    // Enhanced suppression check (§9): only suppress duplicate_decided
+    // when there's a human ReviewDecision for this fingerprint
+    if (!data.forceReopen) {
+      const existing = await app.prisma.reviewItem.findFirst({
+        where: {
+          evidenceFingerprint: canonicalFp,
+          status: { not: "archived" },
+        },
+        orderBy: { createdAt: "desc" },
+      });
+
+      if (existing) {
+        const existingStatus = repo.reconcileStatus(existing.status as string);
+        if (existingStatus === "resolved" || existingStatus === "rejected") {
+          // Check for human decision (§9)
+          const hasDecision = await hasHumanDecision(app, canonicalFp);
+          if (hasDecision) {
+            return reply.status(200).send({
+              success: true,
+              data: serializeReviewItem(existing),
+              suppressed: true,
+              reason: "duplicate_decided",
+            });
+          }
+          // No human decision — legacy stale item, don't suppress
+          // Force create a new item
+          domainInput.forceReopen = true;
+        } else {
+          // pending or needs_changes — duplicate_active
+          return reply.status(200).send({
+            success: true,
+            data: serializeReviewItem(existing),
+            suppressed: true,
+            reason: "duplicate_active",
+          });
+        }
+      }
+    }
+
+    // Create via domain repository (forceReopen bypasses its internal check
+    // since we already did our enhanced check above)
+    try {
+      const result = await repo.create(domainInput);
+      const statusCode = result.created ? 201 : 200;
+      return reply.status(statusCode).send({
+        success: true,
+        data: result.item,
+        suppressed: result.suppressed,
+        reason: result.reason,
+      });
+    } catch (err: any) {
+      if (err.name === "FingerprintMismatchError") {
+        return reply.status(422).send({
+          success: false,
+          error: { code: "FINGERPRINT_MISMATCH", message: err.message },
+        });
+      }
+      throw err;
+    }
+  });
+
+  // PUT /review/items/:id — update (PG source of truth)
+  app.put("/review/items/:id", async (req: any, reply: any) => {
+    const { id } = req.params as { id: string };
+    const update = reviewUpdateSchema.parse(req.body);
+
+    const existing = await app.prisma.reviewItem.findUnique({ where: { id } });
+    if (!existing) {
+      return reply.status(404).send({ success: false, error: { code: "REVIEW_ITEM_NOT_FOUND" } });
+    }
+
+    const updateData: any = { updatedAt: new Date() };
+    if (update.status) updateData.status = update.status;
+    if (update.priority !== undefined) updateData.priority = update.priority;
+    if (update.confidence !== undefined) updateData.confidence = update.confidence;
+    if (update.payload !== undefined) updateData.payload = update.payload;
+    if (update.notes !== undefined) updateData.notes = update.notes;
+    if (update.automation !== undefined) updateData.automation = update.automation;
+    if (update.candidateImage !== undefined) updateData.candidateImage = update.candidateImage;
+    if (update.suggestedAction !== undefined) updateData.suggestedAction = update.suggestedAction;
+    if (update.currentPublicImage !== undefined) updateData.currentPublicImage = update.currentPublicImage;
+
+    const updated = await app.prisma.reviewItem.update({
+      where: { id },
+      data: updateData,
+    });
+
+    // Invalidate Redis cache
+    await app.redis.del(`review:item:${id}`);
+
+    return { success: true, data: serializeReviewItem(updated) };
+  });
+
+  // POST /review/items/:id/recheck — return only, do NOT modify status (§8)
+  app.post("/review/items/:id/recheck", async (req: any, reply: any) => {
+    const { id } = req.params as { id: string };
+
+    // Fetch from PG (source of truth)
+    const row = await app.prisma.reviewItem.findUnique({ where: { id } });
+    let item: any;
+    if (row) {
+      item = serializeReviewItem(row);
+    } else {
+      // Legacy fallback
+      const raw = await app.redis.get(`review:item:${id}`);
+      if (!raw) {
+        return reply.status(404).send({ success: false, error: { code: "REVIEW_ITEM_NOT_FOUND" } });
+      }
+      item = JSON.parse(raw);
+      item.legacy = true;
+    }
+
+    // Compute current state (real-time from database)
+    const figureId = item.figureId ? BigInt(String(item.figureId)) : null;
+    const figureSlug = item.figureSlug ? String(item.figureSlug) : null;
+    const currentState = await computeFigureState(app, figureId, figureSlug);
+
+    // Evaluate problems (recheck logic)
+    const problems = await evaluateReviewItem(app, item);
+
+    // Compute recommendedStatus (does NOT auto-resolve — §8)
+    const hasDeterministicProblem = problems.length > 0 && !problems.some(p => p.includes("需人工判断"));
+    const recommendedStatus = problems.length === 0
+      ? "resolved"
+      : hasDeterministicProblem
+        ? "needs_changes"
+        : "pending";
+
+    // Compute evidenceChanged (§10)
+    const evidenceChanged = await computeEvidenceChanged(app, item);
+
+    return {
+      success: true,
+      data: {
+        problems,
+        currentState,
+        recommendedStatus,
+        evidenceChanged,
+      },
+    };
+  });
+
+  // POST /review/items/:id/action — transaction with lock, 409 for illegal transitions (§6, §7, §15, §16)
+  app.post("/review/items/:id/action", async (req: any, reply: any) => {
+    const { id } = req.params as { id: string };
+    const actionBody = z.object({
+      action: reviewActionSchema,
+      notes: z.string().optional(),
+    }).parse(req.body || {});
+
+    // Distributed lock via Redis (prevent concurrent actions on same item)
+    const lockKey = `review:lock:${id}`;
+    const lockAcquired = await (app.redis as any).set(lockKey, "1", "EX", 10, "NX");
+    if (!lockAcquired) {
+      return reply.status(409).send({
+        success: false,
+        error: { code: "CONCURRENT_ACTION", message: "Another action is in progress on this item" },
+      });
+    }
+
+    try {
+      const repo = new DomainReviewRepository(app.prisma, app.redis);
+      const targetStatus = ACTION_TO_STATUS[actionBody.action] || "pending";
+
+      // For keep_pending: statusAfter stays "pending" (§7)
+      // For request_refetch: idempotent CrawlerJob creation (§16)
+      let crawlerJobId: string | undefined;
+
+      if (actionBody.action === "request_refetch") {
+        // Check existing crawlerJobId on the ReviewItem
+        const existing = await app.prisma.reviewItem.findUnique({ where: { id } });
+        if (!existing) {
+          return reply.status(404).send({ success: false, error: { code: "REVIEW_ITEM_NOT_FOUND" } });
+        }
+
+        const existingJobId = existing.crawlerJobId;
+        if (existingJobId) {
+          // Check if the existing CrawlerJob is non-terminal
+          const existingJob = await app.prisma.crawlerJob.findUnique({ where: { id: existingJobId } });
+          if (existingJob && !isCrawlerJobTerminal(existingJob.status)) {
+            // Reuse existing non-terminal job (idempotent — §16)
+            crawlerJobId = existingJobId;
+          }
+        }
+
+        if (!crawlerJobId) {
+          // Create a new CrawlerJob in PG
+          const crawlerRepo = new CrawlerJobRepository(app.prisma, app.redis);
+          const jobId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+          // Determine source from item payload
+          const itemData = serializeReviewItem(existing);
+          const snap = (itemData.payload || {}).detailSnapshot || {};
+          const itemSource = String(itemData.source || "").toLowerCase();
+          const rawSourceId = String(itemData.sourceId || "");
+          const rawMfcId = String(snap.mfc_id || snap.mfcId || (itemData.payload || {}).mfcId || "");
+          const rawJanCode = String(snap.jan_code || snap.janCode || (itemData.payload || {}).janCode || "");
+          const rawHobbySearchId = String(snap.hobbysearch_id || snap.hobbySearchId || snap.hobby_search_id || (itemData.payload || {}).hobbySearchId || "");
+
+          const isJan = (s: string) => /^\d{8}$/.test(s) || /^\d{13}$/.test(s);
+          const isMfcItemId = (s: string) => /^\d{1,8}$/.test(s);
+
+          let jobSource = "manual";
+          let jobRunner = "local_browser";
+          let jobNotes: string | undefined;
+          const jobPayload: any = {
+            figureId: itemData.figureId ? String(itemData.figureId) : null,
+            figureSlug: itemData.figureSlug || "",
+            reason: itemData.riskReason || `Refetch from review item ${id}`,
+            reviewItemId: id,
+            needImages: itemData.type !== "detail_review",
+            needDetails: itemData.type === "detail_review",
+          };
+
+          if (rawMfcId && isMfcItemId(rawMfcId)) {
+            jobSource = "mfc";
+            jobPayload.mfcId = rawMfcId;
+          } else if (itemSource.includes("mfc") && rawSourceId && isMfcItemId(rawSourceId)) {
+            jobSource = "mfc";
+            jobPayload.mfcId = rawSourceId;
+          } else if (rawJanCode && isJan(rawJanCode)) {
+            jobSource = "amiami";
+            jobPayload.janCode = rawJanCode;
+          } else if (isJan(rawSourceId)) {
+            jobSource = "amiami";
+            jobPayload.janCode = rawSourceId;
+          } else if (rawHobbySearchId) {
+            jobSource = "hobbysearch";
+            jobPayload.hobbySearchId = rawHobbySearchId;
+          } else {
+            jobRunner = "manual";
+            jobNotes = `无法自动判断来源: source=${itemData.source || ""}, sourceId=${rawSourceId}`;
+            jobPayload.unresolvedSource = true;
+          }
+
+          await crawlerRepo.create({
+            id: jobId,
+            source: jobSource,
+            task: "fetch_item",
+            runner: jobRunner,
+            payload: jobPayload,
+            linkedReviewItemId: id,
+            notes: jobNotes,
+            automation: { provider: "manual", workflow: "review-refetch" },
+          });
+          await crawlerRepo.releaseToQueued(jobId);
+          crawlerJobId = jobId;
+        }
+      }
+
+      // Record the decision via domain repository (transaction with transition validation)
+      const reviewer = (req as any).user?.userId ? BigInt(String((req as any).user.userId)) : null;
+      const reviewerRole = (req as any).user?.role || "admin";
+
+      try {
+        const result = await repo.recordDecision({
+          reviewItemId: id,
+          action: actionBody.action,
+          statusAfter: targetStatus,
+          reviewerId: reviewer,
+          reviewerRole,
+          decisionReason: actionBody.notes,
+          crawlerJobId,
+        });
+
+        // Purge figure display caches when image decisions are made (no FLUSHDB)
+        if (["approve_image", "reject_image", "keep_placeholder"].includes(actionBody.action)) {
+          const figKeys = await scanKeys(app.redis, `figures:detail:*`);
+          if (figKeys.length > 0) await app.redis.unlink(...figKeys);
+        }
+
+        // Invalidate list cache
+        const listKeys = await scanKeys(app.redis, "review:list:*");
+        for (const k of listKeys) await app.redis.del(k);
+
+        return {
+          success: true,
+          data: {
+            item: result.item,
+            action: actionBody.action,
+            decision: result.decision,
+            crawlerJobId: crawlerJobId || null,
+          },
+        };
+      } catch (err: any) {
+        if (err.name === "IllegalReviewTransitionError") {
+          return reply.status(409).send({
+            success: false,
+            error: {
+              code: "ILLEGAL_TRANSITION",
+              message: err.message,
+              from: err.from,
+              to: err.to,
+            },
+          });
+        }
+        if (err.name === "ReviewItemNotFoundError") {
+          return reply.status(404).send({ success: false, error: { code: "REVIEW_ITEM_NOT_FOUND" } });
+        }
+        throw err;
+      }
+    } finally {
+      // Release lock
+      await app.redis.del(lockKey);
+    }
+  });
+
+  // POST /review/items/bulk/cleanup — PG source of truth
+  app.post("/review/items/bulk/cleanup", async (req: any, reply: any) => {
+    const body = z.object({
+      dryRun: z.boolean().default(false),
+      markStale: z.boolean().default(true),
+      olderThanDays: z.coerce.number().int().min(1).default(1),
+    }).parse(req.body || {});
+
+    const cutoff = new Date(Date.now() - body.olderThanDays * 86400000);
+
+    // Find old resolved rewrite items from localized-description-sync
+    const candidates = await app.prisma.reviewItem.findMany({
+      where: {
+        type: "rewrite",
+        source: "localized-description-sync",
+        status: { in: ["resolved", "archived"] },
+        updatedAt: { lt: cutoff },
+      },
+      select: { id: true },
+    });
+
+    const updated: string[] = [];
+    for (const { id } of candidates) {
+      if (body.dryRun) {
+        updated.push(id);
+        continue;
+      }
+      if (body.markStale) {
+        const now = new Date().toISOString();
+        await app.prisma.reviewItem.update({
+          where: { id },
+          data: {
+            status: "archived",
+            updatedAt: new Date(),
+          },
+        });
+      }
+      updated.push(id);
+    }
+
+    return {
+      success: true,
+      data: {
+        updatedCount: updated.length,
+        totalScanned: candidates.length,
+        dryRun: body.dryRun,
+        sampleUpdated: updated.slice(0, 5),
+      },
+    };
+  });
+}
+
 export async function adminRoutes(app: FastifyInstance) {
   app.post("/aigc/generate", async (req: any, reply: any) => {
     const data = aigcSchema.parse(req.body);
@@ -440,487 +1205,20 @@ export async function adminRoutes(app: FastifyInstance) {
     return { success: true, data: { status: inQueue ? "queued" : "not_found" } };
   });
 
-  app.get("/review/items", async (req: any) => {
-    const query = reviewQuerySchema.parse(req.query || {});
-    // Default to pending when status not provided (P0 fix: don't show old items by default)
-    const statusFilter = query.status || "pending";
-    const showAll = statusFilter === ALL_STATUSES;
-    const ids = await app.redis.zrevrange("review:items", 0, -1);
-    const filtered: any[] = [];
-
-    for (const id of ids) {
-      const raw = await app.redis.get(`review:item:${id}`);
-      if (!raw) continue;
-      try {
-        const item = JSON.parse(raw);
-        if (!showAll && item.status !== statusFilter) continue;
-        if (query.type && item.type !== query.type) continue;
-        if (query.riskType && item.riskType !== query.riskType) continue;
-        if (query.suggestedAction && item.suggestedAction !== query.suggestedAction) continue;
-        filtered.push(item);
-      } catch {}
-    }
-
-    const total = filtered.length;
-    const offset = query.offset || 0;
-    const items = filtered.slice(offset, offset + query.limit);
-
-    // Enrich items with current figure state (batch, no N+1)
-    const slugSet = new Set<string>();
-    const idSet = new Set<bigint>();
-    for (const item of items) {
-      if (item.figureSlug) slugSet.add(item.figureSlug);
-      if (item.figureId) idSet.add(BigInt(item.figureId));
-    }
-    const figures: any[] = [];
-    if (idSet.size > 0) {
-      const byId = await app.prisma.figure.findMany({
-        where: { id: { in: [...idSet] }, isDeleted: false },
-        select: {
-          id: true, slug: true, name: true, description: true,
-          scale: true, material: true, priceJpy: true, releaseDate: true, heightMm: true,
-          manufacturer: { select: { name: true } },
-          series: { select: { name: true } },
-          images: { take: 5, orderBy: [{ sortOrder: "asc" }, { id: "asc" }], select: { id: true, width: true, height: true, data: true } },
-        },
-      });
-      figures.push(...byId);
-    }
-    if (slugSet.size > 0) {
-      const bySlug = await app.prisma.figure.findMany({
-        where: { slug: { in: [...slugSet] }, isDeleted: false },
-        select: {
-          id: true, slug: true, name: true, description: true,
-          scale: true, material: true, priceJpy: true, releaseDate: true, heightMm: true,
-          manufacturer: { select: { name: true } },
-          series: { select: { name: true } },
-          images: { take: 5, orderBy: [{ sortOrder: "asc" }, { id: "asc" }], select: { id: true, width: true, height: true, data: true } },
-        },
-      });
-      for (const fig of bySlug) {
-        if (!figures.some(f => f.id === fig.id)) figures.push(fig);
-      }
-    }
-    const figureMap = new Map<string, any>();
-    for (const fig of figures) {
-      figureMap.set(fig.slug, fig);
-      figureMap.set(String(fig.id), fig);
-    }
-
-    for (const item of items) {
-      const fig = figureMap.get(item.figureSlug) || figureMap.get(String(item.figureId));
-      if (fig) {
-        const primaryImage = (fig.images || []).length > 0 ? (fig.images[0] || null) : null;
-        const primaryMeta = primaryImage?.data || {};
-        const specFields = [fig.scale, fig.material, fig.priceJpy, fig.releaseDate, fig.heightMm, fig.manufacturer?.name, fig.series?.name].filter((f: any) => f != null);
-        item.currentFigure = {
-          id: Number(fig.id),
-          title: fig.name || "",
-          slug: fig.slug,
-          imageCount: fig.images?.length || 0,
-          primaryImage: primaryImage ? {
-            imageId: Number(primaryImage.id),
-            sourceKind: String(primaryMeta.source_kind || ""),
-            width: primaryImage.width,
-            height: primaryImage.height,
-            apiUrl: primaryImage ? `/api/v1/figures/images/${primaryImage.id}` : null,
-          } : null,
-          detail: {
-            descriptionLength: (fig.description || "").length,
-            descriptionSnapshot: (fig.description || "").slice(0, 200),
-            validSpecCount: specFields.length,
-            missingFields: [],
-          },
-        };
-      }
-    }
-
-    return { success: true, data: items, meta: { count: items.length, total, limit: query.limit, offset, defaultStatus: statusFilter } };
-  });
-
-  // GET /review/stats: statistics for the review queue (P0 fix: stats bar)
-  app.get("/review/stats", async () => {
-    const ids = await app.redis.zrevrange("review:items", 0, -1);
-    const stats = {
-      total: 0,
-      pending: 0,
-      pending_image_review: 0,
-      pending_detail_review: 0,
-      pending_rewrite: 0,
-      pending_figure_import: 0,
-      stale: 0,
-      resolved: 0,
-      rejected: 0,
-      approved: 0,
-      needs_changes: 0,
-      archived: 0,
-    };
-    for (const id of ids) {
-      const raw = await app.redis.get(`review:item:${id}`);
-      if (!raw) continue;
-      try {
-        const item = JSON.parse(raw);
-        stats.total += 1;
-        const s = item.status || "unknown";
-        if (s === "pending") {
-          stats.pending += 1;
-          const t = item.type || "";
-          if (t === "image_review") stats.pending_image_review += 1;
-          else if (t === "detail_review") stats.pending_detail_review += 1;
-          else if (t === "rewrite") stats.pending_rewrite += 1;
-          else if (t === "figure_import") stats.pending_figure_import += 1;
-        } else if (s === "stale") {
-          stats.stale += 1;
-        } else if (s === "resolved") {
-          stats.resolved += 1;
-        } else if (s === "rejected") {
-          stats.rejected += 1;
-        } else if (s === "approved") {
-          stats.approved += 1;
-        } else if (s === "needs_changes") {
-          stats.needs_changes += 1;
-        }
-      } catch {}
-    }
-    // Archived count
-    stats.archived = await app.redis.zcard("review:archive");
-    return { success: true, data: stats };
-  });
-
-  app.post("/review/items", async (req: any, reply: any) => {
-    const data = reviewItemSchema.parse(req.body);
-    const now = new Date().toISOString();
-    
-    // Generate evidenceFingerprint if not provided
-    let fingerprint = data.evidenceFingerprint;
-    if (!fingerprint) {
-      const parts = [data.type, data.figureId || data.figureSlug || "no-fig"];
-      if (data.type === "image_review" || data.type === "image") {
-        parts.push(data.riskType || "no-risk");
-        parts.push(data.candidateImage?.url || data.candidateImage?.source || "no-image");
-      } else if (data.type === "detail_review") {
-        parts.push(data.riskType || "no-risk");
-        parts.push(data.detailSnapshot?.description || "no-desc");
-      } else if (data.type === "jan_match") {
-        parts.push(data.payload?.janCode || "no-jan");
-      } else if (data.type === "figure_import") {
-        parts.push(data.payload?.sourceUrl || "no-url");
-      } else {
-        parts.push(data.title);
-      }
-      fingerprint = crypto.createHash("sha256").update(parts.join("|")).digest("hex");
-    }
-
-    // Duplicate suppression (Phase 2)
-    if (!data.forceReopen && fingerprint) {
-      const existingId = await app.redis.get(`review:fingerprint:${fingerprint}`);
-      if (existingId) {
-        const existingRaw = await app.redis.get(`review:item:${existingId}`);
-        if (existingRaw) {
-          try {
-            const existing = JSON.parse(existingRaw);
-            // Ignore if it's the exact same fingerprint.
-            // If it's still pending, it just stays pending. If it was resolved, we don't reopen it.
-            // Just return success:true and suppressed:true
-            return reply.status(200).send({ success: true, data: existing, suppressed: true, reason: "Duplicate evidenceFingerprint" });
-          } catch {}
-        }
-      }
-    }
-
-    const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    const item = {
-      id,
-      ...data,
-      evidenceFingerprint: fingerprint,
-      createdAt: now,
-      updatedAt: now,
-    };
-
-    await app.redis.set(`review:item:${id}`, JSON.stringify(item));
-    await app.redis.zadd("review:items", Date.now(), id);
-    if (fingerprint) {
-      await app.redis.set(`review:fingerprint:${fingerprint}`, id);
-    }
-    
-    return reply.status(201).send({ success: true, data: item });
-  });
-
-  app.put("/review/items/:id", async (req: any, reply: any) => {
-    const { id } = req.params as { id: string };
-    const existingRaw = await app.redis.get(`review:item:${id}`);
-    if (!existingRaw) {
-      return reply.status(404).send({ success: false, error: { code: "REVIEW_ITEM_NOT_FOUND" } });
-    }
-
-    const update = reviewUpdateSchema.parse(req.body);
-    const existing = JSON.parse(existingRaw);
-    const item = {
-      ...existing,
-      ...update,
-      updatedAt: new Date().toISOString(),
-    };
-
-    await app.redis.set(`review:item:${id}`, JSON.stringify(item));
-    return { success: true, data: item };
-  });
-
-  app.post("/review/items/:id/recheck", async (req: any, reply: any) => {
-    const { id } = req.params as { id: string };
-    const existingRaw = await app.redis.get(`review:item:${id}`);
-    if (!existingRaw) {
-      return reply.status(404).send({ success: false, error: { code: "REVIEW_ITEM_NOT_FOUND" } });
-    }
-
-    const item = JSON.parse(existingRaw);
-    const now = new Date().toISOString();
-    const problems = await evaluateReviewItem(app, item);
-    const nextPayload = {
-      ...(item.payload || {}),
-      reviewProblems: problems,
-      lastCheckedAt: now,
-    };
-    const hasDeterministicProblem = problems.length > 0 && !problems.some(p => p.includes("需人工判断"));
-    const newStatus = problems.length === 0 ? "resolved" : hasDeterministicProblem ? "needs_changes" : item.status;
-    const noteText = problems.length === 0
-      ? `复检通过：${now}`
-      : `复检仍有问题：${problems.join("；")}`;
-    const updatedItem = {
-      ...item,
-      payload: nextPayload,
-      status: newStatus,
-      notes: item.notes ? `${item.notes}\n${noteText}` : noteText,
-      updatedAt: now,
-    };
-
-    await app.redis.set(`review:item:${id}`, JSON.stringify(updatedItem));
-    return { success: true, data: { item: updatedItem, problems } };
-  });
-  // Track RQ: unified action endpoint for review queue (image/detail actions)
-  app.post("/review/items/:id/action", async (req: any, reply: any) => {
-    const { id } = req.params as { id: string };
-    const actionBody = z.object({
-      action: reviewActionSchema,
-      notes: z.string().optional(),
-    }).parse(req.body || {});
-    const existingRaw = await app.redis.get(`review:item:${id}`);
-    if (!existingRaw) {
-      return reply.status(404).send({ success: false, error: { code: "REVIEW_ITEM_NOT_FOUND" } });
-    }
-    const item = JSON.parse(existingRaw);
-    const now = new Date().toISOString();
-    // Map action -> resulting status + behavior
-    const actionStatusMap: Record<string, string> = {
-      approve_image: "approved",
-      reject_image: "rejected",
-      keep_placeholder: "resolved",
-      mark_detail_ok: "resolved",
-      request_refetch: "needs_changes",
-      dismiss_stale: "resolved",
-      keep_pending: "pending",
-    };
-    const newStatus = actionStatusMap[actionBody.action] || item.status;
-    const actionNoteMap: Record<string, string> = {
-      approve_image: "管理员批准候选图",
-      reject_image: "管理员拒绝候选图",
-      keep_placeholder: "保留当前占位图",
-      mark_detail_ok: "管理员确认详情无误",
-      request_refetch: "请求爬虫重新抓取",
-      dismiss_stale: "标记过期项已处理",
-      keep_pending: "人工无法判断，保留待审",
-    };
-    const reviewer = (req as any).user?.displayName || String((req as any).user?.userId || "");
-    const notePrefix = reviewer ? "[" + reviewer + "] " : "";
-    const note = notePrefix + (actionNoteMap[actionBody.action] || actionBody.action);
-    const userNote = actionBody.notes ? `（${actionBody.notes}）` : "";
-    const updatedItem = {
-      ...item,
-      status: newStatus,
-      notes: item.notes ? `${item.notes}
-[${now}] ${note}${userNote}` : `[${now}] ${note}${userNote}`,
-      payload: { ...(item.payload || {}), lastAction: actionBody.action, lastActionAt: now, decisionReason: actionBody.notes || null },
-      updatedAt: now,
-    };
-    await app.redis.set(`review:item:${id}`, JSON.stringify(updatedItem));
-
-    // P0: request_refetch creates a crawler job with correct source detection
-    let crawlerJobId: string | null = null;
-    if (actionBody.action === "request_refetch") {
-      // Idempotency: check existing crawlerJobId in payload
-      const existingJobId = (updatedItem.payload || {}).crawlerJobId;
-      if (existingJobId) {
-        const existingRaw = await app.redis.get(`crawler:job:${existingJobId}`);
-        if (existingRaw) {
-          try {
-            const existingJob = JSON.parse(existingRaw);
-            if (["queued", "claimed", "running", "deferred"].includes(existingJob.status)) {
-              crawlerJobId = existingJobId;  // reuse
-            }
-          } catch {}
-        }
-      }
-      if (!crawlerJobId) {
-        // P0: Determine correct crawler source based on available identifiers
-        const fid = item.figureId ? Number(item.figureId) : null;
-        const figSlug = item.figureSlug || (item.payload || {}).figureSlug || "";
-        const snap = (item.payload || {}).detailSnapshot || {};
-        const itemSource = String(item.source || "").toLowerCase();
-        const rawSourceId = String(item.sourceId || "");
-        const rawMfcId = String(snap.mfc_id || snap.mfcId || (item.payload || {}).mfcId || "");
-        const rawJanCode = String(snap.jan_code || snap.janCode || (item.payload || {}).janCode || "");
-        const rawHobbySearchId = String(snap.hobbysearch_id || snap.hobbySearchId || snap.hobby_search_id || (item.payload || {}).hobbySearchId || "");
-
-        // JAN pattern: 8 or 13 digits
-        const isJan = (s: string) => /^\d{8}$/.test(s) || /^\d{13}$/.test(s);
-        // MFC item id: typically 1-8 digit numeric (NOT 13-digit JAN)
-        const isMfcItemId = (s: string) => /^\d{1,8}$/.test(s);
-
-        let jobSource: string;
-        let jobRunner: string = "local_browser";
-        let jobNotes: string | undefined;
-        const jobPayload: any = {
-          figureId: fid,
-          figureSlug: figSlug,
-          reason: item.riskReason || `Refetch from review item ${id}`,
-          reviewItemId: id,
-          needImages: item.type !== "detail_review",
-          needDetails: item.type === "detail_review",
-        };
-
-        if (rawMfcId && isMfcItemId(rawMfcId)) {
-          // 1. Explicit MFC item id from detailSnapshot
-          jobSource = "mfc";
-          jobPayload.mfcId = rawMfcId;
-        } else if (itemSource.includes("mfc") && rawSourceId && isMfcItemId(rawSourceId)) {
-          // 1b. Source is MFC and sourceId looks like a short MFC item id
-          jobSource = "mfc";
-          jobPayload.mfcId = rawSourceId;
-        } else if (rawJanCode && isJan(rawJanCode)) {
-          // 2. JAN code from detailSnapshot
-          jobSource = "amiami";
-          jobPayload.janCode = rawJanCode;
-        } else if (isJan(rawSourceId)) {
-          // 2b. sourceId is a JAN code (8 or 13 digits)
-          jobSource = "amiami";
-          jobPayload.janCode = rawSourceId;
-        } else if (rawHobbySearchId) {
-          // 3. HobbySearch ID
-          jobSource = "hobbysearch";
-          jobPayload.hobbySearchId = rawHobbySearchId;
-        } else {
-          // 4. Unknown source — manual job
-          jobSource = "manual";
-          jobRunner = "manual";
-          jobNotes = `无法自动判断来源: source=${item.source || ""}, sourceId=${rawSourceId}, mfcId=${rawMfcId}, janCode=${rawJanCode}`;
-          jobPayload.unresolvedSource = true;
-        }
-
-        const jobId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-        const job = {
-          id: jobId,
-          attempts: 0,
-          source: jobSource,
-          task: "fetch_item",
-          runner: jobRunner,
-          status: "queued",
-          priority: 2,
-          payload: jobPayload,
-          notes: jobNotes,
-          notBefore: new Date().toISOString(),
-          maxAttempts: 3,
-          automation: { provider: "manual" as const, workflow: "review-refetch" },
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-        const score = Date.now() + 2 * 1_000_000_000;
-        await app.redis.set(`crawler:job:${jobId}`, JSON.stringify(job));
-        await app.redis.zadd("crawler:jobs", score, jobId);
-        crawlerJobId = jobId;
-        // Record crawlerJobId in item payload + notes for unresolved source
-        updatedItem.payload = { ...(updatedItem.payload || {}), crawlerJobId, crawlerSource: jobSource };
-        if (jobNotes) {
-          updatedItem.notes = updatedItem.notes
-            ? `${updatedItem.notes}\n[${new Date().toISOString()}] ${jobNotes}`
-            : `[${new Date().toISOString()}] ${jobNotes}`;
-        }
-        await app.redis.set(`review:item:${id}`, JSON.stringify(updatedItem));
-      }
-    }
-
-    // Purge figure display caches when image decisions are made (no FLUSHDB)
-    if (["approve_image", "reject_image", "keep_placeholder"].includes(actionBody.action) && item.figureSlug) {
-      // Phase 1+2 runtime-security: SCAN instead of KEYS (contract §14)
-      const figKeys = await scanKeys(app.redis, `figures:detail:*`);
-      if (figKeys.length > 0) await app.redis.unlink(...figKeys);
-    }
-    return { success: true, data: { item: updatedItem, action: actionBody.action, crawlerJobId } };
-  });
-
-  // Track RQ: bulk cleanup - mark old resolved rewrite items as stale
-  app.post("/review/items/bulk/cleanup", async (req: any, reply: any) => {
-    const body = z.object({
-      dryRun: z.boolean().default(false),
-      markStale: z.boolean().default(true),
-      olderThanDays: z.coerce.number().int().min(1).default(1),
-    }).parse(req.body || {});
-    const cutoff = Date.now() - body.olderThanDays * 86400000;
-    const ids = await app.redis.zrevrange("review:items", 0, -1);
-    const updated: string[] = [];
-    const skipped: string[] = [];
-    for (const id of ids) {
-      const raw = await app.redis.get(`review:item:${id}`);
-      if (!raw) continue;
-      try {
-        const item = JSON.parse(raw);
-        // Only touch already-resolved rewrite items from localized-description-sync
-        if (item.type !== "rewrite" || item.source !== "localized-description-sync") {
-          skipped.push(id);
-          continue;
-        }
-        if (item.status !== "resolved" && item.status !== "stale") {
-          skipped.push(id);
-          continue;
-        }
-        const ts = Date.parse(item.updatedAt || item.createdAt || "");
-        if (isNaN(ts) || ts > cutoff) {
-          skipped.push(id);
-          continue;
-        }
-        if (body.dryRun) { updated.push(id); continue; }
-        if (body.markStale && item.status !== "stale") {
-          const now = new Date().toISOString();
-          const updatedItem = {
-            ...item,
-            status: "stale" as const,
-            notes: item.notes ? `${item.notes}
-[${now}] 自动清理：已 resolved 的旧 rewrite 项标记为 stale` : `[${now}] 自动清理：已 resolved 的旧 rewrite 项标记为 stale`,
-            updatedAt: now,
-          };
-          await app.redis.set(`review:item:${id}`, JSON.stringify(updatedItem));
-        }
-        updated.push(id);
-      } catch {}
-    }
-    return {
-      success: true,
-      data: {
-        updatedCount: updated.length,
-        skippedCount: skipped.length,
-        totalScanned: ids.length,
-        dryRun: body.dryRun,
-        sampleUpdated: updated.slice(0, 5),
-      },
-    };
-  });
+  // Phase 1+2 review-api-integration: register PG-backed review routes (contract §1-§16)
+  registerReviewRoutes(app);
 
   app.post("/review/items/:id/apply", async (req: any, reply: any) => {
     const { id } = req.params as { id: string };
-    const existingRaw = await app.redis.get(`review:item:${id}`);
-    if (!existingRaw) {
+    // Phase 1+2: PG is source of truth (contract §1). Use DomainReviewRepository
+    // which has a Redis read-through cache for legacy compatibility.
+    const repo = new DomainReviewRepository(app.prisma, app.redis);
+    const existingItem = await repo.getById(id);
+    if (!existingItem) {
       return reply.status(404).send({ success: false, error: { code: "REVIEW_ITEM_NOT_FOUND" } });
     }
 
-    const item = JSON.parse(existingRaw);
+    const item: any = existingItem;
     const payload = item.payload || {};
 
     try {
@@ -1332,18 +1630,41 @@ export async function adminRoutes(app: FastifyInstance) {
         return reply.status(422).send({ success: false, error: { code: "UNSUPPORTED_REVIEW_TYPE" } });
       }
 
-      const now = new Date().toISOString();
+      const now = new Date();
       const problems = await evaluateReviewItem(app, item);
-      const updatedItem = {
-        ...item,
-        payload: { ...(item.payload || {}), reviewProblems: problems, lastCheckedAt: now },
-        status: problems.length === 0 ? "resolved" : "needs_changes",
-        notes: problems.length === 0
-          ? (item.notes ? `${item.notes}\nApplied and rechecked at ${now}` : `Applied and rechecked at ${now}`)
-          : (item.notes ? `${item.notes}\nApplied but still needs changes: ${problems.join("; ")}` : `Applied but still needs changes: ${problems.join("; ")}`),
-        updatedAt: now,
-      };
-      await app.redis.set(`review:item:${id}`, JSON.stringify(updatedItem));
+      const nextStatus = problems.length === 0 ? "resolved" : "needs_changes";
+      const noteText = problems.length === 0
+        ? `Applied and rechecked at ${now.toISOString()}`
+        : `Applied but still needs changes: ${problems.join("; ")}`;
+      const existingNotes = item.notes ? String(item.notes) : "";
+      const updatedNotes = existingNotes ? `${existingNotes}\n${noteText}` : noteText;
+      const updatedPayload = { ...(item.payload || {}), reviewProblems: problems, lastCheckedAt: now.toISOString() };
+
+      // Phase 1+2: persist to PG (source of truth) + invalidate Redis cache.
+      // Record a ReviewDecision (append-only audit trail, contract §6).
+      const reviewer = (req as any).user?.userId ? BigInt(String((req as any).user.userId)) : null;
+      const reviewerRole = (req as any).user?.role || "admin";
+      const applyResult = await repo.recordDecision({
+        reviewItemId: id,
+        action: "apply",
+        statusAfter: nextStatus,
+        reviewerId: reviewer,
+        reviewerRole,
+        decisionReason: noteText,
+        metadata: { applied, problems },
+      });
+      // Update payload + notes (recordDecision doesn't touch these)
+      const updatedRow = await app.prisma.reviewItem.update({
+        where: { id },
+        data: {
+          payload: updatedPayload as any,
+          notes: updatedNotes,
+          updatedAt: now,
+        },
+      });
+      await app.redis.del(`review:item:${id}`);
+      const updatedItem = { ...item, ...applyResult.item, payload: updatedPayload, notes: updatedNotes };
+
       // Phase 1+2 runtime-security: SCAN instead of KEYS (contract §14).
       // Use targeted namespaces rather than "figures:*" to avoid touching
       // any future figures:review:* or figures:crawler:* keys.
@@ -1354,6 +1675,18 @@ export async function adminRoutes(app: FastifyInstance) {
 
       return { success: true, data: { item: updatedItem, applied, problems } };
     } catch (err: any) {
+      // §15: illegal state transitions return 409 Conflict
+      if (err.name === "IllegalReviewTransitionError") {
+        return reply.status(409).send({
+          success: false,
+          error: {
+            code: "ILLEGAL_TRANSITION",
+            message: err.message,
+            from: err.from,
+            to: err.to,
+          },
+        });
+      }
       return reply.status(422).send({
         success: false,
         error: { code: "REVIEW_APPLY_FAILED", message: err.message || "Failed to apply review item" },
@@ -1361,108 +1694,151 @@ export async function adminRoutes(app: FastifyInstance) {
     }
   });
 
+  // === Crawler job endpoints: PG source of truth via CrawlerJobRepository ===
+  // Phase 1+2 crawler-state: PostgreSQL is the source of truth for CrawlerJob
+  // rows; Redis is ONLY a cache mirror + ZSET queue index (rebuildable from PG).
+
+  function serializeCrawlerJob(row: any): any {
+    const out: any = { ...row };
+    for (const key of ["createdAt", "updatedAt", "claimedAt", "runningAt", "completedAt", "notBefore"]) {
+      if (out[key] instanceof Date) out[key] = out[key].toISOString();
+    }
+    return out;
+  }
+
   app.get("/crawler/jobs", async (req: any) => {
     const query = crawlerJobQuerySchema.parse(req.query || {});
-    const ids = await app.redis.zrevrange("crawler:jobs", 0, Math.max(query.limit * 5, query.limit) - 1);
-    const jobs: any[] = [];
-
-    for (const id of ids) {
-      const raw = await app.redis.get(`crawler:job:${id}`);
-      if (!raw) continue;
-      try {
-        const job = JSON.parse(raw);
-        if (query.status && job.status !== query.status) continue;
-        if (query.runner && job.runner !== query.runner) continue;
-        if (query.source && job.source !== query.source) continue;
-        jobs.push(job);
-        if (jobs.length >= query.limit) break;
-      } catch {}
-    }
-
-    return { success: true, data: jobs, meta: { count: jobs.length, limit: query.limit } };
+    const crawlerRepo = new CrawlerJobRepository(app.prisma, app.redis);
+    const { jobs, total } = await crawlerRepo.list({
+      status: query.status as any,
+      runner: query.runner,
+      source: query.source,
+      limit: query.limit,
+    });
+    return {
+      success: true,
+      data: jobs.map(serializeCrawlerJob),
+      meta: { count: jobs.length, total, limit: query.limit },
+    };
   });
 
   app.post("/crawler/jobs", async (req: any, reply: any) => {
     const data = crawlerJobSchema.parse(req.body);
-    const now = new Date().toISOString();
+    const crawlerRepo = new CrawlerJobRepository(app.prisma, app.redis);
     const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    const job = {
+    const job = await crawlerRepo.create({
       id,
-      attempts: 0,
-      ...data,
-      createdAt: now,
-      updatedAt: now,
-    };
-
-    const score = Date.now() + data.priority * 1_000_000_000;
-    await app.redis.set(`crawler:job:${id}`, JSON.stringify(job));
-    await app.redis.zadd("crawler:jobs", score, id);
-    return reply.status(201).send({ success: true, data: job });
+      source: data.source,
+      task: data.task,
+      runner: data.runner,
+      priority: data.priority,
+      payload: data.payload,
+      maxAttempts: data.maxAttempts,
+      notBefore: data.notBefore ? new Date(data.notBefore) : undefined,
+      notes: data.notes,
+      automation: data.automation,
+    });
+    // Auto-release to queued for backwards compat with admin-created jobs
+    // (legacy behavior: admin-created jobs were immediately visible in the queue)
+    await crawlerRepo.releaseToQueued(id);
+    const released = await crawlerRepo.get(id);
+    return reply.status(201).send({ success: true, data: serializeCrawlerJob(released || job) });
   });
 
   app.post("/crawler/jobs/claim", async (req: any) => {
     const data = crawlerClaimSchema.parse(req.body);
-    const ids = await app.redis.zrevrange("crawler:jobs", 0, 500);
-    const claimed: any[] = [];
-    const nowMs = Date.now();
-
-    for (const id of ids) {
-      if (claimed.length >= data.limit) break;
-      const raw = await app.redis.get(`crawler:job:${id}`);
-      if (!raw) continue;
-      let job: any;
-      try { job = JSON.parse(raw); } catch { continue; }
-      if (job.status !== "queued" && job.status !== "deferred") continue;
-      if (job.runner !== data.runner) continue;
-      if (job.notBefore && Date.parse(job.notBefore) > nowMs) continue;
-      if ((job.attempts || 0) >= (job.maxAttempts || 3)) continue;
-
-      const updated = {
-        ...job,
-        status: "claimed",
-        attempts: (job.attempts || 0) + 1,
-        workerId: data.workerId,
-        claimedAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      await app.redis.set(`crawler:job:${id}`, JSON.stringify(updated));
-      claimed.push(updated);
-    }
-
+    const crawlerRepo = new CrawlerJobRepository(app.prisma, app.redis);
+    // Queue-wide claim (canaryMode=false) — runners consume any matching job
+    const results = await crawlerRepo.claimJobs({
+      runner: data.runner,
+      workerId: data.workerId,
+      limit: data.limit,
+      canaryMode: false,
+    });
+    const claimed = results.map((r: any) => serializeCrawlerJob(r.job));
     return { success: true, data: claimed, meta: { count: claimed.length } };
   });
 
   app.get("/crawler/jobs/:id", async (req: any, reply: any) => {
     const { id } = req.params as { id: string };
-    const raw = await app.redis.get(`crawler:job:${id}`);
-    if (!raw) {
+    const crawlerRepo = new CrawlerJobRepository(app.prisma, app.redis);
+    const job = await crawlerRepo.get(id);
+    if (!job) {
       return reply.status(404).send({ success: false, error: { code: "CRAWLER_JOB_NOT_FOUND", message: "Crawler job not found" } });
     }
-    try {
-      const job = JSON.parse(raw);
-      return { success: true, data: job };
-    } catch {
-      return reply.status(500).send({ success: false, error: { code: "CRAWLER_JOB_PARSE_ERROR", message: "Failed to parse job JSON" } });
-    }
+    return { success: true, data: serializeCrawlerJob(job) };
   });
 
   app.put("/crawler/jobs/:id", async (req: any, reply: any) => {
     const { id } = req.params as { id: string };
-    const existingRaw = await app.redis.get(`crawler:job:${id}`);
-    if (!existingRaw) {
+    const update = crawlerJobUpdateSchema.parse(req.body);
+    const crawlerRepo = new CrawlerJobRepository(app.prisma, app.redis);
+    const existing = await crawlerRepo.get(id);
+    if (!existing) {
       return reply.status(404).send({ success: false, error: { code: "CRAWLER_JOB_NOT_FOUND" } });
     }
 
-    const update = crawlerJobUpdateSchema.parse(req.body);
-    const existing = JSON.parse(existingRaw);
-    const job = {
-      ...existing,
-      ...update,
-      updatedAt: new Date().toISOString(),
-    };
+    // If status is changing, route through the state machine for validation.
+    // Otherwise, update non-status fields directly in PG.
+    let job = existing;
+    if (update.status && update.status !== existing.status) {
+      try {
+        switch (update.status) {
+          case "running":
+            job = await crawlerRepo.start(id);
+            break;
+          case "completed":
+            job = await crawlerRepo.complete(id, update.resultSummary ?? update.result ?? null, update.result ?? null);
+            break;
+          case "failed":
+            job = await crawlerRepo.fail(id, update.error || "Unknown error");
+            break;
+          case "deferred":
+            job = await crawlerRepo.defer(id, update.notBefore ? new Date(update.notBefore) : new Date(Date.now() + 60000), update.notes || undefined);
+            break;
+          case "queued":
+            // Release claimed → queued (re-queue without incrementing attempts)
+            job = await crawlerRepo.releaseClaim(id);
+            break;
+          case "created":
+            // Admin retry: failed → created
+            job = await crawlerRepo.adminRetry(id);
+            break;
+          default:
+            return reply.status(409).send({
+              success: false,
+              error: { code: "ILLEGAL_TRANSITION", message: `Cannot transition to ${update.status} via PUT` },
+            });
+        }
+      } catch (err: any) {
+        if (err.name === "IllegalTransitionError") {
+          return reply.status(409).send({
+            success: false,
+            error: { code: "ILLEGAL_TRANSITION", message: err.message, from: err.from, to: err.to },
+          });
+        }
+        throw err;
+      }
+    }
 
-    await app.redis.set(`crawler:job:${id}`, JSON.stringify(job));
-    return { success: true, data: job };
+    // Apply non-status field updates directly in PG (notes, priority, payload, etc.)
+    const sideFields: any = { updatedAt: new Date() };
+    if (update.notes !== undefined) sideFields.notes = update.notes;
+    if (update.priority !== undefined) sideFields.priority = update.priority;
+    if (update.payload !== undefined) sideFields.payload = update.payload;
+    if (update.result !== undefined) sideFields.result = update.result;
+    if (update.resultSummary !== undefined) sideFields.resultSummary = update.resultSummary;
+    if (update.error !== undefined) sideFields.error = update.error;
+    if (update.runner !== undefined) sideFields.runner = update.runner;
+    if (update.notBefore !== undefined) sideFields.notBefore = update.notBefore ? new Date(update.notBefore) : null;
+
+    if (Object.keys(sideFields).length > 1) {
+      job = await app.prisma.crawlerJob.update({ where: { id }, data: sideFields });
+      // Mirror to Redis cache
+      await app.redis.set(`crawler:job:${id}`, JSON.stringify(job));
+    }
+
+    return { success: true, data: serializeCrawlerJob(job) };
   });
 
   // Allowed cache namespaces for purge (no review/crawler/session/rate-limit)
