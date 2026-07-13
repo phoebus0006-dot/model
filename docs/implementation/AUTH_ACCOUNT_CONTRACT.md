@@ -83,6 +83,7 @@ These two systems share NOTHING except the database instance. They have differen
 ```json
 {
   "userId": "123",
+  "sessionVersion": 0,
   "aud": "modelwiki-user",
   "iat": 1234567890,
   "exp": 1234567890
@@ -98,7 +99,7 @@ These two systems share NOTHING except the database instance. They have differen
 - Verify current password
 - Hash new password
 - Update `passwordHash`
-- Increment `sessionVersion` (invalidates old tokens if session versioning is implemented)
+- Increment `sessionVersion` (invalidates old tokens)
 
 **Forgot password (unauthenticated):**
 - Input: `email`
@@ -134,9 +135,11 @@ These two systems share NOTHING except the database instance. They have differen
   - Return error HTML (do not reveal whether token existed)
 
 **SMTP not configured:**
-- Registration must return 503 SMTP_NOT_CONFIGURED (NOT fake success)
-- Or: set a flag `emailVerificationRequired: true` but still return 201
+- Registration/verification endpoints must return 503 SMTP_NOT_CONFIGURED
+- Must NOT return fake success (200/201 with "email sent" message)
+- The error message must clearly state SMTP is not configured
 - Application must NOT pretend the email was sent
+- See §2.6 for full policy
 
 ### 2.5 Email Normalization
 
@@ -144,24 +147,61 @@ These two systems share NOTHING except the database instance. They have differen
 normalizeEmail(raw):
   1. trim whitespace
   2. split at last "@"
-  3. local part: preserve case sensitivity (some providers are case-sensitive)
+  3. local part: preserve EXACTLY as entered (case-sensitive, dots preserved, +tags preserved)
   4. domain part: lowercase
-  5. For Gmail specifically: remove dots from local part (optional, see note)
-  6. Store original as `email`, normalized as `normalizedEmail`
+  5. IDN domains: normalize via IDNA2008 (e.g. "münchen.de" → "xn--mnchen-3ya.de")
+  6. basic format validation (must have exactly one "@", non-empty local + domain)
+  7. Store trimmed original as `email`, normalized as `normalizedEmail`
 ```
 
-- `email` — the original (trimmed) email as entered
+**Normalization rules (MANDATORY — do NOT do provider-specific rewriting):**
+- ✅ trim whitespace
+- ✅ domain lowercase
+- ✅ IDN domain standardization (Punycode)
+- ✅ basic format validation
+- ❌ NOT Gmail dot-removal (DO NOT remove dots from gmail.com local parts)
+- ❌ NOT `+tag` removal (DO NOT strip plus-addressing tags)
+- ❌ NOT any provider-specific local part rewriting
+- ❌ NOT local part case folding
+
+- `email` — the original (trimmed) email as entered by user
 - `normalizedEmail` — the normalized form used for uniqueness checking
 - Both are `@unique` in the database
 - Uniqueness is enforced by DB constraint (CREATE UNIQUE INDEX), not just application-layer query
+- Two emails that differ only in `+tag` or local-part dots are DIFFERENT accounts (per user's explicit decision)
 
 ### 2.6 Email Verification Policy
 
-Whether unverified users can login is a product decision:
-- **Option A (strict):** Cannot login until email verified
-- **Option B (lenient):** Can login but limited functionality until verified
+**Production behavior check (MUST be done by Agent A):**
+Agent A must inspect the current production deployment to determine:
+1. Whether unverified accounts can login
+2. Whether unverified accounts can favorite, comment, edit
 
-**Current decision:** Follow existing production behavior. Agent A must check the current production deployment to determine which policy is in effect. Do NOT silently change the policy.
+**If production behavior CANNOT be verified, use this safest transition strategy:**
+- Registration succeeds → account created in `emailVerifiedAt: null` state
+- User can request to resend verification email
+- Unverified users CANNOT perform write operations (favorites, comments, edits)
+- Unverified users CAN login to view their profile and resend verification
+- Application must NOT falsely report that a verification email was sent
+
+**SMTP not configured:**
+- Registration/verification endpoints must return 503 SMTP_NOT_CONFIGURED
+- Must NOT return fake success (200/201 with "email sent" message)
+- The error message must clearly state SMTP is not configured
+- This allows operators to diagnose missing email config immediately
+
+**Verified vs unverified capabilities:**
+
+| Action | Unverified user | Verified user |
+|--------|-----------------|---------------|
+| Login | ✅ YES (to manage account) | ✅ YES |
+| View profile | ✅ YES | ✅ YES |
+| Resend verification | ✅ YES | N/A |
+| Favorite/like | ❌ NO (403 EMAIL_NOT_VERIFIED) | ✅ YES |
+| Comment | ❌ NO (403 EMAIL_NOT_VERIFIED) | ✅ YES |
+| Edit content | ❌ NO (403 EMAIL_NOT_VERIFIED) | ✅ YES |
+| Change password | ✅ YES (account security) | ✅ YES |
+| Delete account | ✅ YES | ✅ YES |
 
 ### 2.7 User Model (Final)
 
@@ -176,6 +216,7 @@ model User {
   passwordResetTokenHash String?  @map("password_reset_token_hash")
   passwordResetExpiresAt DateTime? @map("password_reset_expires_at")
   passwordHash           String   @map("password_hash")
+  sessionVersion         Int      @default(0) @map("session_version")
   displayName            String   @map("display_name")
   avatarUrl              String?  @map("avatar_url")
   googleSub              String?  @unique @map("google_sub")
@@ -204,12 +245,25 @@ model User {
 
 ### 2.8 Session Invalidation
 
-When password is changed:
-- Increment a `sessionVersion` field (if implemented) OR
-- Maintain a token blacklist in Redis OR
-- Use short-lived JWTs (15 min) + refresh token rotation
+When password is changed or reset:
+- Increment `sessionVersion` on User model
+- JWT includes `sessionVersion`; if it doesn't match DB, token is rejected
+- This invalidates ALL old tokens immediately (no blacklist needed)
 
-**Current decision:** Agent A should implement `sessionVersion` on User model. JWT includes `sessionVersion`; if it doesn't match DB, token is rejected.
+When account is disabled (`isActive = false`):
+- Middleware re-queries DB and rejects the token
+- Old tokens become invalid immediately
+
+**JWT payload MUST include `sessionVersion`:**
+```json
+{
+  "userId": "123",
+  "sessionVersion": 0,
+  "aud": "modelwiki-user",
+  "iat": 1234567890,
+  "exp": 1234567890
+}
+```
 
 ---
 
@@ -394,7 +448,7 @@ The following are **FORBIDDEN**:
 
 ## 7. Migration Requirements
 
-### Migration 1: User email restoration (Agent A)
+### Migration 1: User email restoration (Agent Schema)
 ```sql
 -- Add email columns back (idempotent)
 ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "email" TEXT;
@@ -404,6 +458,7 @@ ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "email_verify_token_hash" TEXT;
 ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "email_verify_expires_at" TIMESTAMP(3);
 ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "password_reset_token_hash" TEXT;
 ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "password_reset_expires_at" TIMESTAMP(3);
+ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "session_version" INTEGER NOT NULL DEFAULT 0;
 
 -- Backfill normalized_email from email where possible
 -- Users without email must be handled manually (NOT auto-filled with fake emails)
@@ -416,7 +471,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS "users_normalized_email_key" ON "users" ("norm
 -- This may need to be a separate migration after data cleanup
 ```
 
-### Migration 2: AdminAccount creation (Agent B)
+### Migration 2: AdminAccount creation (Agent Schema)
 ```sql
 CREATE TABLE IF NOT EXISTS "admin_accounts" (
   "id" BIGSERIAL PRIMARY KEY,
@@ -456,32 +511,41 @@ CREATE INDEX IF NOT EXISTS "admin_audit_logs_actor_admin_id_created_at_idx"
 
 ## 8. Test Requirements
 
-### Agent A tests (frontend User):
+### Agent User Auth tests (frontend User — Wave 2):
 - register (success)
 - register duplicate email (409)
-- email normalization (case-insensitive domain)
+- email normalization (domain case-insensitive, local part preserved)
+- email normalization does NOT remove Gmail dots
+- email normalization does NOT remove +tag
 - login (success)
 - login wrong password (401)
 - login non-existent email (401, same message)
-- unverified email policy (per §2.6)
+- unverified email policy (per §2.6 — unverified can login but not write)
 - disabled account login (403)
 - verify email token (success)
 - verify expired token (400)
 - verify replayed token (400)
+- resend verification (success)
 - forgot password (always 200)
 - reset password (success)
 - reset with old password fails after reset
+- password change increments sessionVersion (old token invalid)
 - concurrent duplicate registration (only one succeeds)
+- SMTP not configured returns 503 (not fake success)
+- SQL/Unicode edge inputs
 
-### Agent B tests (guanli AdminAccount):
+### Agent Admin Auth tests (guanli AdminAccount — Wave 2):
 - username login (success)
+- email login rejected (400 — AdminAccount does not use email)
 - wrong password (401)
 - inactive admin (403)
-- role denied (403)
+- sessionVersion invalidation after password change (401 on retry)
+- duplicate username (409)
 - ordinary User JWT rejected by admin middleware (403)
 - admin JWT rejected by user middleware (403)
-- password change invalidates old token (401 on retry)
-- duplicate username (409)
-- brute-force rate limit (429)
-- audit log written on login
-- session namespace isolation (admin cookie ≠ user cookie)
+- admin audience enforcement (aud=modelwiki-admin)
+- role enforcement (reviewer cannot access admin management)
+- login rate limit (429, separate namespace from User)
+- audit log written on login/logout/password change
+- create-admin CLI (no default password, no overwrite)
+- disabled admin token immediately invalid
