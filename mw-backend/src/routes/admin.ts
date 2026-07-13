@@ -7,6 +7,7 @@ import path from "path";
 import sharp from "sharp";
 import crypto from "crypto";
 import { processAndStoreImage, upsertFigureImageRecord, downloadImage, validateImageUrl } from "./images.js";
+import { scanKeys } from "../security/redisGuard.js";
 
 const aigcSchema = z.object({
   figureId: z.number().int().positive(),
@@ -848,8 +849,9 @@ export async function adminRoutes(app: FastifyInstance) {
 
     // Purge figure display caches when image decisions are made (no FLUSHDB)
     if (["approve_image", "reject_image", "keep_placeholder"].includes(actionBody.action) && item.figureSlug) {
-      const figKeys = await app.redis.keys(`figures:detail:*`);
-      if (figKeys.length > 0) await app.redis.del(...figKeys);
+      // Phase 1+2 runtime-security: SCAN instead of KEYS (contract §14)
+      const figKeys = await scanKeys(app.redis, `figures:detail:*`);
+      if (figKeys.length > 0) await app.redis.unlink(...figKeys);
     }
     return { success: true, data: { item: updatedItem, action: actionBody.action, crawlerJobId } };
   });
@@ -1342,8 +1344,13 @@ export async function adminRoutes(app: FastifyInstance) {
         updatedAt: now,
       };
       await app.redis.set(`review:item:${id}`, JSON.stringify(updatedItem));
-      const allKeys = await app.redis.keys("figures:*");
-      if (allKeys.length > 0) await app.redis.del(...allKeys);
+      // Phase 1+2 runtime-security: SCAN instead of KEYS (contract §14).
+      // Use targeted namespaces rather than "figures:*" to avoid touching
+      // any future figures:review:* or figures:crawler:* keys.
+      const detailKeys = await scanKeys(app.redis, "figures:detail:*");
+      if (detailKeys.length > 0) await app.redis.unlink(...detailKeys);
+      const listKeys = await scanKeys(app.redis, "figures:list:*");
+      if (listKeys.length > 0) await app.redis.unlink(...listKeys);
 
       return { success: true, data: { item: updatedItem, applied, problems } };
     } catch (err: any) {
@@ -1684,7 +1691,7 @@ export async function adminRoutes(app: FastifyInstance) {
     const processing = await app.redis.get("legacy:import:processing");
     const recentImports: Array<{ itemId: number; status: string }> = [];
 
-    const recentKeys = await app.redis.keys("legacy:import:result:*");
+    const recentKeys = await scanKeys(app.redis, "legacy:import:result:*");
     for (const key of recentKeys.slice(-10)) {
       const val = await app.redis.get(key);
       if (val) {
@@ -1910,8 +1917,10 @@ export async function adminRoutes(app: FastifyInstance) {
       }
     }
 
-    const allKeys = await app.redis.keys("figures:*");
-    if (allKeys.length > 0) await app.redis.del(...allKeys);
+    const detailKeysAfterImport = await scanKeys(app.redis, "figures:detail:*");
+    if (detailKeysAfterImport.length > 0) await app.redis.unlink(...detailKeysAfterImport);
+    const listKeysAfterImport = await scanKeys(app.redis, "figures:list:*");
+    if (listKeysAfterImport.length > 0) await app.redis.unlink(...listKeysAfterImport);
 
     return { success: true, data: { total: data.figures.length, results } };
   });

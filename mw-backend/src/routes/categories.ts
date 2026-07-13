@@ -1,5 +1,6 @@
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
+import { scanKeys } from "../security/redisGuard.js";
 
 const createCategorySchema = z.object({
   slug: z.string().min(1),
@@ -12,13 +13,13 @@ const updateCategorySchema = createCategorySchema.partial();
 
 async function invalidateCategoryCache(app: FastifyInstance, slug?: string) {
   const keys: string[] = [];
-  const listKeys = await app.redis.keys("categories:*");
+  const listKeys = await scanKeys(app.redis, "categories:*");
   keys.push(...listKeys);
   if (slug) {
     const detailKey = `categories:detail:${slug}`;
     keys.push(detailKey);
   }
-  if (keys.length > 0) await app.redis.del(...keys);
+  if (keys.length > 0) await app.redis.unlink(...keys);
 }
 
 async function activeFigureCountByCategory(app: FastifyInstance, categoryIds: any[]) {

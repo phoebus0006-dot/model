@@ -1,6 +1,7 @@
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { processAndStoreImage, upsertFigureImageRecord } from "./images.js";
+import { scanKeys } from "../security/redisGuard.js";
 
 const listQuery = z.object({
   page: z.coerce.number().min(1).default(1),
@@ -256,12 +257,12 @@ function sourceSlugFallbacks(slug: string): any[] {
 
 async function invalidateFigureCache(app: FastifyInstance, slug?: string) {
   if (slug) {
-    await app.redis.del(`figures:detail:${slug}`);
+    await app.redis.unlink(`figures:detail:${slug}`);
   }
-  const detailKeys = await app.redis.keys("figures:detail:*");
-  if (detailKeys.length > 0) await app.redis.del(...detailKeys);
-  const listKeys = await app.redis.keys("figures:list:*");
-  if (listKeys.length > 0) await app.redis.del(...listKeys);
+  const detailKeys = await scanKeys(app.redis, "figures:detail:*");
+  if (detailKeys.length > 0) await app.redis.unlink(...detailKeys);
+  const listKeys = await scanKeys(app.redis, "figures:list:*");
+  if (listKeys.length > 0) await app.redis.unlink(...listKeys);
 }
 
 export async function figureRoutes(app: FastifyInstance) {
