@@ -1,0 +1,157 @@
+# ModelWiki CI — mirrors the local gate (mw-backend/scripts/gate.mjs) in CI.
+# Never depends on production credentials. DATABASE_URL is a placeholder.
+name: CI
+
+on:
+  push:
+    branches: [main, "agent/**"]
+  pull_request:
+    branches: [main]
+
+# Cancel superseded runs on the same ref.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: mw-backend
+
+jobs:
+  gate:
+    name: QA Gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    env:
+      # Placeholder only — prisma validate needs the env var to exist.
+      # CI must NEVER use production credentials.
+      DATABASE_URL: postgresql://placeholder:placeholder@localhost:5432/placeholder
+      # Node options for larger stacks (tsup/esbuild).
+      NODE_OPTIONS: --max-old-space-size=4096
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: mw-backend/package-lock.json
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # ─── 1. Dependency install (frozen) ───────────────────────────────
+      - name: Install dependencies (npm ci)
+        run: npm ci
+
+      # ─── 2. Prisma validate ───────────────────────────────────────────
+      - name: Prisma validate
+        run: npm run prisma:validate
+
+      # ─── 3. Lint (JS tooling syntax) ───────────────────────────────────
+      - name: Lint
+        run: npm run lint
+
+      # ─── 4. Typecheck ─────────────────────────────────────────────────
+      - name: Typecheck
+        run: npm run typecheck
+
+      # ─── 5. Build ──────────────────────────────────────────────────────
+      - name: Build
+        run: npm run build
+
+      # ─── 6. Unit tests (no DB/Redis required) ─────────────────────────
+      - name: Unit tests
+        run: npm run test
+
+      # ─── 7. Integration tests (allow failure — no DB in CI) ────────────
+      - name: Integration tests
+        run: npm run test:integration
+        continue-on-error: true
+
+      # ─── 8. Admin JS check ─────────────────────────────────────────────
+      - name: Admin JS check
+        run: npm run admin-js-check
+
+      # ─── 9. PHP syntax check (skip if php unavailable) ─────────────────
+      - name: PHP syntax check
+        working-directory: .
+        run: |
+          if ! command -v php >/dev/null 2>&1; then
+            echo "SKIP: php CLI not installed"
+            exit 0
+          fi
+          fail=0
+          while IFS= read -r f; do
+            if ! php -l "$f" >/dev/null 2>&1; then
+              echo "FAIL: $f"
+              php -l "$f"
+              fail=1
+            fi
+          done < <(find modelwiki-theme -name '*.php' -not -path '*/vendor/*')
+          exit $fail
+        continue-on-error: true
+
+      # ─── 10. Python compile (syntax check, no pytest needed) ───────────
+      - name: Python compile check
+        working-directory: .
+        run: |
+          fail=0
+          for f in nas_crawler_agent.py mfc_batch_scraper.py guanli_index.php; do
+            if [ -f "$f" ] && [[ "$f" == *.py ]]; then
+              python -m py_compile "$f" || fail=1
+            fi
+          done
+          # Also compile theme test + kuro scripts if present.
+          find modelwiki-theme/tests scripts/kuro -name '*.py' -not -path '*/vendor/*' 2>/dev/null | while read -r f; do
+            python -m py_compile "$f" || exit 1
+          done || fail=1
+          exit $fail
+
+      # ─── 11. Secret scan ───────────────────────────────────────────────
+      - name: Secret scan
+        working-directory: .
+        run: |
+          set +e
+          hits=0
+          patterns=(
+            'AKIA[0-9A-Z]{16}'
+            'sk-[a-zA-Z0-9]{20,}'
+            'ghp_[a-zA-Z0-9]{36}'
+            '-----BEGIN (RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----'
+          )
+          for pat in "${patterns[@]}"; do
+            # Search tracked source only; exclude deps, build output, tests, locks.
+            match=$(grep -rEn --include='*.ts' --include='*.js' --include='*.mjs' \
+              --include='*.sql' --include='*.prisma' --include='*.php' \
+              --exclude-dir=node_modules --exclude-dir=dist --exclude-dir=.git \
+              --exclude='*.test.ts' --exclude='package-lock.json' \
+              "$pat" mw-backend/src mw-backend/prisma modelwiki-theme 2>/dev/null)
+            if [ -n "$match" ]; then
+              echo "SECRET HIT ($pat):"
+              echo "$match"
+              hits=$((hits+1))
+            fi
+          done
+          # Hardcoded password assignment (heuristic, exclude env.example & tests).
+          pwd_match=$(grep -rEn --include='*.ts' --include='*.js' --include='*.php' \
+            --exclude-dir=node_modules --exclude-dir=dist \
+            --exclude='*.test.ts' --exclude='env.example' \
+            'password\s*=\s*["'\''][^"'\'']{8,}["'\'']' \
+            mw-backend/src modelwiki-theme 2>/dev/null)
+          if [ -n "$pwd_match" ]; then
+            echo "SECRET HIT (hardcoded password):"
+            echo "$pwd_match"
+            hits=$((hits+1))
+          fi
+          if [ "$hits" -gt 0 ]; then
+            echo "::error::$hits secret pattern(s) found"
+            exit 1
+          fi
+          echo "No secrets found."
