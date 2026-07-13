@@ -50,6 +50,7 @@ model Figure {
   comments           FigureComment[]
   localized          FigureLocalized[]
   releases           FigureRelease[]
+  reviews            ReviewItem[]
 
   @@map("figures")
 }
@@ -259,10 +260,12 @@ model User {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
-  favorites      Favorite[]
-  favoriteGroups FavoriteGroup[]
-  likes          FigureLike[]
-  comments       FigureComment[]
+  favorites        Favorite[]
+  favoriteGroups   FavoriteGroup[]
+  likes            FigureLike[]
+  comments         FigureComment[]
+  reviewItems      ReviewItem[]
+  reviewDecisions  ReviewDecision[]
 
   @@map("users")
 }
@@ -348,3 +351,106 @@ model RedirectMap {
 
   @@map("redirect_map")
 }
+
+// ─── Phase 1+2 Review Workflow (see docs/implementation/PHASE12_CONTRACT.md) ───
+// PostgreSQL is the source of truth; Redis mirrors as cache/index only.
+
+model ReviewItem {
+  id                   String    @id
+  type                 String
+  riskType             String?   @map("risk_type")
+  status               String    @default("pending")
+  title                String
+  source               String?
+  sourceId             String?   @map("source_id")
+  figureId             BigInt?   @map("figure_id")
+  figureSlug           String?   @map("figure_slug")
+  priority             Int       @default(1)
+  confidence           Float?
+  riskReason           String?   @db.VarChar(1000)
+  candidateImage       Json?
+  currentPublicImage   Json?     @map("current_public_image")
+  originalEvidence     Json?     @map("original_evidence")
+  currentStateSnapshot Json?     @map("current_state_snapshot")
+  detailSnapshot       Json?     @map("detail_snapshot")
+  suggestedAction      String?   @map("suggested_action")
+  payload              Json?
+  notes                String?
+  evidenceFingerprint  String    @map("evidence_fingerprint")
+  forceReopen          Boolean   @default(false) @map("force_reopen")
+  crawlerJobId         String?   @map("crawler_job_id")
+  automation           Json?
+  reviewerId           BigInt?   @map("reviewer_id")
+  decisionReason       String?   @db.VarChar(2000) @map("decision_reason")
+  decisionAt           DateTime? @map("decision_at")
+  lastAction           String?   @map("last_action")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+
+  figure     Figure?          @relation(fields: [figureId], references: [id])
+  reviewer   User?            @relation(fields: [reviewerId], references: [id])
+  crawlerJob CrawlerJob?      @relation(fields: [crawlerJobId], references: [id])
+  decisions  ReviewDecision[]
+
+  @@index([status, createdAt])
+  @@index([figureId, riskType, status])
+  @@index([evidenceFingerprint])
+  @@map("review_items")
+}
+
+model ReviewDecision {
+  id                 BigInt   @id @default(autoincrement())
+  reviewItemId       String   @map("review_item_id")
+  action             String
+  statusBefore       String   @map("status_before")
+  statusAfter        String   @map("status_after")
+  reviewerId         BigInt?  @map("reviewer_id")
+  reviewerRole       String   @map("reviewer_role")
+  decisionReason     String?  @db.VarChar(2000) @map("decision_reason")
+  crawlerJobId       String?  @map("crawler_job_id")
+  candidateImageHash String?  @map("candidate_image_hash")
+  evidenceFingerprint String  @map("evidence_fingerprint")
+  metadata           Json?
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  reviewItem ReviewItem @relation(fields: [reviewItemId], references: [id], onDelete: Cascade)
+  reviewer   User?      @relation(fields: [reviewerId], references: [id])
+  crawlerJob CrawlerJob? @relation(fields: [crawlerJobId], references: [id])
+
+  @@index([reviewItemId, createdAt])
+  @@index([evidenceFingerprint])
+  @@map("review_decisions")
+}
+
+model CrawlerJob {
+  id              String    @id
+  source          String
+  task            String
+  runner          String    @default("server_safe")
+  status          String    @default("created")
+  priority        Int       @default(1)
+  payload         Json?
+  result          Json?
+  resultSummary   Json?     @map("result_summary")
+  error           String?
+  attempts        Int       @default(0)
+  maxAttempts     Int       @default(3) @map("max_attempts")
+  notBefore       DateTime? @map("not_before")
+  workerId        String?   @map("worker_id")
+  linkedReviewItemId String? @map("linked_review_item_id")
+  notes           String?
+  automation      Json?
+  createdAt       DateTime  @default(now()) @map("created_at")
+  claimedAt       DateTime? @map("claimed_at")
+  runningAt       DateTime? @map("running_at")
+  completedAt     DateTime? @map("completed_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  reviewItems ReviewItem[]
+  decisions   ReviewDecision[]
+
+  @@index([status, priority, createdAt])
+  @@index([source, task])
+  @@map("crawler_jobs")
+}
+
