@@ -27,7 +27,7 @@ async function requireUser(app: FastifyInstance, req: any, reply: any) {
     const payload = app.jwt.verify<{ userId: string | number; role: string }>(auth.slice(7));
     const user = await app.prisma.user.findUnique({
       where: { id: BigInt(payload.userId) },
-      select: { id: true, email: true, displayName: true, avatarUrl: true, role: true, isActive: true, createdAt: true },
+      select: { id: true, displayName: true, avatarUrl: true, role: true, isActive: true, createdAt: true },
     });
 
     if (!user?.isActive) {
