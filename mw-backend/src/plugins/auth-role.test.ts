@@ -50,7 +50,7 @@ function makePrismaMock(user: MockUser | null) {
 
 function makeApp(user: MockUser | null): FastifyInstance {
   const app = Fastify({ logger: false });
-  app.decorate("prisma", makePrismaMock(user));
+  (app as any).prisma = makePrismaMock(user);
   app.register(jwt, { secret: JWT_SECRET });
   return app;
 }
