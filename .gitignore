@@ -112,5 +112,16 @@ m6_*.sh
 m6_*.py
 m6fix_*.sh
 m6fix_*.sql
+m6fix_*.json
 p_*.py
 p_*.sql
+
+# Phase 1+2: artifact files must not replace source code (principle #2)
+# Patches, tarballs, code dumps, and diff text are not source modifications
+diff.txt
+*.patch
+*.patch.sha256
+*.tar.gz
+*.tar.gz.sha256
+backend_code.txt
+src.tar.gz
