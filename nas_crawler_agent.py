@@ -30,6 +30,65 @@ from crawler_common import (
 SUPPORTED_ITEM_SOURCES = {"mfc", "hobbysearch", "amiami"}
 REQUEST_TIMEOUT = 30
 
+# ─── Canonical CrawlerJob status enum (7 values) ────────────────────────────
+# Contract: docs/implementation/PHASE12_CONTRACT.md §5
+# The ONLY values new writes may use. "succeeded" is forbidden — use "completed".
+CRAWLER_JOB_STATUSES = (
+    "created",
+    "queued",
+    "claimed",
+    "running",
+    "completed",
+    "failed",
+    "deferred",
+)
+
+# Legal state transitions (mirrors mw-backend/src/crawler/stateMachine.ts).
+LEGAL_TRANSITIONS = {
+    "created": ["queued"],
+    "queued": ["claimed"],
+    "claimed": ["running", "queued"],
+    "running": ["completed", "failed", "deferred"],
+    "completed": [],          # terminal
+    "failed": ["created"],    # admin retry only
+    "deferred": ["queued"],
+}
+
+TERMINAL_STATUSES = frozenset({"completed", "failed"})
+ACTIVE_STATUSES = frozenset({"created", "queued", "claimed", "running", "deferred"})
+
+
+class IllegalTransitionError(Exception):
+    """Raised when a CrawlerJob status transition violates LEGAL_TRANSITIONS."""
+
+    def __init__(self, from_status, to_status, job_id=None):
+        self.from_status = from_status
+        self.to_status = to_status
+        self.job_id = job_id
+        legal = LEGAL_TRANSITIONS.get(from_status, [])
+        super().__init__(
+            f"Illegal CrawlerJob transition: {from_status} -> {to_status}"
+            + (f" (job {job_id})" if job_id else "")
+            + f". Legal targets from {from_status}: {legal or '(terminal)'}"
+        )
+
+
+def _assert_legal_transition(from_status, to_status, job_id=None):
+    """Validate a status transition against LEGAL_TRANSITIONS.
+
+    Raises IllegalTransitionError if the transition is not allowed.
+    """
+    if from_status not in LEGAL_TRANSITIONS:
+        raise IllegalTransitionError(from_status, to_status, job_id)
+    if to_status not in LEGAL_TRANSITIONS[from_status]:
+        raise IllegalTransitionError(from_status, to_status, job_id)
+
+
+def _now_iso():
+    """Return current UTC time as ISO 8601 string (e.g. 2026-07-13T12:00:00Z)."""
+    from datetime import datetime, timezone
+    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
 
 class NasCrawlerAgent:
     def __init__(self, api_base, username, password, runner, worker_id, poll_interval, report_path):
@@ -48,6 +107,13 @@ class NasCrawlerAgent:
         # Mapping: source -> ISO 8601 timestamp (UTC) when cooldown ends.
         self.source_blocked_until = {}
         self._stopping = False
+        # Transition tracking: last known status and attempt per job_id.
+        # Populated by claim_jobs and update_job for transition validation.
+        self._last_status = {}
+        self._last_attempt = {}
+        # Append-only transition event log for audit (previousStatus, nextStatus,
+        # agentId, attempt, timestamp, resultSummary/error).
+        self._transition_events = []
 
     def log(self, message):
         print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] {message}", flush=True)
@@ -78,20 +144,41 @@ class NasCrawlerAgent:
             self.log(f"re-login failed: {type(e).__name__}: {e}")
             raise
 
-    def claim_jobs(self, limit=1):
+    def claim_jobs(self, limit=1, job_ids=None):
+        """Atomically claim jobs via the backend claim API.
+
+        All claim logic is server-side (POST /admin/crawler/jobs/claim).
+        The Python agent never does queue-wide consumption on its own.
+
+        Args:
+            limit: Max jobs to claim (server enforces [1, 10]).
+            job_ids: Optional canary-mode allowlist. When provided, the
+                request includes ``jobIds`` so the backend claims ONLY those
+                ids (contract §5 + §12 canary protocol). Queue-wide claim
+                is forbidden in canary mode.
+        """
         # Server schema enforces limit in [1, 10]; cap to avoid 422
         claim_limit = max(1, min(int(limit or 1), 10))
+        claim_body = {
+            "runner": self.runner,
+            "workerId": self.worker_id,
+            "limit": claim_limit,
+        }
+        # Canary mode: pass exact jobIds so the backend claims only those.
+        if job_ids:
+            claim_body["jobIds"] = list(job_ids)
+            claim_body["canaryMode"] = True
         try:
             resp = self.session.post(
                 f"{self.api_base}/admin/crawler/jobs/claim",
-                json={"runner": self.runner, "workerId": self.worker_id, "limit": claim_limit},
+                json=claim_body,
                 timeout=REQUEST_TIMEOUT,
             )
             if resp.status_code == 401:
                 self._ensure_auth()
                 resp = self.session.post(
                     f"{self.api_base}/admin/crawler/jobs/claim",
-                    json={"runner": self.runner, "workerId": self.worker_id, "limit": claim_limit},
+                    json=claim_body,
                     timeout=REQUEST_TIMEOUT,
                 )
             if resp.status_code == 422:
@@ -100,7 +187,16 @@ class NasCrawlerAgent:
             data = resp.json()
             if not data.get("success"):
                 raise RuntimeError(f"Claim failed: {data}")
-            return data.get("data", [])
+            claimed = data.get("data", [])
+            # Record claimed status for transition validation.
+            # The backend transitions queued/deferred -> claimed and increments
+            # attempts atomically; we mirror that locally.
+            for job in claimed:
+                jid = job.get("id")
+                if jid:
+                    self._last_status[jid] = "claimed"
+                    self._last_attempt[jid] = int(job.get("attempts", 0) or 0)
+            return claimed
         except requests.HTTPError:
             raise
         except Exception as e:
@@ -109,8 +205,52 @@ class NasCrawlerAgent:
             raise
 
     def update_job(self, job_id, **payload):
+        """Update a job via the backend API with transition validation.
+
+        Validates the status transition against LEGAL_TRANSITIONS before
+        sending. Records a transition event (previousStatus, nextStatus,
+        agentId, attempt, timestamp, resultSummary/error) both locally
+        (self._transition_events) and in the payload (``transition`` key)
+        so the backend can persist it as a CrawlerJobEvent.
+
+        Raises IllegalTransitionError if the transition is not allowed.
+        """
+        new_status = payload.get("status")
+        previous_status = self._last_status.get(job_id)
+        attempt_val = payload.get("attempts")
+        if attempt_val is None:
+            attempt_val = self._last_attempt.get(job_id, 0)
+
+        # Validate transition if both previous and new status are known
+        if new_status and previous_status:
+            _assert_legal_transition(previous_status, new_status, job_id)
+
+        # Build transition metadata and include it in the payload
+        if new_status:
+            transition = {
+                "previousStatus": previous_status,
+                "nextStatus": new_status,
+                "agentId": self.worker_id,
+                "runner": self.runner,
+                "attempt": attempt_val,
+                "timestamp": _now_iso(),
+            }
+            # Include in payload so backend can store as CrawlerJobEvent
+            payload["transition"] = transition
+            # Record locally for audit/testing
+            self._transition_events.append({
+                "jobId": job_id,
+                "previousStatus": previous_status,
+                "nextStatus": new_status,
+                "agentId": self.worker_id,
+                "attempt": attempt_val,
+                "timestamp": transition["timestamp"],
+                "resultSummary": payload.get("resultSummary"),
+                "error": payload.get("error"),
+            })
+
         import random as _r
-        for attempt in range(3):
+        for retry_idx in range(3):
             try:
                 resp = self.session.put(
                     f"{self.api_base}/admin/crawler/jobs/{job_id}",
@@ -125,13 +265,18 @@ class NasCrawlerAgent:
                         timeout=REQUEST_TIMEOUT,
                     )
                 if resp.status_code == 429:
-                    if attempt < 2:
-                        wait = (2 ** attempt) + _r.uniform(0.5, 1.5)
-                        self.log(f"  429 on update_job, retry in {wait:.1f}s (attempt {attempt+1}/3)")
+                    if retry_idx < 2:
+                        wait = (2 ** retry_idx) + _r.uniform(0.5, 1.5)
+                        self.log(f"  429 on update_job, retry in {wait:.1f}s (attempt {retry_idx+1}/3)")
                         time.sleep(wait)
                         continue
                     raise RuntimeError(f"update_job: 3 consecutive 429, giving up")
                 resp.raise_for_status()
+                # Update local status tracking on success
+                if new_status:
+                    self._last_status[job_id] = new_status
+                    if payload.get("attempts") is not None:
+                        self._last_attempt[job_id] = int(payload["attempts"])
                 return resp.json()
             except RuntimeError:
                 raise
@@ -146,6 +291,64 @@ class NasCrawlerAgent:
         )
         resp.raise_for_status()
         return resp.json()
+
+    def _find_active_job(self, source, task, item_id):
+        """Check if there's already an active (non-terminal) job for the given
+        source + task + itemId. Used for idempotent job creation.
+
+        Returns the existing job dict or None.
+        """
+        if not item_id:
+            return None
+        try:
+            resp = self.session.get(
+                f"{self.api_base}/admin/crawler/jobs",
+                params={"source": source, "limit": 200},
+                timeout=REQUEST_TIMEOUT,
+            )
+            if resp.status_code != 200:
+                return None
+            jobs = (resp.json().get("data") or [])
+            for j in jobs:
+                if j.get("status") not in ACTIVE_STATUSES:
+                    continue
+                if j.get("task") != task:
+                    continue
+                j_payload = j.get("payload") or {}
+                if j_payload.get("itemId") == item_id or j_payload.get("id") == item_id:
+                    return j
+        except Exception as e:
+            self.log(f"  warn: _find_active_job failed: {e}")
+        return None
+
+    def _create_fetch_item_job_idempotent(self, source, task, payload, priority,
+                                           automation, discovered_by):
+        """Create a fetch_item job, but only if no active job exists for the
+        same source + itemId. This prevents duplicate jobs from repeated
+        searches (idempotent request_refetch — contract §3 request_refetch
+        MUST create exactly one CrawlerJob per active window).
+
+        Returns (job_dict, created: bool).
+        """
+        item_id = payload.get("itemId") or payload.get("id")
+        if item_id:
+            existing = self._find_active_job(source, task, item_id)
+            if existing:
+                self.log(
+                    f"  idempotent skip: active job {existing.get('id')} "
+                    f"exists for {source}:{item_id}"
+                )
+                return existing, False
+        body = {
+            "source": source,
+            "task": task,
+            "runner": self.runner,
+            "priority": priority,
+            "payload": payload,
+            "automation": automation,
+        }
+        job = self.create_job(body)
+        return job, True
 
     def _is_source_blocked(self, source):
         """Check if a source is currently in Cloudflare-block cooldown."""
@@ -393,6 +596,9 @@ class NasCrawlerAgent:
             "write_action": write_action,
             "figure_id": figure_id,
             "slug": slug,
+            # Whether the DB readback (GET /figures/{slug}) succeeded — used by
+            # the 3-step completion verification (HTTP 200 != completed).
+            "readback_ok": readback_ok,
             # DB readback (authoritative)
             "final_category_slugs": final_category_slugs,
             "final_db_image_counts": final_db_image_counts,
@@ -633,21 +839,22 @@ class NasCrawlerAgent:
 
         queued = 0
         for item in results:
-            body = {
-                "source": "mfc",
-                "task": "fetch_item",
-                "runner": self.runner,
-                "priority": job.get("priority", 1),
-                "payload": {
-                    "itemId": item.get("id"),
-                    "url": item.get("url"),
-                    "discoveredBy": job.get("id"),
-                    "query": query,
-                },
-                "automation": job.get("automation") or {"provider": "manual", "workflow": "nas-agent-search"},
+            payload = {
+                "itemId": item.get("id"),
+                "url": item.get("url"),
+                "discoveredBy": job.get("id"),
+                "query": query,
             }
-            self.create_job(body)
-            queued += 1
+            _, created = self._create_fetch_item_job_idempotent(
+                source="mfc",
+                task="fetch_item",
+                payload=payload,
+                priority=job.get("priority", 1),
+                automation=job.get("automation") or {"provider": "manual", "workflow": "nas-agent-search"},
+                discovered_by=job.get("id"),
+            )
+            if created:
+                queued += 1
 
         self.report.write("agent_mfc_search", jobId=job["id"], query=query, results=results, queued=queued)
         return {"query": query, "found": len(results), "queued": queued}
@@ -668,21 +875,22 @@ class NasCrawlerAgent:
 
         queued = 0
         for item in results:
-            body = {
-                "source": "amiami",
-                "task": "fetch_item",
-                "runner": self.runner,
-                "priority": job.get("priority", 1),
-                "payload": {
-                    "itemId": item.get("id"),
-                    "url": item.get("url"),
-                    "discoveredBy": job.get("id"),
-                    "query": query,
-                },
-                "automation": job.get("automation") or {"provider": "manual", "workflow": "nas-agent-amiami-search"},
+            payload = {
+                "itemId": item.get("id"),
+                "url": item.get("url"),
+                "discoveredBy": job.get("id"),
+                "query": query,
             }
-            self.create_job(body)
-            queued += 1
+            _, created = self._create_fetch_item_job_idempotent(
+                source="amiami",
+                task="fetch_item",
+                payload=payload,
+                priority=job.get("priority", 1),
+                automation=job.get("automation") or {"provider": "manual", "workflow": "nas-agent-amiami-search"},
+                discovered_by=job.get("id"),
+            )
+            if created:
+                queued += 1
 
         self.report.write("agent_amiami_search", jobId=job["id"], query=query, results=results, queued=queued)
         return {"query": query, "found": len(results), "queued": queued}
@@ -703,24 +911,72 @@ class NasCrawlerAgent:
 
         queued = 0
         for item in results:
-            body = {
-                "source": "hobbysearch",
-                "task": "fetch_item",
-                "runner": self.runner,
-                "priority": job.get("priority", 1),
-                "payload": {
-                    "itemId": item.get("id"),
-                    "url": item.get("url"),
-                    "discoveredBy": job.get("id"),
-                    "query": query,
-                },
-                "automation": job.get("automation") or {"provider": "manual", "workflow": "nas-agent-hobbysearch-search"},
+            payload = {
+                "itemId": item.get("id"),
+                "url": item.get("url"),
+                "discoveredBy": job.get("id"),
+                "query": query,
             }
-            self.create_job(body)
-            queued += 1
+            _, created = self._create_fetch_item_job_idempotent(
+                source="hobbysearch",
+                task="fetch_item",
+                payload=payload,
+                priority=job.get("priority", 1),
+                automation=job.get("automation") or {"provider": "manual", "workflow": "nas-agent-hobbysearch-search"},
+                discovered_by=job.get("id"),
+            )
+            if created:
+                queued += 1
 
         self.report.write("agent_hobbysearch_search", jobId=job["id"], query=query, results=results, queued=queued)
         return {"query": query, "found": len(results), "queued": queued}
+
+    def _verify_completion(self, job, result, result_summary):
+        """3-step completion verification (HTTP 200 != completed).
+
+        Before marking a job ``completed``, confirm:
+          1. Page/data scrape succeeded (data was obtained or intentionally filtered).
+          2. Writeback succeeded (figure created/merged via API).
+          3. Readback succeeded (GET /figures/{slug} confirms data is in the DB).
+
+        Returns (ok: bool, reason: str).
+        """
+        task = job.get("task")
+        source = job.get("source")
+
+        # Search jobs: no figure writeback to verify. Completion = search ran.
+        if task in ("search", "discover"):
+            return True, "search completed"
+
+        # fetch_item jobs: 3-step verification
+        if task in ("fetch_item", "item"):
+            rs = result_summary or {}
+            write_action = rs.get("write_action", "skipped")
+
+            # Step 1: scrape succeeded
+            if not result:
+                return False, "no result from handle_fetch_item"
+
+            # Filtered items: agent determined no usable data. This is a valid
+            # completion — the agent successfully classified the item. No
+            # writeback or readback needed.
+            if write_action == "filtered":
+                return True, "filtered (no usable data — intentional)"
+
+            # Step 2: writeback succeeded (figure was created/merged)
+            figure_id = rs.get("figure_id")
+            slug = rs.get("slug")
+            if not figure_id or not slug:
+                return False, "writeback produced no figure_id/slug"
+
+            # Step 3: readback succeeded (figure exists in DB via GET /figures/{slug})
+            if not rs.get("readback_ok", False):
+                return False, f"readback failed for figure #{figure_id} ({slug})"
+
+            return True, "3-step verification passed"
+
+        # Unknown task type — do not fake success
+        return False, f"unknown task type: {task}"
 
     def process_job(self, job):
         job_id = job["id"]
@@ -800,8 +1056,31 @@ class NasCrawlerAgent:
         if isinstance(result, dict) and "resultSummary" in result:
             result_summary = result.pop("resultSummary")
 
-        self.update_job(job_id, status="succeeded", result=result, resultSummary=result_summary, error="")
-        self.log(f"job {job_id}: succeeded")
+        # 3-step completion verification (HTTP 200 != completed).
+        # Only mark completed when scrape + writeback + readback all succeed.
+        ok, reason = self._verify_completion(job, result, result_summary)
+        if not ok:
+            self.log(f"job {job_id}: completion verification FAILED: {reason}")
+            fail_payload = job.get("payload") or {}
+            fail_summary = self._build_result_summary(
+                job, source, fail_payload.get("itemId"), fail_payload.get("batch_id"),
+                "verify_failed", None, None, None, {},
+                cf_cleared=False, cf_blocked=False,
+                error_code="COMPLETION_VERIFY_FAILED", error_message=reason,
+            )
+            self.update_job(
+                job_id, status="failed",
+                error=f"completion verification failed: {reason}",
+                resultSummary=fail_summary,
+            )
+            self.report.write(
+                "agent_job_verify_failed",
+                jobId=job_id, source=source, reason=reason,
+            )
+            return
+
+        self.update_job(job_id, status="completed", result=result, resultSummary=result_summary, error="")
+        self.log(f"job {job_id}: completed")
 
     def _upload_images_via_api(self, figure_id, jan_code, processed_images):
         """Upload locally-processed WebP images via /figures/images/upload-processed.
@@ -1028,9 +1307,11 @@ class NasCrawlerAgent:
 
                 for job in jobs:
                     if self._stopping:
-                        # Mark running jobs as deferred so they can be re-claimed
+                        # Release claimed jobs back to queued so they can be
+                        # re-claimed by another agent. claimed → queued is the
+                        # legal transition (claimed → deferred is NOT allowed).
                         try:
-                            self.update_job(job["id"], status="deferred", error="agent shutting down")
+                            self.update_job(job["id"], status="queued", error="agent shutting down")
                         except Exception:
                             pass
                         break
