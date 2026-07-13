@@ -848,6 +848,21 @@ h1{font-size:2rem}h3{font-size:1.25rem}
         return m[t] || t || '一般风险';
     }
 
+    // Phase 1+2: canonical action display names (contract §4)
+    function reviewActionName(a){
+        var m = {
+            approve_image: '批准候选图',
+            reject_image: '拒绝候选图',
+            keep_placeholder: '保留占位图',
+            mark_detail_ok: '详情确认无误',
+            mark_needs_manual_edit: '需人工编辑',
+            request_refetch: '请求重抓',
+            keep_pending: '保持待审',
+            dismiss_stale: '标记已处理',
+        };
+        return m[a] || a || '';
+    }
+
     function compactPayload(value){
         if(Array.isArray(value)) return value.map(compactPayload);
         if(value && typeof value === 'object'){
@@ -990,6 +1005,8 @@ h1{font-size:2rem}h3{font-size:1.25rem}
                 ['建议操作', item.suggestedAction || p.suggestion || p.action || p.recommendation || ''],
                 ['图片来源', cand ? (cand.source || cand.url || '') : (candidates.length > 0 ? candidates[0].source || candidates[0].url || '' : '')],
                 ['尺寸', cand ? ((cand.width||'-')+' x '+(cand.height||'-')) : ''],
+                ['候选图ID', cand && cand.imageId ? String(cand.imageId) : (item.sourceId ? String(item.sourceId) : '')],
+                ['指纹', item.evidenceFingerprint ? String(item.evidenceFingerprint).slice(0, 12) + '…' : ''],
             ]);
             if(cand && cand.source){
                 var imgUrl = cand.url || cand.source;
@@ -1309,6 +1326,20 @@ h1{font-size:2rem}h3{font-size:1.25rem}
             if(item.payload && item.payload.lastActionAt) {
                 source += '<div style="font-size:.75rem;color:var(--mw-text-tertiary);margin-top:2px">操作时间 '+formatDate(item.payload.lastActionAt)+'</div>';
             }
+            // Phase 1+2: decision field display (contract §12) — show lastAction, decisionReason, reviewer
+            var p = item.payload || {};
+            if(p.lastAction || item.lastAction) {
+                source += '<div style="font-size:.75rem;color:var(--mw-text-secondary);margin-top:2px">操作: '+esc(reviewActionName(p.lastAction || item.lastAction))+'</div>';
+            }
+            if(p.decisionReason || item.decisionReason) {
+                source += '<div class="admin-subtle" style="margin-top:2px;white-space:normal;word-break:break-all">理由: '+esc(shortText(p.decisionReason || item.decisionReason, 100))+'</div>';
+            }
+            if(item.reviewerId || p.reviewerId) {
+                source += '<div style="font-size:.75rem;color:var(--mw-text-tertiary);margin-top:2px">审核人 ID: '+esc(String(item.reviewerId || p.reviewerId))+'</div>';
+            }
+            if(item.decisionAt || p.decisionAt) {
+                source += '<div style="font-size:.75rem;color:var(--mw-text-tertiary);margin-top:2px">决定时间 '+formatDate(item.decisionAt || p.decisionAt)+'</div>';
+            }
             var rowLoading = state.loading['reviewAction_' + id];
             var actions = '';
             if(item.type === 'image_review'){
@@ -1464,17 +1495,6 @@ h1{font-size:2rem}h3{font-size:1.25rem}
                         setTimeout(function(){
                             var ta = document.getElementById('kp-reason');
                             if(ta) ta.focus();
-                            var submitBtn = document.getElementById('kp-submit-btn');
-                            if(submitBtn) submitBtn.addEventListener('click', function(){
-                                var reason = document.getElementById('kp-reason').value || '';
-                                state.loading.keepPending = true;
-                                render();
-                                var kid = state.keepPendingId;
-                                api('/admin/review/items/'+encodeURIComponent(kid)+'/action', 'POST', {action:'keep_pending', notes:reason}).then(function(r){
-                                    if(r.success){ addAlert('success','已标记为无法判断，保留待审状态'); state.showModal = null; loadReviewItems(); }
-                                    else addAlert('error', getErrorMessage(r, '操作失败'));
-                                }).catch(function(){ addAlert('error','操作请求失败'); }).then(function(){ state.loading.keepPending = false; render(); });
-                            });
                         }, 50);
                         return;
                     }
@@ -1508,6 +1528,25 @@ h1{font-size:2rem}h3{font-size:1.25rem}
                     else state.newUserForm[field] = el.value || '';
                 }
             });
+        }
+
+        // Phase 1+2: keep_pending modal — re-bind after every render (double-click guard)
+        if(state.showModal === 'keepPending'){
+            var kpBtn = document.getElementById('kp-submit-btn');
+            if(kpBtn) kpBtn.addEventListener('click', function(){
+                if(state.loading.keepPending) return; // double-click guard
+                var reason = document.getElementById('kp-reason');
+                var reasonVal = reason ? reason.value : '';
+                state.loading.keepPending = true;
+                render();
+                var kid = state.keepPendingId;
+                api('/admin/review/items/'+encodeURIComponent(kid)+'/action', 'POST', {action:'keep_pending', notes:reasonVal}).then(function(r){
+                    if(r.success){ addAlert('success','已标记为无法判断，保留待审状态'); state.showModal = null; loadReviewItems(); }
+                    else addAlert('error', getErrorMessage(r, '操作失败'));
+                }).catch(function(){ addAlert('error','操作请求失败'); }).then(function(){ state.loading.keepPending = false; render(); });
+            });
+            var kpReason = document.getElementById('kp-reason');
+            if(kpReason) kpReason.addEventListener('input', function(e){ state.keepPendingReason = e.target.value; });
         }
 
         // CSP-safe click delegation for data-* attributes
