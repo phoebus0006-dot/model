@@ -3,10 +3,9 @@ import rateLimit from "@fastify/rate-limit";
 import jwt from "@fastify/jwt";
 import cors from "@fastify/cors";
 import helmet from "@fastify/helmet";
-import fs from "fs";
+import fsp from "fs/promises";
 import sharp from "sharp";
 import path from "path";
-import { fileURLToPath } from "url";
 import crypto from "crypto";
 import { PrismaClient } from "@prisma/client";
 import { figureRoutes } from "./routes/figures.js";
@@ -22,8 +21,9 @@ import { imageRoutes } from "./routes/images.js";
 import { communityRoutes } from "./routes/community.js";
 import Redis from "ioredis";
 import { installRedisFlushGuard } from "./security/redisGuard.js";
-
-Object.defineProperty(BigInt.prototype, "toJSON", { value: function () { return Number(this); }, writable: true, configurable: true });
+import { registerBigIntSerializer } from "./plugins/bigintSerializer.js";
+import { registerReadinessRoutes } from "./plugins/readiness.js";
+import { verifyUserFromDb, ROLE_ADMIN } from "./plugins/adminGuard.js";
 
 async function main() {
   const app = Fastify({ logger: true, trustProxy: true, bodyLimit: Number(process.env.BODY_LIMIT_BYTES || 20 * 1024 * 1024) });
@@ -36,6 +36,20 @@ async function main() {
     throw new Error("JWT_SECRET must be set to a strong secret in production");
   }
 
+  // Phase 1+2 runtime-security: REVIEW_CACHE_SIGNING_SECRET must be set in
+  // production. The cached review-image endpoint signs URLs with an HMAC
+  // using this secret. Without it, either the endpoint must be disabled or
+  // a fallback secret would be used — both unacceptable. Refuse to start.
+  if (isProduction && !process.env.REVIEW_CACHE_SIGNING_SECRET) {
+    throw new Error("REVIEW_CACHE_SIGNING_SECRET must be set in production (no fallback allowed)");
+  }
+  if (process.env.REVIEW_CACHE_SIGNING_SECRET && process.env.REVIEW_CACHE_SIGNING_SECRET.length < 32) {
+    if (isProduction) {
+      throw new Error("REVIEW_CACHE_SIGNING_SECRET must be at least 32 characters in production");
+    }
+    app.log.warn("REVIEW_CACHE_SIGNING_SECRET is shorter than 32 characters — set a stronger secret before production");
+  }
+
   app.decorate("prisma", prisma);
   app.decorate("redis", redis);
 
@@ -45,6 +59,17 @@ async function main() {
   // This blocks both direct method calls (redis.flushdb()) and raw
   // sendCommand({ name: "FLUSHDB" }) calls. Non-removable once installed.
   installRedisFlushGuard(redis);
+
+  // Phase 1+2 runtime-security: BigInt → string serialization.
+  // Replaces the old global BigInt.prototype.toJSON = Number(this) hack that
+  // silently truncated IDs > Number.MAX_SAFE_INTEGER. The preSerialization
+  // hook recursively converts BigInt to decimal string, preserving full
+  // precision for any ID size.
+  registerBigIntSerializer(app);
+
+  // Phase 1+2 runtime-security: /health (liveness) and /ready (readiness).
+  // /health only reports process liveness; /ready checks PG + Redis.
+  registerReadinessRoutes(app);
 
   const corsOrigins = process.env.CORS_ORIGINS
     ? process.env.CORS_ORIGINS.split(",").map((origin) => origin.trim()).filter(Boolean)
@@ -84,46 +109,37 @@ async function main() {
     keyGenerator: (req) => req.ip,
   });
 
-  function isFigureInteractionPath(path: string) {
-    return /^\/api\/v1\/figures\/[^/]+\/(social|favorite|like|comments)(?:\?|\/|$)/.test(path);
+  function isFigureInteractionPath(p: string) {
+    return /^\/api\/v1\/figures\/[^/]+\/(social|favorite|like|comments)(?:\?|\/|$)/.test(p);
   }
 
   app.addHook("onRequest", async (req, reply) => {
-    const path = req.url;
-    const isAdminPath = path.startsWith("/api/v1/admin");
-    const isAuthPath = path.startsWith("/api/v1/auth");
+    const urlPath = req.url;
+    const isAdminPath = urlPath.startsWith("/api/v1/admin");
+    const isAuthPath = urlPath.startsWith("/api/v1/auth");
     const isWriteMethod = ["POST", "PUT", "PATCH", "DELETE"].includes(req.method);
-    const isFigureWritePath = path.startsWith("/api/v1/figures") && isWriteMethod && !isFigureInteractionPath(path);
+    const isFigureWritePath = urlPath.startsWith("/api/v1/figures") && isWriteMethod && !isFigureInteractionPath(urlPath);
     const isEntityWritePath =
-      (path.startsWith("/api/v1/manufacturers") ||
-        path.startsWith("/api/v1/series") ||
-        path.startsWith("/api/v1/sculptors") ||
-        path.startsWith("/api/v1/categories") ||
-        path.startsWith("/api/v1/characters")) &&
+      (urlPath.startsWith("/api/v1/manufacturers") ||
+        urlPath.startsWith("/api/v1/series") ||
+        urlPath.startsWith("/api/v1/sculptors") ||
+        urlPath.startsWith("/api/v1/categories") ||
+        urlPath.startsWith("/api/v1/characters")) &&
       isWriteMethod;
     if (isAdminPath || isAuthPath) {
       reply.header("Cache-Control", "no-store");
       reply.header("Pragma", "no-cache");
     }
 
+    // Phase 1+2 runtime-security: admin guard always re-queries the DB to
+    // confirm the user's CURRENT role is admin AND isActive=true. The JWT
+    // role claim is NOT trusted — a demoted or deactivated admin's existing
+    // token must stop working immediately.
     if (isAdminPath || isFigureWritePath || isEntityWritePath) {
-      try {
-        const auth = req.headers.authorization;
-        if (!auth?.startsWith("Bearer ") || auth.length <= 7) throw new Error();
-        const payload = app.jwt.verify<{ userId: string | number; role: string }>(auth.slice(7));
-        const user = await prisma.user.findUnique({
-          where: { id: BigInt(payload.userId) },
-          select: { id: true, role: true, isActive: true },
-        });
-        if (!user?.isActive || user.role !== "admin") throw new Error();
-        (req as any).user = { userId: user.id.toString(), role: user.role };
-      } catch {
-        return reply.status(401).send({ success: false, error: { code: "UNAUTHORIZED" } });
-      }
+      const ok = await verifyUserFromDb(app, req, reply, ROLE_ADMIN);
+      if (!ok) return; // verifyUserFromDb already sent the 401/403 response
     }
   });
-
-  app.get("/health", async () => ({ status: "ok", timestamp: new Date().toISOString() }));
 
   app.register(imageRoutes, { prefix: "/api/v1/figures/images" });
   app.register(figureRoutes, { prefix: "/api/v1/figures" });
@@ -142,7 +158,9 @@ async function main() {
       }
       const signingSecret = process.env.REVIEW_CACHE_SIGNING_SECRET;
       if (!signingSecret) {
-        return reply.status(500).send({ success: false, error: { code: "SIGNING_NOT_CONFIGURED", message: "REVIEW_CACHE_SIGNING_SECRET is not set" } });
+        // In production this is unreachable — startup check refuses to boot.
+        app.log.error("REVIEW_CACHE_SIGNING_SECRET missing at request time");
+        return reply.status(500).send({ success: false, error: { code: "SIGNING_NOT_CONFIGURED" } });
       }
       // Signature validation
       const qExp = (req.query as any).exp;
@@ -169,11 +187,15 @@ async function main() {
       }
       const REVIEW_CACHE_DIR = process.env.REVIEW_CACHE_DIR || "/app/assets/review-cache";
       const filePath = path.join(REVIEW_CACHE_DIR, reviewId, fileName);
-      if (!fs.existsSync(filePath)) {
+      // Phase 1+2 runtime-security: use async fs.promises.readFile instead
+      // of fs.readFileSync to avoid blocking the event loop on cached image
+      // reads (high-frequency request path).
+      let fileBuf: Buffer;
+      try {
+        fileBuf = await fsp.readFile(filePath);
+      } catch {
         return reply.status(404).send({ success: false, error: { code: "NOT_FOUND" } });
       }
-      // Determine Content-Type from actual image format using sharp
-      const fileBuf = fs.readFileSync(filePath);
       let ct = "image/jpeg";
       try {
         const meta = await sharp(fileBuf).metadata();
@@ -194,6 +216,10 @@ async function main() {
   app.register(authRoutes, { prefix: "/api/v1/auth" });
   app.register(communityRoutes, { prefix: "/api/v1" });
 
+  // Phase 1+2 runtime-security: sanitized error handler.
+  // In production, never leak internal file paths, DNS details, stack traces,
+  // or raw error messages to the client. Client errors (4xx) return the
+  // error code only; server errors (5xx) return a generic code.
   app.setErrorHandler((error: any, req: any, reply: any) => {
     if (error?.name === "ZodError" || Array.isArray(error?.issues)) {
       return reply.status(422).send({ success: false, error: { code: "VALIDATION_ERROR", details: error.issues || error.errors } });
@@ -201,17 +227,51 @@ async function main() {
     if (error.validation) return reply.status(422).send({ success: false, error: { code: "VALIDATION_ERROR", details: error.validation } });
     if (error.statusCode === 429) return reply.status(429).send({ success: false, error: { code: "RATE_LIMITED" } });
     if (error.statusCode && error.statusCode < 500) {
+      const code = error.code || "BAD_REQUEST";
+      // In production, suppress raw error.message for 4xx — it may contain
+      // internal details. Keep it in dev for debugging.
+      const message = isProduction ? undefined : error.message;
       return reply.status(error.statusCode).send({
         success: false,
-        error: {
-          code: error.code || "BAD_REQUEST",
-          message: error.message,
-        },
+        error: message ? { code, message } : { code },
       });
     }
     app.log.error(error);
     reply.status(500).send({ success: false, error: { code: "INTERNAL_ERROR" } });
   });
+
+  // ─── Graceful shutdown ───────────────────────────────────────────────────
+  // On SIGTERM/SIGINT: stop accepting new connections, drain in-flight
+  // requests, disconnect Prisma, quit Redis. Orchestrators (Docker/k8s)
+  // send SIGTERM; Ctrl+C sends SIGINT.
+  let shuttingDown = false;
+  async function shutdown(signal: string) {
+    if (shuttingDown) return; // idempotent
+    shuttingDown = true;
+    app.log.info({ signal }, "Graceful shutdown started");
+    try {
+      await app.close(); // closes HTTP server + runs onClose hooks
+    } catch (err) {
+      app.log.error({ err }, "Error during Fastify close");
+    }
+    try {
+      await prisma.$disconnect();
+      app.log.info("Prisma disconnected");
+    } catch (err) {
+      app.log.error({ err }, "Error during Prisma disconnect");
+    }
+    try {
+      redis.disconnect();
+      app.log.info("Redis disconnected");
+    } catch (err) {
+      app.log.error({ err }, "Error during Redis disconnect");
+    }
+    app.log.info("Graceful shutdown complete");
+    process.exit(0);
+  }
+
+  process.on("SIGTERM", () => void shutdown("SIGTERM"));
+  process.on("SIGINT", () => void shutdown("SIGINT"));
 
   try {
     await app.listen({ port: 3000, host: "0.0.0.0" });

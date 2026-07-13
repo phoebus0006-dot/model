@@ -214,8 +214,18 @@ export async function authRoutes(app: FastifyInstance) {
       return reply.status(401).send({ success: false, error: { code: "INVALID_CREDENTIALS", message: "用户名或密码错误" } });
     }
 
+    // Phase 1+2 runtime-security: JWT carries userId only. Role is always
+    // re-queried from the DB on every privileged request (see adminGuard.ts).
+    // We still include role in the payload for informational purposes, but it
+    // is NOT trusted for authorization.
     const jwtToken = app.jwt.sign({ userId: user.id.toString(), role: user.role });
-    return { success: true, data: { user: { id: user.id, displayName: user.displayName, role: user.role }, token: jwtToken } };
+    return {
+      success: true,
+      data: {
+        user: { id: user.id.toString(), displayName: user.displayName, role: user.role },
+        token: jwtToken,
+      },
+    };
   });
 
   app.put("/password", { config: { rateLimit: { max: 5, timeWindow: "1 minute" } } }, async (req: any, reply: any) => {

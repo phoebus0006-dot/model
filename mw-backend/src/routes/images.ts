@@ -311,7 +311,7 @@ export async function processAndStoreImage(
 
   // 3. Ensure output directory exists
   const dir = getImageDir(janCode);
-  fs.mkdirSync(dir, { recursive: true });
+  await fsp.mkdir(dir, { recursive: true });
 
   // 4. Load image into sharp to get metadata
   const metadata = await sharp(buffer).metadata();
@@ -324,8 +324,15 @@ export async function processAndStoreImage(
     const filePath = getImageFilePath(janCode, sha256, sizeName as ImageSize);
 
     // Skip if file already exists (dedup by sha256 + size)
-    if (fs.existsSync(filePath)) {
-      const stat = fs.statSync(filePath);
+    // Phase 1+2 runtime-security: use async fs.promises.stat instead of
+    // sync fs.existsSync + fs.statSync to avoid blocking the event loop.
+    let existingStat: Awaited<ReturnType<typeof fsp.stat>> | null = null;
+    try {
+      existingStat = await fsp.stat(filePath);
+    } catch {
+      existingStat = null;
+    }
+    if (existingStat) {
       const existingMeta = await sharp(filePath).metadata();
 
       results.push({
@@ -335,7 +342,7 @@ export async function processAndStoreImage(
         format: "webp",
         width: existingMeta.width || null,
         height: existingMeta.height || null,
-        fileSize: stat.size,
+        fileSize: existingStat.size,
         source: imageUrl,
         alt,
         sortOrder,
@@ -353,7 +360,7 @@ export async function processAndStoreImage(
     const outputBuffer = await pipeline.toBuffer();
     const outputMeta = await sharp(outputBuffer).metadata();
 
-    fs.writeFileSync(filePath, outputBuffer);
+    await fsp.writeFile(filePath, outputBuffer);
 
     results.push({
       janCode,
@@ -489,8 +496,8 @@ export async function imageRoutes(app: FastifyInstance) {
       }
 
       const filePath = getImageFilePath(janCode, data.sha256, data.size as ImageSize);
-      fs.mkdirSync(path.dirname(filePath), { recursive: true });
-      fs.writeFileSync(filePath, buffer);
+      await fsp.mkdir(path.dirname(filePath), { recursive: true });
+      await fsp.writeFile(filePath, buffer);
 
       const payload = {
         figureId: BigInt(data.figureId),
@@ -702,7 +709,17 @@ export async function imageRoutes(app: FastifyInstance) {
     if (image.sha256 && image.janCode) {
       const filePath = getImageFilePath(image.janCode, image.sha256, image.size as ImageSize);
 
-      if (fs.existsSync(filePath)) {
+      // Phase 1+2 runtime-security: use async fsp.stat instead of sync
+      // fs.existsSync to avoid blocking the event loop on the high-frequency
+      // image-serving path.
+      let fileExists = false;
+      try {
+        await fsp.access(filePath);
+        fileExists = true;
+      } catch {
+        fileExists = false;
+      }
+      if (fileExists) {
         reply.header("Content-Type", "image/webp");
         reply.header("Content-Length", image.fileSize || undefined);
         reply.header("Cache-Control", "public, max-age=2592000, immutable");
