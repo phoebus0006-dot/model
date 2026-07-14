@@ -58,6 +58,7 @@ jobs:
       REVIEW_CACHE_SIGNING_SECRET: ci-review-signing-secret-32-chars-min
       NODE_OPTIONS: --max-old-space-size=4096
       PYTHONPATH: ${{ github.workspace }}
+      TEST_MANIFEST_PATH: ${{ runner.temp }}/modelwiki-test-manifest.json
 
     steps:
       - name: Checkout
@@ -228,4 +229,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-manifest
-          path: mw-backend/test-manifest.json
+          path: ${{ runner.temp }}/modelwiki-test-manifest.json
+          if-no-files-found: error
