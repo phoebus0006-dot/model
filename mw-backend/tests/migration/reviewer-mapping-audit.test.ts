@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Migration test: reviewer FK migration audit.
  *
  * Verifies the full reviewer FK migration flow:
@@ -13,68 +13,24 @@
  *
  * Requires:
  *   DATABASE_URL — disposable PostgreSQL connection string (NOT production)
- *   PSQL at %TEMP%\pg17\pgsql\bin\psql.exe, port 15432, user testuser
  *   @prisma/client generated (for dry-run script)
  */
 
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
-import { execSync } from "node:child_process";
-import path from "node:path";
-import fs from "node:fs";
+import { createDbHelpers } from "./helpers";
 import { generateReport } from "../../scripts/migration/dry-run-classify";
 
-const DATABASE_URL = process.env.DATABASE_URL || "";
-const DB_NAME = DATABASE_URL.split("/").pop() || "mw_test_reviewer";
-const PSQL = path.join(process.env.TEMP || "", "pg17", "pgsql", "bin", "psql.exe");
-
-function runSql(sql: string): string {
-  try {
-    return execSync(`"${PSQL}" -p 15432 -U testuser -d ${DB_NAME} -t -A -F "\t"`, {
-      encoding: "utf-8", timeout: 30000, stdio: ["pipe","pipe","pipe"], input: sql,
-    }).trim().replace(/\r/g, "");
-  } catch (e: any) { return e.stdout ? e.stdout.trim().replace(/\r/g, "") : ""; }
-}
-
-function runSqlRows(sql: string): string[][] {
-  const r = runSql(sql); if (!r) return []; return r.split("\n").map(l => l.split("\t"));
-}
-
-function execSql(sql: string): boolean {
-  try {
-    execSync(`"${PSQL}" -p 15432 -U testuser -d ${DB_NAME} -v ON_ERROR_STOP=1`, {
-      encoding: "utf-8", timeout: 30000, stdio: ["pipe","pipe","pipe"], input: sql,
-    });
-    return true;
-  } catch (e) { return false; }
-}
-
-function execPrisma(args: string): void {
-  execSync(`npx prisma ${args}`, {
-    cwd: process.cwd(), env: { ...process.env, DATABASE_URL, CHECKPOINT_DISABLE: "1" },
-    stdio: "pipe", timeout: 100000,
-  });
-}
-
-function applyMigrationSql(migrationDir: string): void {
-  const sqlPath = path.join(process.cwd(), "prisma", "migrations", migrationDir, "migration.sql");
-  if (!fs.existsSync(sqlPath)) throw new Error(`Migration SQL not found: ${sqlPath}`);
-  const sql = fs.readFileSync(sqlPath, "utf-8");
-  if (!execSql(sql)) throw new Error(`Failed to apply migration SQL: ${migrationDir}`);
-}
+const { setup, runSql, runSqlRows, execSql, execPrisma, applyMigrationSql, dbUrl } = createDbHelpers("mw_test_reviewer");
 
 // Captured dry-run output (set in before hook)
 let dryRunOutput: any = null;
 
 describe("Reviewer FK migration audit", { timeout: 300000 }, () => {
   before(async () => {
-    if (!DATABASE_URL) throw new Error("DATABASE_URL must be set");
+    setup();
 
-    // 1. Recreate database clean
-    execSync(`"${PSQL}" -p 15432 -U testuser -d postgres -c "DROP DATABASE IF EXISTS ${DB_NAME};"`, { stdio: "pipe", timeout: 15000 });
-    execSync(`"${PSQL}" -p 15432 -U testuser -d postgres -c "CREATE DATABASE ${DB_NAME};"`, { stdio: "pipe", timeout: 15000 });
-
-    // 2. Apply first 3 migrations + resolve --applied (baseline flow)
+    // 1. Apply first 3 migrations + resolve --applied (baseline flow)
     applyMigrationSql("20260712000000_baseline_tables");
     applyMigrationSql("20260713000000_phase12_review_workflow");
     applyMigrationSql("20260713000001_review_storage_agent_a");
@@ -82,25 +38,21 @@ describe("Reviewer FK migration audit", { timeout: 300000 }, () => {
     execPrisma("migrate resolve --applied 20260713000000_phase12_review_workflow");
     execPrisma("migrate resolve --applied 20260713000001_review_storage_agent_a");
 
-    // 3. Seed pre-migration data with reviewer_ids pointing to users
+    // 2. Seed pre-migration data with reviewer_ids pointing to users
     execSql(`INSERT INTO "users" ("id", "display_name", "role", "is_active", "updated_at") VALUES (10, 'Reviewer User A', 'user', true, CURRENT_TIMESTAMP), (20, 'Reviewer User B', 'user', true, CURRENT_TIMESTAMP);`);
     execSql(`SELECT setval('"users_id_seq"', (SELECT MAX(id) FROM "users"));`);
 
-    //    NOTE: review_items.id is TEXT PRIMARY KEY (not BIGSERIAL), so string
-    //    literals are required. There is no review_items_id_seq sequence.
     execSql(`INSERT INTO "review_items" ("id", "type", "title", "status", "reviewer_id", "evidence_fingerprint", "updated_at") VALUES ('10', 'general', 'Review Item A', 'pending', 10, 'fp_audit_001', CURRENT_TIMESTAMP), ('20', 'general', 'Review Item B', 'pending', 20, 'fp_audit_002', CURRENT_TIMESTAMP), ('30', 'general', 'Review Item No Reviewer', 'pending', NULL, 'fp_audit_003', CURRENT_TIMESTAMP);`);
 
-    //    NOTE: review_decisions.id is BIGSERIAL, but review_item_id is TEXT
-    //    (FK to review_items.id), so review_item_id needs string literals.
     execSql(`INSERT INTO "review_decisions" ("id", "review_item_id", "reviewer_id", "reviewer_role", "evidence_fingerprint", "action", "status_before", "status_after", "created_at") VALUES (10, '10', 10, 'admin', 'fp_audit_001', 'approve', 'pending', 'approved', CURRENT_TIMESTAMP), (20, '20', 20, 'reviewer', 'fp_audit_002', 'reject', 'pending', 'rejected', CURRENT_TIMESTAMP);`);
     execSql(`SELECT setval('"review_decisions_id_seq"', (SELECT MAX(id) FROM "review_decisions"));`);
 
-    // 4. Run dry-run classification (zero DB writes) by importing generateReport
+    // 3. Run dry-run classification (zero DB writes) by importing generateReport
     //    directly. This avoids subprocess stdout capture issues in sandboxed
     //    environments. The function performs ONLY read-only SELECT queries.
-    dryRunOutput = await generateReport(DATABASE_URL);
+    dryRunOutput = await generateReport(dbUrl);
 
-    // 5. Apply account_schema migration
+    // 4. Apply account_schema migration
     execPrisma("migrate deploy");
   });
 
@@ -110,7 +62,6 @@ describe("Reviewer FK migration audit", { timeout: 300000 }, () => {
     const rfm = dryRunOutput.reviewerFkMigration;
     assert.ok(rfm, "reviewerFkMigration section should exist");
 
-    // All required fields per task #13
     assert.equal(typeof rfm.reviewItemsWithReviewerBefore, "number", "reviewItemsWithReviewerBefore");
     assert.equal(typeof rfm.reviewDecisionsWithReviewerBefore, "number", "reviewDecisionsWithReviewerBefore");
     assert.ok(Array.isArray(rfm.distinctReviewerIds), "distinctReviewerIds");
