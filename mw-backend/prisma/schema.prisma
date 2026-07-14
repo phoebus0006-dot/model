@@ -8,49 +8,49 @@ datasource db {
 }
 
 model Figure {
-  id                 BigInt     @id @default(autoincrement())
-  slug               String     @unique
-  name               String
-  nameJp             String?    @map("name_jp")
-  nameEn             String?    @map("name_en")
-  description        String?
-  scale              String?
-  material           String?
-  priceJpy           Int?       @map("price_jpy")
-  releaseDate        DateTime?  @map("release_date")
-  heightMm           Int?       @map("height_mm")
-  weightG            Int?       @map("weight_g")
-  janCode            String?    @unique @map("jan_code")
-  parentId           BigInt?    @map("parent_id")
-  seriesId           BigInt?    @map("series_id")
-  manufacturerId     BigInt?    @map("manufacturer_id")
-  activeRevisionId   BigInt?    @unique @map("active_revision_id")
-  mfcId              String?    @map("mfc_id")
-  productLine        String?    @map("product_line")
-  hobbySearchId      String?    @map("hobby_search_id")
-  ageRating          String?    @map("age_rating")
-  amiamiId           String?    @map("amiami_id")
-  hljId              String?    @map("hlj_id")
-  isDeleted          Boolean    @default(false) @map("is_deleted")
-  createdAt          DateTime   @default(now()) @map("created_at")
-  updatedAt          DateTime   @updatedAt @map("updated_at")
+  id               BigInt    @id @default(autoincrement())
+  slug             String    @unique
+  name             String
+  nameJp           String?   @map("name_jp")
+  nameEn           String?   @map("name_en")
+  description      String?
+  scale            String?
+  material         String?
+  priceJpy         Int?      @map("price_jpy")
+  releaseDate      DateTime? @map("release_date")
+  heightMm         Int?      @map("height_mm")
+  weightG          Int?      @map("weight_g")
+  janCode          String?   @unique @map("jan_code")
+  parentId         BigInt?   @map("parent_id")
+  seriesId         BigInt?   @map("series_id")
+  manufacturerId   BigInt?   @map("manufacturer_id")
+  activeRevisionId BigInt?   @unique @map("active_revision_id")
+  mfcId            String?   @map("mfc_id")
+  productLine      String?   @map("product_line")
+  hobbySearchId    String?   @map("hobby_search_id")
+  ageRating        String?   @map("age_rating")
+  amiamiId         String?   @map("amiami_id")
+  hljId            String?   @map("hlj_id")
+  isDeleted        Boolean   @default(false) @map("is_deleted")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
 
-  parent             Figure?            @relation("FigureLineage", fields: [parentId], references: [id])
-  children           Figure[]           @relation("FigureLineage")
-  series             Series?            @relation(fields: [seriesId], references: [id])
-  manufacturer       Manufacturer?      @relation(fields: [manufacturerId], references: [id])
-  activeRevision     Revision?          @relation("ActiveRevision", fields: [activeRevisionId], references: [id])
-  images             FigureImage[]
-  revisions          Revision[]         @relation("FigureRevisions")
-  categories         FigureCategory[]
-  sculptors          FigureSculptor[]
-  characters         FigureCharacter[]
-  favorites          Favorite[]
-  likes              FigureLike[]
-  comments           FigureComment[]
-  localized          FigureLocalized[]
-  releases           FigureRelease[]
-  reviews            ReviewItem[]
+  parent         Figure?           @relation("FigureLineage", fields: [parentId], references: [id])
+  children       Figure[]          @relation("FigureLineage")
+  series         Series?           @relation(fields: [seriesId], references: [id])
+  manufacturer   Manufacturer?     @relation(fields: [manufacturerId], references: [id])
+  activeRevision Revision?         @relation("ActiveRevision", fields: [activeRevisionId], references: [id])
+  images         FigureImage[]
+  revisions      Revision[]        @relation("FigureRevisions")
+  categories     FigureCategory[]
+  sculptors      FigureSculptor[]
+  characters     FigureCharacter[]
+  favorites      Favorite[]
+  likes          FigureLike[]
+  comments       FigureComment[]
+  localized      FigureLocalized[]
+  releases       FigureRelease[]
+  reviews        ReviewItem[]
 
   @@map("figures")
 }
@@ -96,8 +96,8 @@ model Series {
   description String?
   createdAt   DateTime @default(now()) @map("created_at")
 
-  figures        Figure[]
-  characters     Character[]
+  figures    Figure[]
+  characters Character[]
 
   @@map("series")
 }
@@ -112,8 +112,8 @@ model Character {
   description String?
   createdAt   DateTime @default(now()) @map("created_at")
 
-  series        Series?         @relation(fields: [seriesId], references: [id])
-  figures       FigureCharacter[]
+  series  Series?           @relation(fields: [seriesId], references: [id])
+  figures FigureCharacter[]
 
   @@map("characters")
 }
@@ -129,7 +129,7 @@ model Manufacturer {
   description String?
   createdAt   DateTime @default(now()) @map("created_at")
 
-  figures        Figure[]
+  figures Figure[]
 
   @@map("manufacturers")
 }
@@ -145,22 +145,22 @@ model Sculptor {
   description String?
   createdAt   DateTime @default(now()) @map("created_at")
 
-  figures        FigureSculptor[]
+  figures FigureSculptor[]
 
   @@map("sculptors")
 }
 
 model Category {
-  id        BigInt    @id @default(autoincrement())
-  slug      String    @unique
+  id        BigInt   @id @default(autoincrement())
+  slug      String   @unique
   name      String
-  parentId  BigInt?   @map("parent_id")
-  sortOrder Int       @default(0) @map("sort_order")
-  createdAt DateTime  @default(now()) @map("created_at")
+  parentId  BigInt?  @map("parent_id")
+  sortOrder Int      @default(0) @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
 
-  parent      Category?   @relation("CategoryTree", fields: [parentId], references: [id])
-  children    Category[]  @relation("CategoryTree")
-  figures     FigureCategory[]
+  parent   Category?        @relation("CategoryTree", fields: [parentId], references: [id])
+  children Category[]       @relation("CategoryTree")
+  figures  FigureCategory[]
 
   @@map("categories")
 }
@@ -180,8 +180,8 @@ model Revision {
   qualityScore    Decimal? @map("quality_score")
   createdAt       DateTime @default(now()) @map("created_at")
 
-  figure                Figure  @relation("FigureRevisions", fields: [figureId], references: [id])
-  activeRevisionFigure  Figure? @relation("ActiveRevision")
+  figure               Figure  @relation("FigureRevisions", fields: [figureId], references: [id])
+  activeRevisionFigure Figure? @relation("ActiveRevision")
 
   @@unique([figureId, versionNumber])
   @@map("revisions")
@@ -190,11 +190,11 @@ model Revision {
 model FigureImage {
   id        BigInt   @id @default(autoincrement())
   figureId  BigInt   @map("figure_id")
-  url       String?  // Legacy: external URL, kept for backward compat
+  url       String? // Legacy: external URL, kept for backward compat
   janCode   String?  @map("jan_code")
   sha256    String?
   size      String   @default("raw")
-  format    String    @default("webp")
+  format    String   @default("webp")
   width     Int?
   height    Int?
   alt       String?
@@ -213,11 +213,11 @@ model FigureImage {
 }
 
 model FigureCategory {
-  figureId   BigInt   @map("figure_id")
-  categoryId BigInt   @map("category_id")
+  figureId   BigInt @map("figure_id")
+  categoryId BigInt @map("category_id")
 
-  figure    Figure   @relation(fields: [figureId], references: [id])
-  category  Category @relation(fields: [categoryId], references: [id])
+  figure   Figure   @relation(fields: [figureId], references: [id])
+  category Category @relation(fields: [categoryId], references: [id])
 
   @@id([figureId, categoryId])
   @@map("figure_category")
@@ -229,8 +229,8 @@ model FigureSculptor {
   role       String?
   isPrimary  Boolean @default(false) @map("is_primary")
 
-  figure    Figure   @relation(fields: [figureId], references: [id])
-  sculptor  Sculptor @relation(fields: [sculptorId], references: [id])
+  figure   Figure   @relation(fields: [figureId], references: [id])
+  sculptor Sculptor @relation(fields: [sculptorId], references: [id])
 
   @@id([figureId, sculptorId])
   @@map("figure_sculptor")
@@ -248,24 +248,36 @@ model FigureCharacter {
   @@map("figure_character")
 }
 
-model User {
-  id           BigInt   @id @default(autoincrement())
-  passwordHash String?  @map("password_hash")
-  displayName  String   @map("display_name")
-  avatarUrl    String?  @map("avatar_url")
-  googleSub    String?  @unique @map("google_sub")
-  wechatOpenid String?  @unique @map("wechat_openid")
-  role         String   @default("user")
-  isActive     Boolean  @default(true) @map("is_active")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+// ─── Frontend User (email-based auth, see AUTH_ACCOUNT_CONTRACT.md §2) ──────
+// email/normalizedEmail are nullable in this transitional migration because
+// existing users created before this migration may not have email addresses.
+// Per contract §7, a future migration will make them NOT NULL after data
+// cleanup. normalizedEmail uniqueness is enforced by DB constraint.
 
-  favorites        Favorite[]
-  favoriteGroups   FavoriteGroup[]
-  likes            FigureLike[]
-  comments         FigureComment[]
-  reviewItems      ReviewItem[]
-  reviewDecisions  ReviewDecision[]
+model User {
+  id                     BigInt    @id @default(autoincrement())
+  email                  String?   @unique
+  normalizedEmail        String?   @unique @map("normalized_email")
+  emailVerifiedAt        DateTime? @map("email_verified_at")
+  emailVerifyTokenHash   String?   @map("email_verify_token_hash")
+  emailVerifyExpiresAt   DateTime? @map("email_verify_expires_at")
+  passwordResetTokenHash String?   @map("password_reset_token_hash")
+  passwordResetExpiresAt DateTime? @map("password_reset_expires_at")
+  passwordHash           String?   @map("password_hash")
+  sessionVersion         Int       @default(0) @map("session_version")
+  displayName            String    @map("display_name")
+  avatarUrl              String?   @map("avatar_url")
+  googleSub              String?   @unique @map("google_sub")
+  wechatOpenid           String?   @unique @map("wechat_openid")
+  role                   String    @default("user")
+  isActive               Boolean   @default(true) @map("is_active")
+  createdAt              DateTime  @default(now()) @map("created_at")
+  updatedAt              DateTime  @updatedAt @map("updated_at")
+
+  favorites      Favorite[]
+  favoriteGroups FavoriteGroup[]
+  likes          FigureLike[]
+  comments       FigureComment[]
 
   @@map("users")
 }
@@ -277,7 +289,7 @@ model FavoriteGroup {
   sortOrder Int      @default(0) @map("sort_order")
   createdAt DateTime @default(now()) @map("created_at")
 
-  user      User      @relation(fields: [userId], references: [id])
+  user      User       @relation(fields: [userId], references: [id])
   favorites Favorite[]
 
   @@map("favorite_groups")
@@ -291,9 +303,9 @@ model Favorite {
   notes     String?
   createdAt DateTime @default(now()) @map("created_at")
 
-  user  User           @relation(fields: [userId], references: [id])
+  user   User           @relation(fields: [userId], references: [id])
   figure Figure         @relation(fields: [figureId], references: [id])
-  group FavoriteGroup?  @relation(fields: [groupId], references: [id])
+  group  FavoriteGroup? @relation(fields: [groupId], references: [id])
 
   @@unique([userId, figureId])
   @@map("favorites")
@@ -352,8 +364,49 @@ model RedirectMap {
   @@map("redirect_map")
 }
 
+// ─── Guanli AdminAccount (username-based auth, see AUTH_ACCOUNT_CONTRACT.md §3) ──
+
+model AdminAccount {
+  id                 BigInt    @id @default(autoincrement())
+  username           String    @unique
+  normalizedUsername String    @unique @map("normalized_username")
+  passwordHash       String    @map("password_hash")
+  displayName        String    @map("display_name")
+  role               String // "admin" | "reviewer" | "operator"
+  isActive           Boolean   @default(true) @map("is_active")
+  sessionVersion     Int       @default(0) @map("session_version")
+  lastLoginAt        DateTime? @map("last_login_at")
+  passwordChangedAt  DateTime  @default(now()) @map("password_changed_at")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  auditLogs       AdminAuditLog[]
+  reviewItems     ReviewItem[]
+  reviewDecisions ReviewDecision[]
+
+  @@map("admin_accounts")
+}
+
+model AdminAuditLog {
+  id           BigInt   @id @default(autoincrement())
+  actorAdminId BigInt   @map("actor_admin_id")
+  action       String // "login" | "logout" | "create_admin" | "disable_admin" | "change_password" | ...
+  targetType   String   @map("target_type") // "admin" | "review" | "figure" | ...
+  targetId     String?  @map("target_id")
+  requestId    String?  @map("request_id")
+  ip           String?
+  userAgent    String?  @map("user_agent")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  admin AdminAccount @relation(fields: [actorAdminId], references: [id])
+
+  @@index([actorAdminId, createdAt])
+  @@map("admin_audit_logs")
+}
+
 // ─── Phase 1+2 Review Workflow (see docs/implementation/PHASE12_CONTRACT.md) ───
 // PostgreSQL is the source of truth; Redis mirrors as cache/index only.
+// reviewerId references AdminAccount (not User) per AUTH_ACCOUNT_CONTRACT.md §3.
 
 model ReviewItem {
   id                   String    @id
@@ -382,14 +435,14 @@ model ReviewItem {
   crawlerJobId         String?   @map("crawler_job_id")
   automation           Json?
   reviewerId           BigInt?   @map("reviewer_id")
-  decisionReason       String?   @db.VarChar(2000) @map("decision_reason")
+  decisionReason       String?   @map("decision_reason") @db.VarChar(2000)
   decisionAt           DateTime? @map("decision_at")
   lastAction           String?   @map("last_action")
   createdAt            DateTime  @default(now()) @map("created_at")
   updatedAt            DateTime  @updatedAt @map("updated_at")
 
   figure     Figure?          @relation(fields: [figureId], references: [id])
-  reviewer   User?            @relation(fields: [reviewerId], references: [id])
+  reviewer   AdminAccount?    @relation(fields: [reviewerId], references: [id])
   crawlerJob CrawlerJob?      @relation(fields: [crawlerJobId], references: [id])
   decisions  ReviewDecision[]
 
@@ -401,24 +454,24 @@ model ReviewItem {
 }
 
 model ReviewDecision {
-  id                 BigInt   @id @default(autoincrement())
-  reviewItemId       String   @map("review_item_id")
-  action             String
-  previousStatus     String   @map("status_before")
-  nextStatus         String   @map("status_after")
-  reviewerId         BigInt?  @map("reviewer_id")
-  reviewerRole       String   @map("reviewer_role")
-  decisionReason     String?  @db.VarChar(2000) @map("decision_reason")
-  crawlerJobId       String?  @map("crawler_job_id")
-  candidateImageHash String?  @map("candidate_image_hash")
-  evidenceFingerprint String  @map("evidence_fingerprint")
-  requestId          String?  @map("request_id")
-  metadata           Json?
-  createdAt          DateTime @default(now()) @map("created_at")
+  id                  BigInt   @id @default(autoincrement())
+  reviewItemId        String   @map("review_item_id")
+  action              String
+  previousStatus      String   @map("status_before")
+  nextStatus          String   @map("status_after")
+  reviewerId          BigInt?  @map("reviewer_id")
+  reviewerRole        String   @map("reviewer_role")
+  decisionReason      String?  @map("decision_reason") @db.VarChar(2000)
+  crawlerJobId        String?  @map("crawler_job_id")
+  candidateImageHash  String?  @map("candidate_image_hash")
+  evidenceFingerprint String   @map("evidence_fingerprint")
+  requestId           String?  @map("request_id")
+  metadata            Json?
+  createdAt           DateTime @default(now()) @map("created_at")
 
-  reviewItem ReviewItem @relation(fields: [reviewItemId], references: [id], onDelete: Cascade)
-  reviewer   User?      @relation(fields: [reviewerId], references: [id])
-  crawlerJob CrawlerJob? @relation(fields: [crawlerJobId], references: [id])
+  reviewItem ReviewItem    @relation(fields: [reviewItemId], references: [id], onDelete: Cascade)
+  reviewer   AdminAccount? @relation(fields: [reviewerId], references: [id])
+  crawlerJob CrawlerJob?   @relation(fields: [crawlerJobId], references: [id])
 
   @@index([reviewItemId, createdAt])
   @@index([evidenceFingerprint])
@@ -427,28 +480,28 @@ model ReviewDecision {
 }
 
 model CrawlerJob {
-  id              String    @id
-  source          String
-  task            String
-  runner          String    @default("server_safe")
-  status          String    @default("created")
-  priority        Int       @default(1)
-  payload         Json?
-  result          Json?
-  resultSummary   Json?     @map("result_summary")
-  error           String?
-  attempts        Int       @default(0)
-  maxAttempts     Int       @default(3) @map("max_attempts")
-  notBefore       DateTime? @map("not_before")
-  workerId        String?   @map("worker_id")
-  linkedReviewItemId String? @map("linked_review_item_id")
-  notes           String?
-  automation      Json?
-  createdAt       DateTime  @default(now()) @map("created_at")
-  claimedAt       DateTime? @map("claimed_at")
-  runningAt       DateTime? @map("running_at")
-  completedAt     DateTime? @map("completed_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
+  id                 String    @id
+  source             String
+  task               String
+  runner             String    @default("server_safe")
+  status             String    @default("created")
+  priority           Int       @default(1)
+  payload            Json?
+  result             Json?
+  resultSummary      Json?     @map("result_summary")
+  error              String?
+  attempts           Int       @default(0)
+  maxAttempts        Int       @default(3) @map("max_attempts")
+  notBefore          DateTime? @map("not_before")
+  workerId           String?   @map("worker_id")
+  linkedReviewItemId String?   @map("linked_review_item_id")
+  notes              String?
+  automation         Json?
+  createdAt          DateTime  @default(now()) @map("created_at")
+  claimedAt          DateTime? @map("claimed_at")
+  runningAt          DateTime? @map("running_at")
+  completedAt        DateTime? @map("completed_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
 
   reviewItems ReviewItem[]
   decisions   ReviewDecision[]
@@ -464,16 +517,16 @@ model CrawlerJob {
 // every status change (created→queued→claimed→running→completed, etc.).
 
 model CrawlerJobEvent {
-  id              BigInt   @id @default(autoincrement())
-  crawlerJobId    String   @map("crawler_job_id")
-  previousStatus  String   @map("previous_status")
-  nextStatus      String   @map("next_status")
-  agentId         String?  @map("agent_id")
-  attempt         Int      @default(0)
-  timestamp       DateTime @default(now())
-  resultSummary   Json?    @map("result_summary")
-  error           String?
-  createdAt       DateTime @default(now()) @map("created_at")
+  id             BigInt   @id @default(autoincrement())
+  crawlerJobId   String   @map("crawler_job_id")
+  previousStatus String   @map("previous_status")
+  nextStatus     String   @map("next_status")
+  agentId        String?  @map("agent_id")
+  attempt        Int      @default(0)
+  timestamp      DateTime @default(now())
+  resultSummary  Json?    @map("result_summary")
+  error          String?
+  createdAt      DateTime @default(now()) @map("created_at")
 
   crawlerJob CrawlerJob @relation(fields: [crawlerJobId], references: [id], onDelete: Cascade)
 
@@ -481,4 +534,3 @@ model CrawlerJobEvent {
   @@index([crawlerJobId, timestamp])
   @@map("crawler_job_events")
 }
-

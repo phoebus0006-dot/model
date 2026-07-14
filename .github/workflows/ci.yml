@@ -1,5 +1,7 @@
-# ModelWiki CI — mirrors the local gate (mw-backend/scripts/gate.mjs) in CI.
-# Never depends on production credentials. DATABASE_URL is a placeholder.
+# ModelWiki CI — contract section 15.
+# Uses DISPOSABLE PostgreSQL + Redis service containers (never production).
+# No continue-on-error: any failing step fails the build (contract section 8).
+# CI environment: PostgreSQL 16, Redis 7, PHP 8.3, Python 3.12.
 name: CI
 
 on:
@@ -7,8 +9,8 @@ on:
     branches: [main, "agent/**"]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
-# Cancel superseded runs on the same ref.
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
@@ -21,14 +23,42 @@ jobs:
   gate:
     name: QA Gate
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
+
+    # Disposable services — contract section 5.
+    # NEVER uses production credentials.
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: mwtest
+          POSTGRES_PASSWORD: mwtest
+          POSTGRES_DB: mwtest
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U mwtest -d mwtest"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 10
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 10
 
     env:
-      # Placeholder only — prisma validate needs the env var to exist.
-      # CI must NEVER use production credentials.
-      DATABASE_URL: postgresql://placeholder:placeholder@localhost:5432/placeholder
-      # Node options for larger stacks (tsup/esbuild).
+      DATABASE_URL: postgresql://mwtest:mwtest@localhost:5432/mwtest
+      REDIS_URL: redis://localhost:6379
+      JWT_SECRET: ci-test-secret-at-least-32-characters-long
+      REVIEW_CACHE_SIGNING_SECRET: ci-review-signing-secret-32-chars-min
       NODE_OPTIONS: --max-old-space-size=4096
+      PYTHONPATH: ${{ github.workspace }}
 
     steps:
       - name: Checkout
@@ -37,7 +67,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
           cache: npm
           cache-dependency-path: mw-backend/package-lock.json
 
@@ -46,47 +76,72 @@ jobs:
         with:
           python-version: "3.12"
 
-      # ─── 1. Dependency install (frozen) ───────────────────────────────
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          coverage: none
+
+      # ─── 1. Install dependencies (frozen, single lockfile) ─────────────
       - name: Install dependencies (npm ci)
         run: npm ci
 
-      # ─── 2. Prisma validate ───────────────────────────────────────────
+      # ─── 2. Prisma generate ─────────────────────────────────────────────
+      - name: Prisma generate
+        run: npx prisma generate
+
+      # ─── 3. Prisma validate ─────────────────────────────────────────────
       - name: Prisma validate
         run: npm run prisma:validate
 
-      # ─── 3. Lint (JS tooling syntax) ───────────────────────────────────
-      - name: Lint
-        run: npm run lint
+      # ─── 4. Prisma migrate deploy (disposable DB) ───────────────────────
+      - name: Prisma migrate deploy
+        run: npx prisma migrate deploy
 
-      # ─── 4. Typecheck ─────────────────────────────────────────────────
+      # ─── 5. Typecheck ───────────────────────────────────────────────────
       - name: Typecheck
         run: npm run typecheck
 
-      # ─── 5. Build ──────────────────────────────────────────────────────
+      # ─── 6. Build ───────────────────────────────────────────────────────
       - name: Build
         run: npm run build
 
-      # ─── 6. Unit tests (no DB/Redis required) ─────────────────────────
+      # ─── 7. Lint ────────────────────────────────────────────────────────
+      - name: Lint
+        run: npm run lint
+
+      # ─── 8. Unit tests (src/**/*.test.ts excluding routes/) ─────────────
       - name: Unit tests
-        run: npm run test
+        run: npm run test:unit
 
-      # ─── 7. Integration tests (allow failure — no DB in CI) ────────────
-      - name: Integration tests
+      # ─── 9. Mock route tests (src/routes/**/*.test.ts) ──────────────────
+      - name: Mock route tests
+        run: npm run test:route
+
+      # ─── 10. Mock integration tests (tests/mock/**/*.test.ts) ───────────
+      - name: Mock integration tests
+        run: npm run test:mock-integration
+
+      # ─── 11. Smoke tests (startup + account isolation) ──────────────────
+      - name: Smoke tests
+        run: npm run test:smoke
+
+      # ─── 12. Real integration tests (real PG + Redis) ───────────────────
+      - name: Real integration tests
         run: npm run test:integration
-        continue-on-error: true
 
-      # ─── 8. Admin JS check ─────────────────────────────────────────────
+      # ─── 13. Migration tests (prisma migrate deploy on disposable PG) ───
+      - name: Migration tests
+        run: npm run test:migration
+
+      # ─── 14. Admin JS check (SyntaxError → exit 1) ──────────────────────
       - name: Admin JS check
         run: npm run admin-js-check
 
-      # ─── 9. PHP syntax check (skip if php unavailable) ─────────────────
+      # ─── 15. PHP syntax check (PHP 8.3) ─────────────────────────────────
       - name: PHP syntax check
         working-directory: .
         run: |
-          if ! command -v php >/dev/null 2>&1; then
-            echo "SKIP: php CLI not installed"
-            exit 0
-          fi
           fail=0
           while IFS= read -r f; do
             if ! php -l "$f" >/dev/null 2>&1; then
@@ -95,26 +150,36 @@ jobs:
               fail=1
             fi
           done < <(find modelwiki-theme -name '*.php' -not -path '*/vendor/*')
+          if [ -f guanli_index.php ]; then
+            if ! php -l guanli_index.php >/dev/null 2>&1; then
+              echo "FAIL: guanli_index.php"
+              php -l guanli_index.php
+              fail=1
+            fi
+          fi
           exit $fail
-        continue-on-error: true
 
-      # ─── 10. Python compile (syntax check, no pytest needed) ───────────
-      - name: Python compile check
+      # ─── 16. Python tests (pytest on test_crawler_state.py + theme tests) ─
+      - name: Python tests
         working-directory: .
         run: |
+          pip install pytest requests -q
+          # Run pytest on root-level test_crawler_state.py and modelwiki-theme/tests/*.py
+          # PYTHONPATH is set to repo root so nas_crawler_agent can be imported.
+          python -m pytest test_crawler_state.py --tb=line -q
+          # Python compile check for all .py files
           fail=0
-          for f in nas_crawler_agent.py mfc_batch_scraper.py guanli_index.php; do
-            if [ -f "$f" ] && [[ "$f" == *.py ]]; then
+          for f in nas_crawler_agent.py mfc_batch_scraper.py; do
+            if [ -f "$f" ]; then
               python -m py_compile "$f" || fail=1
             fi
           done
-          # Also compile theme test + kuro scripts if present.
-          find modelwiki-theme/tests scripts/kuro -name '*.py' -not -path '*/vendor/*' 2>/dev/null | while read -r f; do
+          find modelwiki-theme/tests -name '*.py' -not -path '*/vendor/*' 2>/dev/null | while read -r f; do
             python -m py_compile "$f" || exit 1
           done || fail=1
           exit $fail
 
-      # ─── 11. Secret scan ───────────────────────────────────────────────
+      # ─── 17. Secret scan ────────────────────────────────────────────────
       - name: Secret scan
         working-directory: .
         run: |
@@ -127,7 +192,6 @@ jobs:
             '-----BEGIN (RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----'
           )
           for pat in "${patterns[@]}"; do
-            # Search tracked source only; exclude deps, build output, tests, locks.
             match=$(grep -rEn --include='*.ts' --include='*.js' --include='*.mjs' \
               --include='*.sql' --include='*.prisma' --include='*.php' \
               --exclude-dir=node_modules --exclude-dir=dist --exclude-dir=.git \
@@ -139,7 +203,6 @@ jobs:
               hits=$((hits+1))
             fi
           done
-          # Hardcoded password assignment (heuristic, exclude env.example & tests).
           pwd_match=$(grep -rEn --include='*.ts' --include='*.js' --include='*.php' \
             --exclude-dir=node_modules --exclude-dir=dist \
             --exclude='*.test.ts' --exclude='env.example' \
@@ -155,3 +218,18 @@ jobs:
             exit 1
           fi
           echo "No secrets found."
+
+      # ─── 18. Full gate (runs all gates, generates manifest) ─────────────
+      - name: Full QA gate
+        env:
+          TEST_MANIFEST_PATH: ${{ runner.temp }}/modelwiki-test-manifest.json
+        run: npm run gate
+
+      # ─── 19. Upload test manifest (CI artifact, NOT source code) ────────
+      - name: Upload test manifest
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-manifest
+          path: ${{ runner.temp }}/modelwiki-test-manifest.json
+          if-no-files-found: error

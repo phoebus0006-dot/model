@@ -44,7 +44,6 @@ desktop.ini
 
 # Logs
 *.log
-/tmp/
 
 # Cleanup archive (backups)
 cleanup-archive/
@@ -127,9 +126,24 @@ diff.txt
 backend_code.txt
 src.tar.gz
 
+# Recovery bundle - must NEVER be committed to GitHub
+# (Agent Repository Hygiene contract: DO NOT push recovery bundle to remote)
+*.bundle
+*.bundle.sha256
+model-wiki-backups/
+recovery-bundle/
+
 # CI temp files
 coverage/
 .nyc_output/
 *.lcov
 .env.local
 .env.*.local
+
+# Test manifest is a CI artifact, not source code
+mw-backend/test-manifest.json
+mw-backend/test-artifacts/
+
+
+# Local CI artifact downloads (gh run download)
+.ci-artifacts/

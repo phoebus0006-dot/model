@@ -1,0 +1,4 @@
+# Prisma migration lock file.
+# DO NOT modify this file manually. It is used by Prisma to ensure that
+# migrations are only applied with the correct provider.
+provider = "postgresql"

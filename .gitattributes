@@ -1,0 +1,39 @@
+# Gitattributes - ModelWiki repository
+# Managed by Agent Repository Hygiene (Wave 1, branch agent/repository-hygiene)
+#
+# NOTE: core.autocrlf=true is set locally. This file does NOT force a global eol
+# to avoid mass renormalization of the existing tree. It only marks binary types
+# explicitly and flags generated/vendored files for GitHub linguist.
+
+# Binary assets - never normalize line endings
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.webp  binary
+*.ico   binary
+*.svg   text
+*.woff  binary
+*.woff2 binary
+*.ttf   binary
+*.eot   binary
+*.otf   binary
+*.pdf   binary
+
+# Archives and recovery bundles - binary (must never be treated as text)
+*.zip     binary
+*.tar     binary
+*.tar.gz  binary
+*.tgz     binary
+*.gz      binary
+*.bundle  binary
+*.7z      binary
+*.rar     binary
+
+# Generated / vendored files - hide from GitHub language statistics
+package-lock.json       linguist-generated=true
+**/package-lock.json     linguist-generated=true
+*.min.js                linguist-generated=true
+*.min.css               linguist-generated=true
+*.lcov                  linguist-generated=true
+coverage/**             linguist-generated=true

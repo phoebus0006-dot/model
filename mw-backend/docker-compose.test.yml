@@ -1,0 +1,44 @@
+# Disposable test infrastructure for ModelWiki QA (contract section 5).
+#
+# NEVER uses production credentials. Spins up throwaway PostgreSQL + Redis
+# containers for local test:integration / test:migration runs.
+#
+# Usage:
+#   docker compose -f docker-compose.test.yml up -d
+#   DATABASE_URL=postgresql://mwtest:mwtest@localhost:5433/mwtest \
+#   REDIS_URL=redis://localhost:6380 \
+#   npm run test:integration
+#   docker compose -f docker-compose.test.yml down -v
+#
+# CI uses GitHub Actions service containers instead (see .github/workflows/ci.yml).
+
+services:
+  test-postgres:
+    image: postgres:16-alpine
+    container_name: mw-test-postgres
+    environment:
+      POSTGRES_USER: mwtest
+      POSTGRES_PASSWORD: mwtest
+      POSTGRES_DB: mwtest
+    ports:
+      - "5433:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mwtest -d mwtest"]
+      interval: 2s
+      timeout: 3s
+      retries: 10
+
+  test-redis:
+    image: redis:7-alpine
+    container_name: mw-test-redis
+    ports:
+      - "6380:6379"
+    tmpfs:
+      - /data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 3s
+      retries: 10

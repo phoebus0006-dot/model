@@ -10,9 +10,18 @@
     "lint": "node --check scripts/gate.mjs && node --check scripts/admin-js-check.mjs",
     "admin-js-check": "node scripts/admin-js-check.mjs",
     "gate": "node scripts/gate.mjs",
-    "test": "tsx --test \"src/**/*.test.ts\"",
-    "test:integration": "tsx --test \"tests/**/*.test.ts\"",
-    "prisma:validate": "cross-env DATABASE_URL=postgresql://placeholder:placeholder@localhost:5432/placeholder npx prisma validate"
+    "prisma:validate": "cross-env DATABASE_URL=postgresql://placeholder:placeholder@localhost:5432/placeholder npx prisma validate",
+
+    "test": "node --test --import tsx \"src/**/*.test.ts\"",
+    "test:unit": "node --test --import tsx \"src/**/*.test.ts\"",
+    "test:route": "node --test --import tsx \"src/routes/**/*.test.ts\"",
+    "test:mock-integration": "node --test --import tsx \"tests/mock/**/*.test.ts\"",
+    "test:smoke": "node --test --import tsx \"tests/smoke/**/*.test.ts\"",
+    "test:integration": "node --test --import tsx \"tests/real/**/*.test.ts\"",
+    "test:migration": "node --test --import tsx \"tests/migration/**/*.test.ts\"",
+    "test:e2e": "node --test --import tsx \"tests/e2e/**/*.test.ts\"",
+    "test:php": "node scripts/gate.mjs --only php-syntax",
+    "test:python": "node scripts/gate.mjs --only python-tests"
   },
   "dependencies": {
     "@fastify/cors": "^10.0.0",
