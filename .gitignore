@@ -139,3 +139,8 @@ coverage/
 *.lcov
 .env.local
 .env.*.local
+
+# Test manifest is a CI artifact, not source code
+mw-backend/test-manifest.json
+mw-backend/test-artifacts/
+
