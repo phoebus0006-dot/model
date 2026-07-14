@@ -1,22 +1,38 @@
 # Wave 1 Agent Contracts (FROZEN)
 
 > **Status: FROZEN** — These contracts are the authoritative specifications for Wave 1 agents.
-> **Start conditions:** POST_PUSH_VERIFICATION.md complete + HEAD==origin/main + AUTH_ACCOUNT_CONTRACT.md corrected + canonical SHA frozen.
+> **Start conditions:** POST_PUSH_FINAL_VERIFICATION.md complete + HEAD==origin/main + AUTH_ACCOUNT_CONTRACT.md corrected + canonical tag frozen.
 
 ## Canonical Baseline
 
-- **CANONICAL_SHA**: `cb8e4dd60b72b65554ae770cb84c3219c3021050` (origin/main == HEAD)
-- All Wave 1 worktrees MUST be created from this SHA:
-  ```
-  git worktree add ../model-<agent-name> -b agent/<agent-name> cb8e4dd
-  ```
+Wave 0 canonical reference:
+
+**refs/tags/wave0-final**
+
+权威报告：`docs/reconciliation/POST_PUSH_FINAL_VERIFICATION.md`
+
+> **禁止在合同中硬编码 commit SHA**（如 cb8e4dd、076fed5、8a9ffa9 等），因为最终修正文档本身会产生新 commit，导致 SHA 变化。
+> Wave 0 使用 annotated tag 冻结，所有引用通过 tag 解析。
+
+所有 Wave 1 Agent 启动时必须执行：
+
+```bash
+git fetch origin --tags --prune
+git rev-parse refs/tags/wave0-final^{commit}
+```
+
+将输出保存为 `WAVE1_BASE_SHA`。所有 Wave 1 worktree 必须从 `WAVE1_BASE_SHA` 创建：
+
+```bash
+git worktree add ../model-<agent-name> -b agent/<agent-name> "$WAVE1_BASE_SHA"
+```
 
 ## Wave 1 Start Conditions (ALL must be TRUE)
 
-- [x] POST_PUSH_VERIFICATION.md complete
-- [x] HEAD == origin/main == cb8e4dd
+- [x] POST_PUSH_FINAL_VERIFICATION.md complete
+- [x] HEAD == origin/main
 - [x] AUTH_ACCOUNT_CONTRACT.md corrected (email policy, sessionVersion)
-- [x] Canonical SHA frozen
+- [x] Canonical tag `wave0-final` frozen (local + remote)
 - [ ] Human approval to start Wave 1
 
 ---
@@ -187,4 +203,5 @@ Then Wave 2 agents (parallel):
 - Agent Admin Auth (`agent/guanli-admin-auth`) — `admin-auth.*`
 - Agent Runtime (`agent/runtime-account-isolation`) — `index.ts`
 
-See WAVE2_AGENT_CONTRACTS.md for Wave 2+ contracts (Agent F/G/H, Integrator, Agent R).
+See WAVE2_AGENT_CONTRACTS.md for Wave 2 contracts (Agent User Auth / Admin Auth / Runtime).
+See WAVE3_AGENT_CONTRACTS.md for Wave 3+ contracts (Agent Review API / Crawler / Apply / Guanli UI / Integrator / Agent R).

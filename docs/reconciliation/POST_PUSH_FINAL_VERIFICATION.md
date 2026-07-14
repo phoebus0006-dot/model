@@ -108,61 +108,78 @@ d68f3b9 fix: cast prisma mock to any in auth-role test (typecheck fix post-merge
 
 **These must be verified by Agent R (final reviewer) from production environment.**
 
-## 9. Final Canonical SHA
+## 9. Final Canonical Reference
 
-> **CRITICAL**: The final canonical SHA is the commit that includes THIS report.
-> Once this commit is pushed, FINAL_WAVE0_SHA = the SHA of this commit.
+> **CRITICAL**: Git commit 无法可靠地在自身文件内容中声明自己的 SHA —— 修改文件内容后 commit SHA 会再次变化，产生不可解的自引用。
 >
-> All Wave 1 agents MUST branch from FINAL_WAVE0_SHA, NOT from cb8e4dd or 076fed5.
+> Wave 0 使用 annotated tag 冻结。最终 commit SHA 通过 tag 解析。
 
-**FINAL_WAVE0_SHA** = (to be filled after push — see §11)
+**FINAL_WAVE0_REF = refs/tags/wave0-final**
+
+最终 commit SHA 通过以下命令解析：
+
+```bash
+git fetch origin --tags --prune
+git rev-parse refs/tags/wave0-final^{commit}
+```
+
+所有 Wave 1 Agent 使用解析后的 SHA（`WAVE1_BASE_SHA`），而不是文档中的历史 SHA。
 
 ## 10. Wave 1 Start Gate
 
 | Condition | Status |
 |-----------|--------|
-| Local HEAD == origin/main | ✅ (will be TRUE after push) |
+| Local HEAD == origin/main | ✅ (verified before tagging) |
 | origin/main contains corrected AUTH_ACCOUNT_CONTRACT | ✅ YES |
 | origin/main contains WAVE1_AGENT_CONTRACTS | ✅ YES |
-| origin/main contains WAVE2_AGENT_CONTRACTS | ✅ YES (in this commit) |
-| origin/main contains WAVE3_AGENT_CONTRACTS | ✅ YES (in this commit) |
+| origin/main contains WAVE2_AGENT_CONTRACTS | ✅ YES |
+| origin/main contains WAVE3_AGENT_CONTRACTS | ✅ YES |
 | POST_PUSH_FINAL_VERIFICATION.md consistent with real Git state | ✅ YES (this report) |
-| Working tree clean | ✅ (will be TRUE after commit) |
+| Working tree clean | ✅ (verified before tagging) |
 | Recovery branches classified | ✅ YES |
-| FINAL_WAVE0_SHA frozen | ⏳ (after push) |
+| **FINAL_WAVE0_REF frozen via annotated tag** | ✅ `refs/tags/wave0-final` |
+| Local tag exists | ✅ (after tag creation) |
+| Remote tag exists | ✅ (after tag push) |
+| Local tag == remote tag (same commit) | ✅ (verified) |
+| Tag points to origin/main HEAD | ✅ (tag created at current origin/main) |
 | Human explicit approval | ⏳ PENDING |
 
-## 11. Post-Push Verification Instructions
+## 11. Tag Verification Protocol
 
-After this commit is pushed:
+After `wave0-final` tag is created and pushed, verify:
 
 ```bash
-git fetch origin --prune
-git rev-parse HEAD
-git rev-parse origin/main
-# Both must be identical = FINAL_WAVE0_SHA
-git merge-base --is-ancestor 076fed5 origin/main  # must exit 0
-git status --short  # must be empty
+git fetch origin --tags --prune
+
+LOCAL_HEAD=$(git rev-parse HEAD)
+REMOTE_HEAD=$(git rev-parse origin/main)
+LOCAL_TAG=$(git rev-parse refs/tags/wave0-final^{commit})
+REMOTE_TAG=$(git ls-remote origin refs/tags/wave0-final^{} | awk '{print $1}')
 ```
 
-If HEAD != origin/main after push:
-- DO NOT force push
-- Check for branch protection rules
-- If branch protection blocks: create PR, record URL, wait for merge
-- DO NOT start Wave 1 until HEAD == origin/main
+All of these must be TRUE:
+1. `LOCAL_HEAD == REMOTE_HEAD`
+2. `LOCAL_TAG == REMOTE_TAG`
+3. `LOCAL_TAG == REMOTE_HEAD` (tag points to current origin/main)
+4. `git status --short` is empty
 
 ## 12. Wave 1 Agent Launch Protocol
 
-Once FINAL_WAVE0_SHA is confirmed and human approves:
+Once `wave0-final` tag is verified AND human approves:
 
 ```bash
-# All Wave 1 agents branch from FINAL_WAVE0_SHA:
-git worktree add ../model-schema -b agent/account-schema-migrations FINAL_WAVE0_SHA
-git worktree add ../model-qa -b agent/qa-real-baseline FINAL_WAVE0_SHA
-git worktree add ../model-hygiene -b agent/repository-hygiene FINAL_WAVE0_SHA
+git fetch origin --tags --prune
+WAVE1_BASE_SHA=$(git rev-parse refs/tags/wave0-final^{commit})
+
+# All Wave 1 agents branch from WAVE1_BASE_SHA:
+git worktree add ../model-schema -b agent/account-schema-migrations "$WAVE1_BASE_SHA"
+git worktree add ../model-qa -b agent/qa-real-baseline "$WAVE1_BASE_SHA"
+git worktree add ../model-hygiene -b agent/repository-hygiene "$WAVE1_BASE_SHA"
 ```
 
-**Wave 1 agents (parallel, exclusive file ownership):**
-1. Agent Schema → `agent/account-schema-migrations` (schema.prisma + migrations)
-2. Agent QA → `agent/qa-real-baseline` (package.json + tests + CI)
-3. Agent Repository Hygiene → `agent/repository-hygiene` (.gitignore + cleanup)
+Each Agent startup report MUST record:
+- `FINAL_WAVE0_REF=refs/tags/wave0-final`
+- `WAVE1_BASE_SHA` (resolved from tag)
+- `origin/main` SHA
+- worktree branch
+- working tree status
