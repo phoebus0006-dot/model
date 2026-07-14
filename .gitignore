@@ -44,7 +44,6 @@ desktop.ini
 
 # Logs
 *.log
-/tmp/
 
 # Cleanup archive (backups)
 cleanup-archive/
@@ -126,6 +125,13 @@ diff.txt
 *.tar.gz.sha256
 backend_code.txt
 src.tar.gz
+
+# Recovery bundle - must NEVER be committed to GitHub
+# (Agent Repository Hygiene contract: DO NOT push recovery bundle to remote)
+*.bundle
+*.bundle.sha256
+model-wiki-backups/
+recovery-bundle/
 
 # CI temp files
 coverage/
