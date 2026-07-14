@@ -9,7 +9,6 @@ on:
     branches: [main, "agent/**"]
   pull_request:
     branches: [main]
-  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -67,7 +66,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: "20"
           cache: npm
           cache-dependency-path: mw-backend/package-lock.json
 
@@ -163,7 +162,7 @@ jobs:
       - name: Python tests
         working-directory: .
         run: |
-          pip install pytest requests -q
+          pip install pytest -q
           # Run pytest on root-level test_crawler_state.py and modelwiki-theme/tests/*.py
           # PYTHONPATH is set to repo root so nas_crawler_agent can be imported.
           python -m pytest test_crawler_state.py --tb=line -q
@@ -221,8 +220,6 @@ jobs:
 
       # ─── 18. Full gate (runs all gates, generates manifest) ─────────────
       - name: Full QA gate
-        env:
-          TEST_MANIFEST_PATH: ${{ runner.temp }}/modelwiki-test-manifest.json
         run: npm run gate
 
       # ─── 19. Upload test manifest (CI artifact, NOT source code) ────────
@@ -231,5 +228,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-manifest
-          path: ${{ runner.temp }}/modelwiki-test-manifest.json
-          if-no-files-found: error
+          path: mw-backend/test-manifest.json

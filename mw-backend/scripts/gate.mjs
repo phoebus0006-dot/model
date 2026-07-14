@@ -36,8 +36,8 @@
 //   }
 
 import { execSync } from "node:child_process";
-import { readFileSync, existsSync, readdirSync, statSync, writeFileSync, mkdirSync } from "node:fs";
-import { join, dirname, relative, sep, resolve } from "node:path";
+import { readFileSync, existsSync, readdirSync, statSync, writeFileSync } from "node:fs";
+import { join, dirname, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -590,14 +590,7 @@ const manifest = {
 // This file is a CI artifact — NOT source code.  It is gitignored and should
 // not be committed.  Each run overwrites it with fresh results that include
 // the commit SHA, timestamp, environment, and commands used.
-//
-// Path resolution (reproducible across clones, no .git/info/exclude dependency):
-//   1. TEST_MANIFEST_PATH env var (CI sets this to $RUNNER_TEMP/...)
-//   2. Default: <backendDir>/test-artifacts/test-manifest.json
-const manifestPath = process.env.TEST_MANIFEST_PATH
-  ? resolve(process.env.TEST_MANIFEST_PATH)
-  : join(backendDir, "test-artifacts", "test-manifest.json");
-mkdirSync(dirname(manifestPath), { recursive: true });
+const manifestPath = join(backendDir, "test-manifest.json");
 writeFileSync(manifestPath, JSON.stringify(manifest, null, 2), "utf-8");
 
 if (jsonFlag) {
