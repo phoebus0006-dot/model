@@ -14,8 +14,9 @@
 
     "test": "tsx --test \"src/**/*.test.ts\"",
     "test:unit": "tsx --test \"src/**/*.test.ts\"",
+    "test:route": "tsx --test \"src/routes/**/*.test.ts\"",
+    "test:mock-integration": "tsx --test \"tests/mock/**/*.test.ts\"",
     "test:smoke": "tsx --test \"tests/smoke/**/*.test.ts\"",
-    "test:route": "tsx --test \"tests/mock/**/*.test.ts\"",
     "test:integration": "tsx --test \"tests/real/**/*.test.ts\"",
     "test:migration": "tsx --test \"tests/migration/**/*.test.ts\"",
     "test:e2e": "tsx --test \"tests/e2e/**/*.test.ts\"",

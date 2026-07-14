@@ -1,6 +1,7 @@
 # ModelWiki CI — contract section 15.
 # Uses DISPOSABLE PostgreSQL + Redis service containers (never production).
 # No continue-on-error: any failing step fails the build (contract section 8).
+# CI environment: PostgreSQL 16, Redis 7, PHP 8.3, Python 3.12.
 name: CI
 
 on:
@@ -56,6 +57,7 @@ jobs:
       JWT_SECRET: ci-test-secret-at-least-32-characters-long
       REVIEW_CACHE_SIGNING_SECRET: ci-review-signing-secret-32-chars-min
       NODE_OPTIONS: --max-old-space-size=4096
+      PYTHONPATH: ${{ github.workspace }}
 
     steps:
       - name: Checkout
@@ -107,31 +109,35 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      # ─── 8. Unit tests ──────────────────────────────────────────────────
+      # ─── 8. Unit tests (src/**/*.test.ts excluding routes/) ─────────────
       - name: Unit tests
         run: npm run test:unit
 
-      # ─── 9. Smoke tests (startup + account isolation) ───────────────────
-      - name: Smoke tests
-        run: npm run test:smoke
-
-      # ─── 10. Mock route tests ───────────────────────────────────────────
+      # ─── 9. Mock route tests (src/routes/**/*.test.ts) ──────────────────
       - name: Mock route tests
         run: npm run test:route
 
-      # ─── 11. Integration tests (real PG + Redis) ────────────────────────
-      - name: Integration tests
+      # ─── 10. Mock integration tests (tests/mock/**/*.test.ts) ───────────
+      - name: Mock integration tests
+        run: npm run test:mock-integration
+
+      # ─── 11. Smoke tests (startup + account isolation) ──────────────────
+      - name: Smoke tests
+        run: npm run test:smoke
+
+      # ─── 12. Real integration tests (real PG + Redis) ───────────────────
+      - name: Real integration tests
         run: npm run test:integration
 
-      # ─── 12. Migration tests ────────────────────────────────────────────
+      # ─── 13. Migration tests (prisma migrate deploy on disposable PG) ───
       - name: Migration tests
         run: npm run test:migration
 
-      # ─── 13. Admin JS check ─────────────────────────────────────────────
+      # ─── 14. Admin JS check (SyntaxError → exit 1) ──────────────────────
       - name: Admin JS check
         run: npm run admin-js-check
 
-      # ─── 14. PHP syntax check ───────────────────────────────────────────
+      # ─── 15. PHP syntax check (PHP 8.3) ─────────────────────────────────
       - name: PHP syntax check
         working-directory: .
         run: |
@@ -143,15 +149,24 @@ jobs:
               fail=1
             fi
           done < <(find modelwiki-theme -name '*.php' -not -path '*/vendor/*')
+          if [ -f guanli_index.php ]; then
+            if ! php -l guanli_index.php >/dev/null 2>&1; then
+              echo "FAIL: guanli_index.php"
+              php -l guanli_index.php
+              fail=1
+            fi
+          fi
           exit $fail
 
-      # ─── 15. Python tests ───────────────────────────────────────────────
+      # ─── 16. Python tests (pytest on test_crawler_state.py + theme tests) ─
       - name: Python tests
         working-directory: .
         run: |
           pip install pytest -q
-          python -m pytest tests/ --tb=line -q || true
-          # Python compile check (always runs)
+          # Run pytest on root-level test_crawler_state.py and modelwiki-theme/tests/*.py
+          # PYTHONPATH is set to repo root so nas_crawler_agent can be imported.
+          python -m pytest test_crawler_state.py --tb=line -q
+          # Python compile check for all .py files
           fail=0
           for f in nas_crawler_agent.py mfc_batch_scraper.py; do
             if [ -f "$f" ]; then
@@ -163,7 +178,7 @@ jobs:
           done || fail=1
           exit $fail
 
-      # ─── 16. Secret scan ────────────────────────────────────────────────
+      # ─── 17. Secret scan ────────────────────────────────────────────────
       - name: Secret scan
         working-directory: .
         run: |
@@ -203,11 +218,11 @@ jobs:
           fi
           echo "No secrets found."
 
-      # ─── 17. Full gate (runs all gates, generates manifest) ─────────────
+      # ─── 18. Full gate (runs all gates, generates manifest) ─────────────
       - name: Full QA gate
         run: npm run gate
 
-      # ─── 18. Upload test manifest ───────────────────────────────────────
+      # ─── 19. Upload test manifest (CI artifact, NOT source code) ────────
       - name: Upload test manifest
         if: always()
         uses: actions/upload-artifact@v4
