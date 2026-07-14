@@ -1,253 +1,192 @@
 # Wave 2 Agent Contracts (FROZEN)
 
-> **Status: FROZEN** — These contracts are the authoritative specifications for Wave 2 agents.
-> **Start conditions NOT yet met.** Do not execute until all Wave 1 conditions pass.
+> **Status: FROZEN** — Authoritative specifications for Wave 2 agents.
+> **Supersedes** the old WAVE2_AGENT_CONTRACTS.md (which contained Agent F/G/H — those are now Wave 3).
+> **Start conditions:** Agent Schema merged (prisma generate + validate + migrate deploy on disposable DB pass) + Agent QA merged (gate passes) + Agent Repository Hygiene merged.
 
 ## Wave 2 Start Conditions (ALL must be TRUE)
 
-- [ ] repository reconciliation 已人工批准
-- [ ] canonical SHA 已冻结
-- [ ] User 邮箱认证恢复 (Agent A 完成)
-- [ ] Guanli AdminAccount 独立认证完成 (Agent B 完成)
-- [ ] Schema migration 完整 (Agent C 完成)
-- [ ] clean checkout 测试基线通过 (Agent D 完成)
-- [ ] Review 存储模型可用 (Agent E 完成)
+- [ ] account-schema-migrations merged
+- [ ] qa-real-baseline merged
+- [ ] repository-hygiene merged
+- [ ] `prisma generate` passes
+- [ ] `prisma validate` passes
+- [ ] `migrate deploy` on disposable DB passes
 
-**Until all above are TRUE, Agents F/G/H MUST NOT start.**
+Then Wave 2 agents (parallel, different file ownership):
+- Agent User Auth (`agent/frontend-email-auth`) — `auth.ts`
+- Agent Admin Auth (`agent/guanli-admin-auth`) — `admin-auth.*`
+- Agent Runtime (`agent/runtime-account-isolation`) — `index.ts`
 
 ---
 
-## Agent F: Review API 集成
+## Agent User Auth: 前台邮箱注册和登录
 
-**Branch:** `agent/review-api-integration`
-**Wave:** 2 (first)
-**Start condition:** Wave 1 complete + Review storage model available
+**Branch:** `agent/frontend-email-auth`
+**Wave:** 2 (parallel)
+**Base:** Latest main after Wave 1 merge
+
+### File Ownership (EXCLUSIVE)
+- `mw-backend/src/routes/auth.ts`
+- `mw-backend/src/services/user-auth/**`
+- `mw-backend/src/plugins/user-auth/**`
+- email sending service
+- User auth tests
+
+### Prohibited
+- Modify `schema.prisma`
+- Modify AdminAccount routes
+- Modify `adminGuard`
+- Modify Guanli pages
+- Modify Review/Crawler
 
 ### Tasks
-1. PostgreSQL 是 Review 的唯一事实源
-2. recheck 不自动关闭人工审核
-3. action 写 append-only ReviewDecision
-4. GET readback 返回: reviewer, decisionReason, decisionAt
-5. 图片数使用 `_count.images`
-6. 主图只加载一张
-7. PUT 不允许直接修改 status
-8. duplicate suppression 依据人工决定
-9. evidence changed 时 reopen
-10. request_refetch 幂等
-11. 管理接口只能接受 AdminAccount 身份
-12. 普通 User 邮箱 JWT 调用管理接口必须返回 401/403
-13. actor 必须记录 AdminAccount.id，不是普通 User.id
-14. 非法状态跳转返回 409
-15. 所有 BigInt ID 返回字符串
+1. Completely remove username/displayName login logic
+2. Registration input: `email`, `password`, `displayName`
+3. Login input: `email`, `password`
+4. Use `normalizedEmail` for queries
+5. FORBIDDEN `app.prisma as any`
+6. All fields must exist in Prisma Schema
+7. Registration relies on DB unique constraint for concurrent duplicate handling
+8. Password strength: min 8 chars, uppercase, lowercase, digit or special char
+9. Login failure returns unified INVALID_CREDENTIALS
+10. Disabled account returns clear status but no info leak
+11. JWT: `aud=modelwiki-user`, `userId` string, `sessionVersion`, NO `role` in JWT
+12. Privileged requests re-query User: `isActive`, `role`, `sessionVersion`
+13. Email verification: random token, DB stores SHA-256 only, 24h expiry, single use, resend support
+14. Forgot password: always return 200, token hash stored, 1h expiry, single use
+15. Password change/reset: `sessionVersion + 1`, old tokens invalidated
+16. SMTP not configured: NO fake success, return per frozen contract (503)
+17. DO NOT implement Gmail dot-removal or `+tag` deletion
+18. DO NOT log raw tokens, passwords, or full credentials
+19. Email-related logs must be redacted
 
 ### Required Tests
-- 8 images
-- recheck no mutation
-- decision audit
-- duplicate decided
-- pending active
-- reopen
-- refetch idempotency
-- concurrency
-- ordinary User token rejected
-- AdminAccount token accepted
+- registration
+- login
+- duplicate email
+- concurrent duplicate registration
+- domain case normalization
+- local part preservation (no +tag stripping, no dot removal)
+- wrong password
+- disabled user
+- verification success
+- expired verification
+- verification replay
+- resend verification
+- forgot password anti-enumeration
+- reset password
+- reset replay
+- password change → sessionVersion increment → old token invalid
+- session invalidation
+- SQL/Unicode edge inputs
+- SMTP not configured → 503
 
-### File Ownership
-- `mw-backend/src/routes/admin.ts` (review API portions)
-- `mw-backend/src/review/**`
-- `mw-backend/src/domain/review/**`
-- Review API tests
-
-### Prohibited
-- 修改用户认证 (Agent A/B domain)
-- 修改 guanli 认证 UI (Agent H domain)
-- 修改 crawler state machine (Agent G domain)
+### Acceptance
+- Real PostgreSQL test
+- No Prisma runtime field errors
+- No username login
+- Frontend email complete loop
 
 ---
 
-## Agent G: Crawler 与 NAS Agent
+## Agent Admin Auth: Guanli 独立管理员认证
 
-**Branch:** `agent/crawler-state-integration`
-**Wave:** 2 (second)
-**Start condition:** Agent F complete OR parallel with F (different files)
+**Branch:** `agent/guanli-admin-auth`
+**Wave:** 2 (parallel)
+**Base:** Latest main after Wave 1 merge
+
+### File Ownership (EXCLUSIVE)
+- `mw-backend/src/routes/admin-auth.*`
+- `mw-backend/src/plugins/admin-auth/**`
+- `mw-backend/src/services/admin-auth/**`
+- admin create CLI
+- Admin auth tests
+
+### Prohibited
+- Modify `auth.ts`
+- Modify User email auth
+- Modify `schema.prisma`
+- Modify Review route
+- Modify `guanli_index.php`
 
 ### Tasks
-1. 使用统一 Crawler 状态机 (from Agent E)
-2. claim 原子化
-3. NAS Agent 与后端版本握手
-4. Agent 启动时报告: code SHA, protocol version, hostname, agentId
-5. 后端拒绝不兼容 protocol
-6. completed 前必须 readback
-7. 不扩大并发 (concurrency = 1)
-8. 不大规模抓取生产站点
-9. 所有测试使用 fixture/mocked source
-10. Crawler 操作 actor 使用 AdminAccount 或明确 system actor
+1. Implement: `POST /admin/auth/login`, `POST /admin/auth/logout`, `POST /admin/auth/change-password`, `GET /admin/auth/me`
+2. Accept ONLY username + password
+3. DO NOT accept email
+4. Username normalization: trim + lowercase
+5. JWT: `aud=modelwiki-admin`, `adminId`, `sessionVersion`, short TTL
+6. Use independent Cookie/storage namespace
+7. adminGuard: verify audience, query AdminAccount, check isActive, check sessionVersion, re-query role
+8. User JWT MUST be rejected
+9. Admin JWT cannot act as User JWT
+10. Change password: verify old, update hash, sessionVersion + 1, update passwordChangedAt
+11. Disabled admin → old tokens immediately invalid
+12. Every sensitive action writes AdminAuditLog
+13. Login rate limit uses different namespace from User login
+14. Create admin CLI: no default password, no password output, no overwrite existing username, interactive or env var
+15. DO NOT create hardcoded admin/admin
+16. DO NOT auto-convert User to AdminAccount
 
-### File Ownership
-- `mw-backend/src/crawler/**`
-- `nas_crawler_agent.py`
-- `test_crawler_state.py`
-- crawler protocol tests
+### Required Tests
+- username login
+- email login rejected
+- wrong password
+- inactive admin
+- sessionVersion invalidation
+- change password
+- duplicate username
+- user token rejected
+- admin audience enforcement
+- role enforcement
+- login rate limit
+- audit log
+- create-admin CLI
 
-### Prohibited
-- 修改用户认证
-- 修改 guanli 认证
-- 修改 Review API (Agent F domain)
-- 连接生产数据库/Redis
-- 大规模抓取生产站点
+### Acceptance
+- Guanli does not require email
+- Completely isolated from frontend User
+- Real PostgreSQL test passes
 
 ---
 
-## Agent H: Guanli UI 集成
+## Agent Runtime: 运行时、安全和身份隔离
 
-**Branch:** `agent/guanli-ui-integration`
-**Wave:** 2 (third)
-**Start condition:** Agent B (guanli admin auth) complete + Agent F (review API) complete
+**Branch:** `agent/runtime-account-isolation`
+**Wave:** 2 (parallel)
+**Base:** Latest main after Wave 1 merge
+
+### File Ownership (EXCLUSIVE)
+- `mw-backend/src/index.ts`
+- runtime plugin/config
+- JWT registration and middleware mounting
+- readiness and shutdown tests
+
+### Prohibited
+- Modify `auth.ts`
+- Modify admin-auth routes
+- Modify `schema.prisma`
+- Modify `admin.ts`
 
 ### Tasks
-1. guanli 登录使用 username，不显示 email 输入
-2. 不调用普通 `/auth/login`
-3. 使用独立后台 token/session (from Agent B)
-4. 登出只清除后台 session
-5. 普通用户前台 session 不影响后台
-6. 审核操作显示: current state, evidence, candidate, decision history
-7. action 后真实 GET readback
-8. 防 double-click
-9. abort stale request
-10. object URL 正确释放
-11. 不重做整体 UI
-12. 浏览器测试验证两套账号隔离
+1. Support both `userGuard` and `adminGuard` simultaneously
+2. Both verify different JWT audiences
+3. NO fallback to other identity
+4. NO same request having both user and admin identity
+5. Type definitions: `req.user` and `req.admin` separate
+6. Remove old ambiguous admin判断
+7. Admin routes mount adminGuard ONLY
+8. User routes mount userGuard ONLY
+9. BigInt API output continues as string
+10. Check: `/health`, `/ready`, graceful shutdown, Prisma disconnect, Redis quit
+11. Production secret missing → fail closed
+12. User JWT secret and Admin JWT secret: independent secrets recommended (or same key with strict audience)
+13. CORS, Cookie secure, sameSite, domain explicit per deployment env
+14. DO NOT log JWT
+15. Add identity isolation tests
 
-### File Ownership
-- `modelwiki-theme/page-guanli.php`
-- `guanli_index.php`
-- `modelwiki-theme/tests/admin-ui-check.mjs`
-- guanli UI tests
-
-### Prohibited
-- 修改普通用户前端页面
-- 修改后端认证逻辑 (Agent A/B domain)
-- 修改 Review 业务逻辑 (Agent F domain)
-
----
-
-## Integrator: 受控合并
-
-**Branch:** N/A (operates on main)
-**Start condition:** All Wave 1 + Wave 2 agents complete
-
-### Merge Order (STRICT)
-1. `repository-reconciliation`
-2. `frontend-email-auth`
-3. `guanli-admin-auth`
-4. `schema-migration-reconciliation`
-5. `test-baseline`
-6. `review-storage-recovery`
-7. `review-api-integration`
-8. `crawler-state-integration`
-9. `guanli-ui-integration`
-10. reviewer fixes
-
-### Per-Merge Procedure
-1. 记录 pre-merge SHA
-2. 检查文件所有权 (no cross-agent file conflicts)
-3. 检查 migration 冲突
-4. 执行完整 gate (`node scripts/gate.mjs`)
-5. 记录 post-merge SHA
-6. 测试失败立即停止
-7. 不继续合并下一个分支
-8. 不 force push
-9. 不 squash 掉必要迁移历史
-10. 不提交 bundle、patch、tar.gz
-
-### Integrator MUST NOT
-- 使用旧的"全部测试通过"报告
-- 跳过任何 merge 步骤
-- Force push
-- Squash migration history
-- Commit recovery artifacts
-
----
-
-## Agent R: 最终独立 Reviewer
-
-**Branch:** N/A (fresh clone, read-only review)
-**Start condition:** Integrator complete
-
-### Reviewer MUST start from fresh clone
-
-### Section 1: Source-of-Truth
-验证: origin/main SHA, local SHA, deployment SHA, guanli deployed version, NAS Agent SHA, migration version, dirty/untracked, active worktrees, stale branches
-
-任何不一致标记: `INCONSISTENT`
-
-### Section 2: 账号体系验证
-**普通用户:** 邮箱注册, 邮箱登录, 邮箱唯一, 邮箱规范化, 密码找回, 停用后失效, 普通用户不能访问 guanli
-
-**后台管理员:** username 登录, 不要求 email, 使用 AdminAccount, 独立 JWT/session, 停用后失效, 改密后旧 token 失效, Admin token 不冒充普通 User
-
-**必须实际尝试:**
-1. 普通邮箱用户 token 调用后台接口 → 预期 401/403
-2. guanli 管理员 token 调用普通用户身份接口 → 预期 401/403 或无普通用户身份
-3. 使用普通邮箱登录信息登录 guanli → 预期失败
-4. 使用 guanli username 登录普通用户入口 → 预期失败
-
-### Section 3: 仓库验证
-确认: main 无 patch, main 无 tar.gz, main 无 diff.txt, 无未解释 recovery 文件, migrations 完整, lockfile 唯一, clean checkout 可复现, 本地和远端一致
-
-### Section 4: 测试验证
-必须使用真实 disposable: PostgreSQL, Redis, temporary storage
-
-记录每条命令: command, exit code, discovered, executed, passed, failed, skipped, duration
-
-不得把 mock-only 标记为真实集成 VERIFIED
-
-### Section 5: Review/Crawler 验证
-实际验证: ReviewItem 持久化, ReviewDecision audit, recheck 无状态修改, duplicate suppression, reopen, real image count, request_refetch, atomic claim, illegal transition, writeback readback, concurrent actions
-
-### Section 6: 浏览器验证
-使用浏览器分别验证: 普通用户邮箱登录页, guanli username 登录页, session 隔离, 审核 action 闭环, Console error=0, pageerror=0, double-click, stale request abort, logout isolation
-
-### Section 7: 最终状态
-每项只能标记: `VERIFIED` | `PARTIAL` | `FAILED` | `NOT TESTED` | `INCONSISTENT`
-
-### Final Conclusion
-满足以下全部条件前:
-- 仓库一致
-- 两套账号体系正确隔离
-- migrations 真实通过
-- 测试数字可复现
-- Review/Crawler 闭环真实通过
-- 浏览器闭环通过
-
-**最终结论必须是: `DO_NOT_DEPLOY` / `DO_NOT_ADVANCE_TO_PHASE_3`**
-
----
-
-## Wave Execution Timeline
-
-```
-Wave 1 (parallel):
-  Agent A (frontend-email-auth)     ─┐
-  Agent B (guanli-admin-auth)       ─┤
-  Agent C (schema-migration)        ─┤── after A+B contracts frozen
-  Agent D (test-baseline)           ─┤── parallel with C
-  Agent E (review-storage-recovery) ─┘── after canonical approved
-
-  [GATE: Wave 1 complete + human approval]
-
-Wave 2 (sequential/parallel):
-  Agent F (review-api-integration)      ── after E
-  Agent G (crawler-state-integration)   ── parallel with F (different files)
-  Agent H (guanli-ui-integration)       ── after B + F
-
-  [GATE: Wave 2 complete]
-
-Integrator: merge in strict order (10 steps)
-
-  [GATE: Integration complete]
-
-Agent R: fresh clone review
-
-  [GATE: VERIFIED or DO_NOT_DEPLOY]
-```
+### Acceptance
+- User/Admin tokens cannot cross
+- Disabled account real-time invalid
+- Password change → old token invalid
+- startup/shutdown passes
