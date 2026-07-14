@@ -1,0 +1,125 @@
+{
+  "generated_at": "2026-07-14T07:42:22.605Z",
+  "gates": [
+    {
+      "name": "prisma-validate",
+      "suite_type": "schema",
+      "status": "PASS",
+      "detail": "The schema at prisma\\schema.prisma is valid 🚀",
+      "duration_ms": 2452
+    },
+    {
+      "name": "typecheck",
+      "suite_type": "typescript",
+      "status": "FAIL",
+      "detail": "src/domain/review/repository.ts(316,54): error TS7006: Parameter 'db' implicitly has an 'any' type.\r | src/domain/review/repository.ts(432,24): error TS7006: Parameter 'r' implicitly has an 'any' type",
+      "duration_ms": 2776
+    },
+    {
+      "name": "build",
+      "suite_type": "typescript",
+      "status": "PASS",
+      "detail": "dist 224.58 KB",
+      "duration_ms": 1297
+    },
+    {
+      "name": "lint",
+      "suite_type": "lint",
+      "status": "PASS",
+      "detail": "gate.mjs + admin-js-check.mjs syntax OK",
+      "duration_ms": 107
+    },
+    {
+      "name": "admin-js-check",
+      "suite_type": "static-check",
+      "status": "PASS",
+      "detail": "admin-js: ALL PASS",
+      "duration_ms": 136
+    },
+    {
+      "name": "test-unit",
+      "suite_type": "unit",
+      "status": "PASS",
+      "detail": "271/271 unit tests pass",
+      "duration_ms": 1684,
+      "discovered": 12,
+      "executed": 271,
+      "passed": 271,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "test-smoke",
+      "suite_type": "smoke",
+      "status": "PASS",
+      "detail": "11/11 smoke tests pass",
+      "duration_ms": 1541,
+      "discovered": 2,
+      "executed": 11,
+      "passed": 11,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "test-route",
+      "suite_type": "mock-route",
+      "status": "PASS",
+      "detail": "2/27 mock route tests pass",
+      "duration_ms": 1224,
+      "discovered": 6,
+      "executed": 27,
+      "passed": 2,
+      "failed": 0,
+      "skipped": 25
+    },
+    {
+      "name": "test-integration",
+      "suite_type": "real-postgresql-redis",
+      "status": "NOT_TESTED",
+      "detail": "DATABASE_URL/REDIS_URL not set or not localhost (disposable DB required)",
+      "duration_ms": 1
+    },
+    {
+      "name": "test-migration",
+      "suite_type": "migration",
+      "status": "NOT_TESTED",
+      "detail": "DATABASE_URL not set or not localhost (disposable PG required)",
+      "duration_ms": 0
+    },
+    {
+      "name": "php-syntax",
+      "suite_type": "php-syntax",
+      "status": "NOT_TESTED",
+      "detail": "php CLI not installed",
+      "duration_ms": 19
+    },
+    {
+      "name": "python-tests",
+      "suite_type": "python",
+      "status": "NOT_TESTED",
+      "detail": "no tests/ directory at repo root",
+      "duration_ms": 34
+    },
+    {
+      "name": "test-e2e",
+      "suite_type": "browser-e2e",
+      "status": "NOT_TESTED",
+      "detail": "E2E_BROWSER not set (no browser automation available)",
+      "duration_ms": 0
+    },
+    {
+      "name": "secret-scan",
+      "suite_type": "security",
+      "status": "PASS",
+      "detail": "no secrets found in src/prisma/modelwiki-theme",
+      "duration_ms": 32
+    }
+  ],
+  "summary": {
+    "pass": 8,
+    "fail": 1,
+    "not_tested": 5,
+    "total": 14
+  },
+  "overall_exit": 1
+}

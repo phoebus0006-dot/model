@@ -10,9 +10,17 @@
     "lint": "node --check scripts/gate.mjs && node --check scripts/admin-js-check.mjs",
     "admin-js-check": "node scripts/admin-js-check.mjs",
     "gate": "node scripts/gate.mjs",
+    "prisma:validate": "cross-env DATABASE_URL=postgresql://placeholder:placeholder@localhost:5432/placeholder npx prisma validate",
+
     "test": "tsx --test \"src/**/*.test.ts\"",
-    "test:integration": "tsx --test \"tests/**/*.test.ts\"",
-    "prisma:validate": "cross-env DATABASE_URL=postgresql://placeholder:placeholder@localhost:5432/placeholder npx prisma validate"
+    "test:unit": "tsx --test \"src/**/*.test.ts\"",
+    "test:smoke": "tsx --test \"tests/smoke/**/*.test.ts\"",
+    "test:route": "tsx --test \"tests/mock/**/*.test.ts\"",
+    "test:integration": "tsx --test \"tests/real/**/*.test.ts\"",
+    "test:migration": "tsx --test \"tests/migration/**/*.test.ts\"",
+    "test:e2e": "tsx --test \"tests/e2e/**/*.test.ts\"",
+    "test:php": "node scripts/gate.mjs --only php-syntax",
+    "test:python": "node scripts/gate.mjs --only python-tests"
   },
   "dependencies": {
     "@fastify/cors": "^10.0.0",
