@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Upgrade fixture migration test — non-empty baseline database.
  *
  * Verifies the formal existing-database baseline flow (task #7, #9):
@@ -15,30 +15,93 @@
  *
  * Requires:
  *   DATABASE_URL — disposable PostgreSQL connection string (NOT production)
+ *   PSQL at %TEMP%\pg17\pgsql\bin\psql.exe, port 15432, user testuser
  */
 
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
-import { createDbHelpers } from "./helpers";
+import { execSync } from "node:child_process";
+import path from "node:path";
+import fs from "node:fs";
 
-const { setup, runSql, runSqlRows, execSql, execPrisma, applyMigrationSql } = createDbHelpers("mw_test_upgrade");
+const DATABASE_URL = process.env.DATABASE_URL || "";
+const DB_NAME = DATABASE_URL.split("/").pop() || "mw_test_upgrade";
+const PSQL = path.join(process.env.TEMP || "", "pg17", "pgsql", "bin", "psql.exe");
+
+function runSql(sql: string): string {
+  try {
+    return execSync(`"${PSQL}" -p 15432 -U testuser -d ${DB_NAME} -t -A -F "\t"`, {
+      encoding: "utf-8", timeout: 30000, stdio: ["pipe","pipe","pipe"], input: sql,
+    }).trim().replace(/\r/g, "");
+  } catch (e: any) {
+    return e.stdout ? e.stdout.trim().replace(/\r/g, "") : "";
+  }
+}
+
+function runSqlRows(sql: string): string[][] {
+  const r = runSql(sql);
+  if (!r) return [];
+  return r.split("\n").map(l => l.split("\t"));
+}
+
+function execSql(sql: string): boolean {
+  try {
+    execSync(`"${PSQL}" -p 15432 -U testuser -d ${DB_NAME} -v ON_ERROR_STOP=1`, {
+      encoding: "utf-8", timeout: 30000, stdio: ["pipe","pipe","pipe"], input: sql,
+    });
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+function execPrisma(args: string): void {
+  execSync(`npx prisma ${args}`, {
+    cwd: process.cwd(),
+    env: { ...process.env, DATABASE_URL },
+    stdio: "pipe",
+    timeout: 100000,
+  });
+}
+
+/**
+ * Apply a migration's SQL file directly via psql.
+ * Used ONLY to reproduce the pre-existing schema state for the baseline flow.
+ */
+function applyMigrationSql(migrationDir: string): void {
+  const sqlPath = path.join(process.cwd(), "prisma", "migrations", migrationDir, "migration.sql");
+  if (!fs.existsSync(sqlPath)) {
+    throw new Error(`Migration SQL not found: ${sqlPath}`);
+  }
+  const sql = fs.readFileSync(sqlPath, "utf-8");
+  const ok = execSql(sql);
+  if (!ok) {
+    throw new Error(`Failed to apply migration SQL: ${migrationDir}`);
+  }
+}
 
 describe("Upgrade fixture migration (baseline flow)", { timeout: 300000 }, () => {
   before(() => {
-    setup();
+    if (!DATABASE_URL) {
+      throw new Error("DATABASE_URL must be set to a disposable PostgreSQL instance");
+    }
 
-    // 1. Apply the first 3 migrations' SQL directly (simulating an existing database)
+    // 1. Recreate the database clean
+    execSync(`"${PSQL}" -p 15432 -U testuser -d postgres -c "DROP DATABASE IF EXISTS ${DB_NAME};"`, { stdio: "pipe", timeout: 15000 });
+    execSync(`"${PSQL}" -p 15432 -U testuser -d postgres -c "CREATE DATABASE ${DB_NAME};"`, { stdio: "pipe", timeout: 15000 });
+
+    // 2. Apply the first 3 migrations' SQL directly (simulating an existing database)
     applyMigrationSql("20260712000000_baseline_tables");
     applyMigrationSql("20260713000000_phase12_review_workflow");
     applyMigrationSql("20260713000001_review_storage_agent_a");
 
-    // 2. Mark the first 3 migrations as applied in _prisma_migrations via the
+    // 3. Mark the first 3 migrations as applied in _prisma_migrations via the
     //    formal Prisma baseline flow (NOT bypassing P3005).
     execPrisma("migrate resolve --applied 20260712000000_baseline_tables");
     execPrisma("migrate resolve --applied 20260713000000_phase12_review_workflow");
     execPrisma("migrate resolve --applied 20260713000001_review_storage_agent_a");
 
-    // 3. Seed pre-migration test data
+    // 4. Seed pre-migration test data
     //    Users without email (pre-account-schema state)
     execSql(`
       INSERT INTO "users" ("id", "display_name", "role", "is_active", "updated_at")
@@ -71,7 +134,7 @@ describe("Upgrade fixture migration (baseline flow)", { timeout: 300000 }, () =>
     `);
     execSql(`SELECT setval('"review_decisions_id_seq"', (SELECT MAX(id) FROM "review_decisions"));`);
 
-    // 4. Apply the account_schema migration via `prisma migrate deploy`
+    // 5. Apply the account_schema migration via `prisma migrate deploy`
     execPrisma("migrate deploy");
   });
 
@@ -169,6 +232,8 @@ describe("Upgrade fixture migration (baseline flow)", { timeout: 300000 }, () =>
   it("should allow new ReviewItem with reviewer_id pointing to AdminAccount", () => {
     const adminId = runSql(`SELECT id FROM "admin_accounts" WHERE username = 'admin1' LIMIT 1`);
     assert.ok(adminId, "AdminAccount admin1 should exist");
+    // NOTE: review_items.id is TEXT PRIMARY KEY without a default, so an
+    // explicit id value must be provided.
     const ok = execSql(`
       INSERT INTO "review_items" ("id", "type", "title", "status", "reviewer_id", "evidence_fingerprint", "updated_at")
       VALUES ('post-migration-1', 'general', 'Post-migration review item', 'pending', ${adminId}, 'fp_post_001', CURRENT_TIMESTAMP)
@@ -177,6 +242,8 @@ describe("Upgrade fixture migration (baseline flow)", { timeout: 300000 }, () =>
   });
 
   it("should reject ReviewItem with reviewer_id pointing to non-existent AdminAccount", () => {
+    // NOTE: review_items.id is TEXT PRIMARY KEY without a default, so an
+    // explicit id value must be provided.
     const ok = execSql(`
       INSERT INTO "review_items" ("id", "type", "title", "status", "reviewer_id", "evidence_fingerprint", "updated_at")
       VALUES ('invalid-reviewer-test', 'general', 'Invalid reviewer test', 'pending', 99999999, 'fp_invalid', CURRENT_TIMESTAMP)

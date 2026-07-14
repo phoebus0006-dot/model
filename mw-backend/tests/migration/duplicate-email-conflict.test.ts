@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Migration test: duplicate email conflict detection
  *
  * Verifies that post-migration unique constraints correctly reject duplicate
@@ -13,14 +13,48 @@
 
 import { describe, it, before } from "node:test";
 import assert from "node:assert/strict";
-import { createDbHelpers } from "./helpers";
+import { execSync } from "node:child_process";
+import path from "node:path";
 
-const { setup, runSql, execSql, execPrisma } = createDbHelpers("mw_test_dupemail");
+const DATABASE_URL = process.env.DATABASE_URL || "";
+const DB_NAME = DATABASE_URL.split("/").pop() || "mw_test_dupemail";
+const PSQL = path.join(process.env.TEMP || "", "pg17", "pgsql", "bin", "psql.exe");
+
+function runSql(sql: string): string {
+  try {
+    return execSync(`"${PSQL}" -p 15432 -U testuser -d ${DB_NAME} -t -A -F "\t"`, {
+      encoding: "utf-8", timeout: 30000, stdio: ["pipe", "pipe", "pipe"], input: sql,
+    }).trim().replace(/\r/g, "");
+  } catch (e: any) {
+    return e.stdout ? e.stdout.trim().replace(/\r/g, "") : "";
+  }
+}
+
+function execSql(sql: string): boolean {
+  try {
+    execSync(`"${PSQL}" -p 15432 -U testuser -d ${DB_NAME} -v ON_ERROR_STOP=1`, {
+      encoding: "utf-8", timeout: 30000, stdio: ["pipe", "pipe", "pipe"], input: sql,
+    });
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
 
 describe("Duplicate email conflict detection", { timeout: 180000 }, () => {
   before(() => {
-    setup();
-    execPrisma("migrate deploy");
+    if (!DATABASE_URL) {
+      throw new Error("DATABASE_URL must be set to a disposable PostgreSQL instance");
+    }
+    // Ensure clean database exists before running migrations
+    execSync(`"${PSQL}" -p 15432 -U testuser -d postgres -c "DROP DATABASE IF EXISTS ${DB_NAME};"`, { stdio: "pipe", timeout: 15000 });
+    execSync(`"${PSQL}" -p 15432 -U testuser -d postgres -c "CREATE DATABASE ${DB_NAME};"`, { stdio: "pipe", timeout: 15000 });
+    execSync("npx prisma migrate deploy", {
+      cwd: process.cwd(),
+      env: { ...process.env, DATABASE_URL },
+      stdio: "pipe",
+      timeout: 100000,
+    });
   });
 
   it("should reject duplicate email on insert", () => {
@@ -66,6 +100,7 @@ describe("Duplicate email conflict detection", { timeout: 180000 }, () => {
   });
 
   it("should detect zero duplicate emails via SQL query", () => {
+    // This is the query pattern used to detect duplicates before making email NOT NULL
     const dupCount = runSql(`
       SELECT count(*) FROM (
         SELECT lower(email) AS norm_email, count(*) AS cnt
