@@ -1,10 +1,22 @@
 -- Baseline tables for ModelWiki.
 -- This migration creates all core tables that existed before the review workflow.
--- Uses IF NOT EXISTS for idempotency — safe to run on databases with partial schema.
 -- Does NOT include review/crawler tables (those are in 20260713000000 and 20260713000001).
+--
+-- DRIFT POLICY: This migration is NOT idempotent. If any table/index/constraint
+-- already exists, the migration fails loudly. This is intentional — silent drift
+-- hiding is forbidden per the Wave 1 Schema Hardening contract.
+--
+-- EXISTING DATABASES: For databases that already have these tables (created by
+-- a previous deployment path), do NOT run this migration directly. Instead use
+-- the baseline flow documented in BASELINE_FLOW.md:
+--   1. pg_dump backup
+--   2. structural audit (prisma migrate diff)
+--   3. prisma migrate resolve --applied 20260712000000_baseline_tables
+--   4. verify _prisma_migrations
+--   5. prisma migrate deploy (for subsequent migrations)
 
 -- CreateTable: figures
-CREATE TABLE IF NOT EXISTS "figures" (
+CREATE TABLE "figures" (
     "id" BIGSERIAL NOT NULL,
     "slug" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -33,12 +45,12 @@ CREATE TABLE IF NOT EXISTS "figures" (
     "updated_at" TIMESTAMP(3) NOT NULL,
     CONSTRAINT "figures_pkey" PRIMARY KEY ("id")
 );
-CREATE UNIQUE INDEX IF NOT EXISTS "figures_slug_key" ON "figures"("slug");
-CREATE UNIQUE INDEX IF NOT EXISTS "figures_jan_code_key" ON "figures"("jan_code");
-CREATE UNIQUE INDEX IF NOT EXISTS "figures_active_revision_id_key" ON "figures"("active_revision_id");
+CREATE UNIQUE INDEX "figures_slug_key" ON "figures"("slug");
+CREATE UNIQUE INDEX "figures_jan_code_key" ON "figures"("jan_code");
+CREATE UNIQUE INDEX "figures_active_revision_id_key" ON "figures"("active_revision_id");
 
 -- CreateTable: figure_localized
-CREATE TABLE IF NOT EXISTS "figure_localized" (
+CREATE TABLE "figure_localized" (
     "id" BIGSERIAL NOT NULL,
     "figure_id" BIGINT NOT NULL,
     "language" TEXT NOT NULL,
@@ -50,10 +62,10 @@ CREATE TABLE IF NOT EXISTS "figure_localized" (
     "updated_at" TIMESTAMP(3) NOT NULL,
     CONSTRAINT "figure_localized_pkey" PRIMARY KEY ("id")
 );
-CREATE UNIQUE INDEX IF NOT EXISTS "figure_localized_figure_id_language_key" ON "figure_localized"("figure_id", "language");
+CREATE UNIQUE INDEX "figure_localized_figure_id_language_key" ON "figure_localized"("figure_id", "language");
 
 -- CreateTable: figure_releases
-CREATE TABLE IF NOT EXISTS "figure_releases" (
+CREATE TABLE "figure_releases" (
     "id" BIGSERIAL NOT NULL,
     "figure_id" BIGINT NOT NULL,
     "edition" TEXT NOT NULL,
@@ -65,7 +77,7 @@ CREATE TABLE IF NOT EXISTS "figure_releases" (
 );
 
 -- CreateTable: series
-CREATE TABLE IF NOT EXISTS "series" (
+CREATE TABLE "series" (
     "id" BIGSERIAL NOT NULL,
     "slug" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -76,10 +88,10 @@ CREATE TABLE IF NOT EXISTS "series" (
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "series_pkey" PRIMARY KEY ("id")
 );
-CREATE UNIQUE INDEX IF NOT EXISTS "series_slug_key" ON "series"("slug");
+CREATE UNIQUE INDEX "series_slug_key" ON "series"("slug");
 
 -- CreateTable: characters
-CREATE TABLE IF NOT EXISTS "characters" (
+CREATE TABLE "characters" (
     "id" BIGSERIAL NOT NULL,
     "slug" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -90,10 +102,10 @@ CREATE TABLE IF NOT EXISTS "characters" (
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "characters_pkey" PRIMARY KEY ("id")
 );
-CREATE UNIQUE INDEX IF NOT EXISTS "characters_slug_key" ON "characters"("slug");
+CREATE UNIQUE INDEX "characters_slug_key" ON "characters"("slug");
 
 -- CreateTable: manufacturers
-CREATE TABLE IF NOT EXISTS "manufacturers" (
+CREATE TABLE "manufacturers" (
     "id" BIGSERIAL NOT NULL,
     "slug" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -105,10 +117,10 @@ CREATE TABLE IF NOT EXISTS "manufacturers" (
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "manufacturers_pkey" PRIMARY KEY ("id")
 );
-CREATE UNIQUE INDEX IF NOT EXISTS "manufacturers_slug_key" ON "manufacturers"("slug");
+CREATE UNIQUE INDEX "manufacturers_slug_key" ON "manufacturers"("slug");
 
 -- CreateTable: sculptors
-CREATE TABLE IF NOT EXISTS "sculptors" (
+CREATE TABLE "sculptors" (
     "id" BIGSERIAL NOT NULL,
     "slug" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -120,10 +132,10 @@ CREATE TABLE IF NOT EXISTS "sculptors" (
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "sculptors_pkey" PRIMARY KEY ("id")
 );
-CREATE UNIQUE INDEX IF NOT EXISTS "sculptors_slug_key" ON "sculptors"("slug");
+CREATE UNIQUE INDEX "sculptors_slug_key" ON "sculptors"("slug");
 
 -- CreateTable: categories
-CREATE TABLE IF NOT EXISTS "categories" (
+CREATE TABLE "categories" (
     "id" BIGSERIAL NOT NULL,
     "slug" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -132,10 +144,10 @@ CREATE TABLE IF NOT EXISTS "categories" (
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "categories_pkey" PRIMARY KEY ("id")
 );
-CREATE UNIQUE INDEX IF NOT EXISTS "categories_slug_key" ON "categories"("slug");
+CREATE UNIQUE INDEX "categories_slug_key" ON "categories"("slug");
 
 -- CreateTable: revisions
-CREATE TABLE IF NOT EXISTS "revisions" (
+CREATE TABLE "revisions" (
     "id" BIGSERIAL NOT NULL,
     "figure_id" BIGINT NOT NULL,
     "content_md" TEXT NOT NULL,
@@ -151,10 +163,10 @@ CREATE TABLE IF NOT EXISTS "revisions" (
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "revisions_pkey" PRIMARY KEY ("id")
 );
-CREATE UNIQUE INDEX IF NOT EXISTS "revisions_figure_id_version_number_key" ON "revisions"("figure_id", "version_number");
+CREATE UNIQUE INDEX "revisions_figure_id_version_number_key" ON "revisions"("figure_id", "version_number");
 
 -- CreateTable: figure_images
-CREATE TABLE IF NOT EXISTS "figure_images" (
+CREATE TABLE "figure_images" (
     "id" BIGSERIAL NOT NULL,
     "figure_id" BIGINT NOT NULL,
     "url" TEXT,
@@ -174,17 +186,17 @@ CREATE TABLE IF NOT EXISTS "figure_images" (
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "figure_images_pkey" PRIMARY KEY ("id")
 );
-CREATE UNIQUE INDEX IF NOT EXISTS "figure_images_figure_id_sha256_size_key" ON "figure_images"("figure_id", "sha256", "size");
+CREATE UNIQUE INDEX "figure_images_figure_id_sha256_size_key" ON "figure_images"("figure_id", "sha256", "size");
 
 -- CreateTable: figure_category
-CREATE TABLE IF NOT EXISTS "figure_category" (
+CREATE TABLE "figure_category" (
     "figure_id" BIGINT NOT NULL,
     "category_id" BIGINT NOT NULL,
     CONSTRAINT "figure_category_pkey" PRIMARY KEY ("figure_id","category_id")
 );
 
 -- CreateTable: figure_sculptor
-CREATE TABLE IF NOT EXISTS "figure_sculptor" (
+CREATE TABLE "figure_sculptor" (
     "figure_id" BIGINT NOT NULL,
     "sculptor_id" BIGINT NOT NULL,
     "role" TEXT,
@@ -193,15 +205,15 @@ CREATE TABLE IF NOT EXISTS "figure_sculptor" (
 );
 
 -- CreateTable: figure_character
-CREATE TABLE IF NOT EXISTS "figure_character" (
+CREATE TABLE "figure_character" (
     "figure_id" BIGINT NOT NULL,
     "character_id" BIGINT NOT NULL,
     "is_featured" BOOLEAN NOT NULL DEFAULT false,
     CONSTRAINT "figure_character_pkey" PRIMARY KEY ("figure_id","character_id")
 );
 
--- CreateTable: users (original schema — no email fields yet)
-CREATE TABLE IF NOT EXISTS "users" (
+-- CreateTable: users (original schema — no email fields yet; added in 20260714000000)
+CREATE TABLE "users" (
     "id" BIGSERIAL NOT NULL,
     "password_hash" TEXT,
     "display_name" TEXT NOT NULL,
@@ -214,11 +226,11 @@ CREATE TABLE IF NOT EXISTS "users" (
     "updated_at" TIMESTAMP(3) NOT NULL,
     CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );
-CREATE UNIQUE INDEX IF NOT EXISTS "users_google_sub_key" ON "users"("google_sub");
-CREATE UNIQUE INDEX IF NOT EXISTS "users_wechat_openid_key" ON "users"("wechat_openid");
+CREATE UNIQUE INDEX "users_google_sub_key" ON "users"("google_sub");
+CREATE UNIQUE INDEX "users_wechat_openid_key" ON "users"("wechat_openid");
 
 -- CreateTable: favorite_groups
-CREATE TABLE IF NOT EXISTS "favorite_groups" (
+CREATE TABLE "favorite_groups" (
     "id" BIGSERIAL NOT NULL,
     "user_id" BIGINT NOT NULL,
     "name" TEXT NOT NULL,
@@ -228,7 +240,7 @@ CREATE TABLE IF NOT EXISTS "favorite_groups" (
 );
 
 -- CreateTable: favorites
-CREATE TABLE IF NOT EXISTS "favorites" (
+CREATE TABLE "favorites" (
     "id" BIGSERIAL NOT NULL,
     "user_id" BIGINT NOT NULL,
     "figure_id" BIGINT NOT NULL,
@@ -237,20 +249,20 @@ CREATE TABLE IF NOT EXISTS "favorites" (
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "favorites_pkey" PRIMARY KEY ("id")
 );
-CREATE UNIQUE INDEX IF NOT EXISTS "favorites_user_id_figure_id_key" ON "favorites"("user_id", "figure_id");
+CREATE UNIQUE INDEX "favorites_user_id_figure_id_key" ON "favorites"("user_id", "figure_id");
 
 -- CreateTable: figure_likes
-CREATE TABLE IF NOT EXISTS "figure_likes" (
+CREATE TABLE "figure_likes" (
     "id" BIGSERIAL NOT NULL,
     "user_id" BIGINT NOT NULL,
     "figure_id" BIGINT NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "figure_likes_pkey" PRIMARY KEY ("id")
 );
-CREATE UNIQUE INDEX IF NOT EXISTS "figure_likes_user_id_figure_id_key" ON "figure_likes"("user_id", "figure_id");
+CREATE UNIQUE INDEX "figure_likes_user_id_figure_id_key" ON "figure_likes"("user_id", "figure_id");
 
 -- CreateTable: figure_comments
-CREATE TABLE IF NOT EXISTS "figure_comments" (
+CREATE TABLE "figure_comments" (
     "id" BIGSERIAL NOT NULL,
     "user_id" BIGINT NOT NULL,
     "figure_id" BIGINT NOT NULL,
@@ -262,7 +274,7 @@ CREATE TABLE IF NOT EXISTS "figure_comments" (
 );
 
 -- CreateTable: entity_mapping
-CREATE TABLE IF NOT EXISTS "entity_mapping" (
+CREATE TABLE "entity_mapping" (
     "id" BIGSERIAL NOT NULL,
     "entity_type" TEXT NOT NULL,
     "entity_id" BIGINT NOT NULL,
@@ -274,10 +286,10 @@ CREATE TABLE IF NOT EXISTS "entity_mapping" (
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "entity_mapping_pkey" PRIMARY KEY ("id")
 );
-CREATE UNIQUE INDEX IF NOT EXISTS "entity_mapping_entity_type_source_source_id_key" ON "entity_mapping"("entity_type", "source", "source_id");
+CREATE UNIQUE INDEX "entity_mapping_entity_type_source_source_id_key" ON "entity_mapping"("entity_type", "source", "source_id");
 
 -- CreateTable: redirect_map
-CREATE TABLE IF NOT EXISTS "redirect_map" (
+CREATE TABLE "redirect_map" (
     "id" BIGSERIAL NOT NULL,
     "from_path" TEXT NOT NULL,
     "to_path" TEXT NOT NULL,
@@ -285,108 +297,43 @@ CREATE TABLE IF NOT EXISTS "redirect_map" (
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "redirect_map_pkey" PRIMARY KEY ("id")
 );
-CREATE UNIQUE INDEX IF NOT EXISTS "redirect_map_from_path_key" ON "redirect_map"("from_path");
+CREATE UNIQUE INDEX "redirect_map_from_path_key" ON "redirect_map"("from_path");
 
--- Foreign keys (only add if not already present)
-DO $$
-BEGIN
-    -- figures FKs
-    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'figures_parent_id_fkey') THEN
-        ALTER TABLE "figures" ADD CONSTRAINT "figures_parent_id_fkey" FOREIGN KEY ("parent_id") REFERENCES "figures"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-    END IF;
-    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'figures_series_id_fkey') THEN
-        ALTER TABLE "figures" ADD CONSTRAINT "figures_series_id_fkey" FOREIGN KEY ("series_id") REFERENCES "series"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-    END IF;
-    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'figures_manufacturer_id_fkey') THEN
-        ALTER TABLE "figures" ADD CONSTRAINT "figures_manufacturer_id_fkey" FOREIGN KEY ("manufacturer_id") REFERENCES "manufacturers"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-    END IF;
-    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'figures_active_revision_id_fkey') THEN
-        ALTER TABLE "figures" ADD CONSTRAINT "figures_active_revision_id_fkey" FOREIGN KEY ("active_revision_id") REFERENCES "revisions"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-    END IF;
+-- Foreign keys
+ALTER TABLE "figures" ADD CONSTRAINT "figures_parent_id_fkey" FOREIGN KEY ("parent_id") REFERENCES "figures"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "figures" ADD CONSTRAINT "figures_series_id_fkey" FOREIGN KEY ("series_id") REFERENCES "series"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "figures" ADD CONSTRAINT "figures_manufacturer_id_fkey" FOREIGN KEY ("manufacturer_id") REFERENCES "manufacturers"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "figures" ADD CONSTRAINT "figures_active_revision_id_fkey" FOREIGN KEY ("active_revision_id") REFERENCES "revisions"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
-    -- figure_localized FK
-    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'figure_localized_figure_id_fkey') THEN
-        ALTER TABLE "figure_localized" ADD CONSTRAINT "figure_localized_figure_id_fkey" FOREIGN KEY ("figure_id") REFERENCES "figures"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-    END IF;
+ALTER TABLE "figure_localized" ADD CONSTRAINT "figure_localized_figure_id_fkey" FOREIGN KEY ("figure_id") REFERENCES "figures"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
-    -- figure_releases FK
-    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'figure_releases_figure_id_fkey') THEN
-        ALTER TABLE "figure_releases" ADD CONSTRAINT "figure_releases_figure_id_fkey" FOREIGN KEY ("figure_id") REFERENCES "figures"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-    END IF;
+ALTER TABLE "figure_releases" ADD CONSTRAINT "figure_releases_figure_id_fkey" FOREIGN KEY ("figure_id") REFERENCES "figures"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
-    -- characters FK
-    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'characters_series_id_fkey') THEN
-        ALTER TABLE "characters" ADD CONSTRAINT "characters_series_id_fkey" FOREIGN KEY ("series_id") REFERENCES "series"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-    END IF;
+ALTER TABLE "characters" ADD CONSTRAINT "characters_series_id_fkey" FOREIGN KEY ("series_id") REFERENCES "series"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
-    -- categories FK
-    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'categories_parent_id_fkey') THEN
-        ALTER TABLE "categories" ADD CONSTRAINT "categories_parent_id_fkey" FOREIGN KEY ("parent_id") REFERENCES "categories"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-    END IF;
+ALTER TABLE "categories" ADD CONSTRAINT "categories_parent_id_fkey" FOREIGN KEY ("parent_id") REFERENCES "categories"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
-    -- revisions FK
-    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'revisions_figure_id_fkey') THEN
-        ALTER TABLE "revisions" ADD CONSTRAINT "revisions_figure_id_fkey" FOREIGN KEY ("figure_id") REFERENCES "figures"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-    END IF;
+ALTER TABLE "revisions" ADD CONSTRAINT "revisions_figure_id_fkey" FOREIGN KEY ("figure_id") REFERENCES "figures"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
-    -- figure_images FK
-    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'figure_images_figure_id_fkey') THEN
-        ALTER TABLE "figure_images" ADD CONSTRAINT "figure_images_figure_id_fkey" FOREIGN KEY ("figure_id") REFERENCES "figures"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-    END IF;
+ALTER TABLE "figure_images" ADD CONSTRAINT "figure_images_figure_id_fkey" FOREIGN KEY ("figure_id") REFERENCES "figures"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
-    -- figure_category FKs
-    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'figure_category_figure_id_fkey') THEN
-        ALTER TABLE "figure_category" ADD CONSTRAINT "figure_category_figure_id_fkey" FOREIGN KEY ("figure_id") REFERENCES "figures"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-    END IF;
-    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'figure_category_category_id_fkey') THEN
-        ALTER TABLE "figure_category" ADD CONSTRAINT "figure_category_category_id_fkey" FOREIGN KEY ("category_id") REFERENCES "categories"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-    END IF;
+ALTER TABLE "figure_category" ADD CONSTRAINT "figure_category_figure_id_fkey" FOREIGN KEY ("figure_id") REFERENCES "figures"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "figure_category" ADD CONSTRAINT "figure_category_category_id_fkey" FOREIGN KEY ("category_id") REFERENCES "categories"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
-    -- figure_sculptor FKs
-    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'figure_sculptor_figure_id_fkey') THEN
-        ALTER TABLE "figure_sculptor" ADD CONSTRAINT "figure_sculptor_figure_id_fkey" FOREIGN KEY ("figure_id") REFERENCES "figures"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-    END IF;
-    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'figure_sculptor_sculptor_id_fkey') THEN
-        ALTER TABLE "figure_sculptor" ADD CONSTRAINT "figure_sculptor_sculptor_id_fkey" FOREIGN KEY ("sculptor_id") REFERENCES "sculptors"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-    END IF;
+ALTER TABLE "figure_sculptor" ADD CONSTRAINT "figure_sculptor_figure_id_fkey" FOREIGN KEY ("figure_id") REFERENCES "figures"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "figure_sculptor" ADD CONSTRAINT "figure_sculptor_sculptor_id_fkey" FOREIGN KEY ("sculptor_id") REFERENCES "sculptors"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
-    -- figure_character FKs
-    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'figure_character_figure_id_fkey') THEN
-        ALTER TABLE "figure_character" ADD CONSTRAINT "figure_character_figure_id_fkey" FOREIGN KEY ("figure_id") REFERENCES "figures"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-    END IF;
-    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'figure_character_character_id_fkey') THEN
-        ALTER TABLE "figure_character" ADD CONSTRAINT "figure_character_character_id_fkey" FOREIGN KEY ("character_id") REFERENCES "characters"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-    END IF;
+ALTER TABLE "figure_character" ADD CONSTRAINT "figure_character_figure_id_fkey" FOREIGN KEY ("figure_id") REFERENCES "figures"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "figure_character" ADD CONSTRAINT "figure_character_character_id_fkey" FOREIGN KEY ("character_id") REFERENCES "characters"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
-    -- favorite_groups FK
-    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'favorite_groups_user_id_fkey') THEN
-        ALTER TABLE "favorite_groups" ADD CONSTRAINT "favorite_groups_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-    END IF;
+ALTER TABLE "favorite_groups" ADD CONSTRAINT "favorite_groups_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
-    -- favorites FKs
-    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'favorites_user_id_fkey') THEN
-        ALTER TABLE "favorites" ADD CONSTRAINT "favorites_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-    END IF;
-    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'favorites_figure_id_fkey') THEN
-        ALTER TABLE "favorites" ADD CONSTRAINT "favorites_figure_id_fkey" FOREIGN KEY ("figure_id") REFERENCES "figures"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-    END IF;
-    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'favorites_group_id_fkey') THEN
-        ALTER TABLE "favorites" ADD CONSTRAINT "favorites_group_id_fkey" FOREIGN KEY ("group_id") REFERENCES "favorite_groups"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-    END IF;
+ALTER TABLE "favorites" ADD CONSTRAINT "favorites_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "favorites" ADD CONSTRAINT "favorites_figure_id_fkey" FOREIGN KEY ("figure_id") REFERENCES "figures"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "favorites" ADD CONSTRAINT "favorites_group_id_fkey" FOREIGN KEY ("group_id") REFERENCES "favorite_groups"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
-    -- figure_likes FKs
-    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'figure_likes_user_id_fkey') THEN
-        ALTER TABLE "figure_likes" ADD CONSTRAINT "figure_likes_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-    END IF;
-    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'figure_likes_figure_id_fkey') THEN
-        ALTER TABLE "figure_likes" ADD CONSTRAINT "figure_likes_figure_id_fkey" FOREIGN KEY ("figure_id") REFERENCES "figures"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-    END IF;
+ALTER TABLE "figure_likes" ADD CONSTRAINT "figure_likes_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "figure_likes" ADD CONSTRAINT "figure_likes_figure_id_fkey" FOREIGN KEY ("figure_id") REFERENCES "figures"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
-    -- figure_comments FKs
-    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'figure_comments_user_id_fkey') THEN
-        ALTER TABLE "figure_comments" ADD CONSTRAINT "figure_comments_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-    END IF;
-    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'figure_comments_figure_id_fkey') THEN
-        ALTER TABLE "figure_comments" ADD CONSTRAINT "figure_comments_figure_id_fkey" FOREIGN KEY ("figure_id") REFERENCES "figures"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-    END IF;
-END $$;
+ALTER TABLE "figure_comments" ADD CONSTRAINT "figure_comments_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "figure_comments" ADD CONSTRAINT "figure_comments_figure_id_fkey" FOREIGN KEY ("figure_id") REFERENCES "figures"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

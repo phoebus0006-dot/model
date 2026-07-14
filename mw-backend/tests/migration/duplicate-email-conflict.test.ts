@@ -46,6 +46,9 @@ describe("Duplicate email conflict detection", { timeout: 180000 }, () => {
     if (!DATABASE_URL) {
       throw new Error("DATABASE_URL must be set to a disposable PostgreSQL instance");
     }
+    // Ensure clean database exists before running migrations
+    execSync(`"${PSQL}" -p 15432 -U testuser -d postgres -c "DROP DATABASE IF EXISTS ${DB_NAME};"`, { stdio: "pipe", timeout: 15000 });
+    execSync(`"${PSQL}" -p 15432 -U testuser -d postgres -c "CREATE DATABASE ${DB_NAME};"`, { stdio: "pipe", timeout: 15000 });
     execSync("npx prisma migrate deploy", {
       cwd: process.cwd(),
       env: { ...process.env, DATABASE_URL },
