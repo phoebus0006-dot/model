@@ -144,3 +144,6 @@ coverage/
 mw-backend/test-manifest.json
 mw-backend/test-artifacts/
 
+
+# Local CI artifact downloads (gh run download)
+.ci-artifacts/
