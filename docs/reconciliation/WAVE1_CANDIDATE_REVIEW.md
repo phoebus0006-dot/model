@@ -130,3 +130,99 @@ A       scripts/reconciliation/classify_artifacts.py
 
 **Wave 1 merge approved: NO** (pending CI verification of PostgreSQL/Redis/PHP)
 **Wave 2 start approved: NO**
+
+
+## CI Verification
+
+Appended after CI finalization. Local results above are preserved unchanged.
+
+- PR: #1
+- PR URL: https://github.com/phoebus0006-dot/model/pull/1
+- CI run ID: 29347455931
+- CI run URL: https://github.com/phoebus0006-dot/model/actions/runs/29347455931
+- CI commit SHA: e21c0cdd5c7e8aef879d63686e42ac4da94740c9 (candidate branch HEAD, confirmed via `gh run view --json headSha`)
+- Manifest commit_sha: a8b8884d6673593269df67882c6403d58254f410 (GitHub Actions PR merge commit — `actions/checkout@v4` checks out `refs/pull/1/merge` for PR events; headSha from API matches candidate HEAD)
+- PostgreSQL: VERIFIED (test-integration real-postgresql-redis PASS, test-migration PASS, service: postgres:16-alpine healthy)
+- Redis: VERIFIED (test-integration requires redis, PASS, service: redis:7-alpine healthy)
+- Migration empty DB: VERIFIED (empty-db-migration.test.ts PASS within test-migration suite, 6 files discovered)
+- Migration existing DB: VERIFIED (upgrade-fixture.test.ts PASS within test-migration suite, baseline flow with `migrate resolve --applied` + `migrate deploy`)
+- PHP: VERIFIED (php-syntax PASS, 22 PHP files OK, PHP 8.3.32)
+- Python: VERIFIED (python-tests PASS, 51 passed, 0 failed, Python 3.12.13)
+- typecheck: VERIFIED (tsc --noEmit, 0 errors)
+- build: VERIFIED (tsup, dist 224.58 KB)
+- Full gate: VERIFIED (Full QA gate step PASS, manifest summary fail=0, overall_exit=0)
+- Manifest artifact: VERIFIED (test-manifest artifact uploaded successfully, downloaded and verified)
+- Browser E2E: NOT TESTED (Wave 2 backlog — account login UI not yet implemented)
+- Secret scan: VERIFIED (no secrets found)
+- Remaining blockers: NONE (all required CI checks green)
+
+### CI Fix History (this session)
+
+| Commit | Description | CI Run | Result |
+|--------|-------------|--------|--------|
+| a0d7c14 | fix(ci): align test manifest artifact path | 29344804793 | FAILED (Unit tests: Node 20 glob) |
+| 4185002 | fix(tests): use node --test --import tsx for glob support | — | (intermediate) |
+| 3053e33 | fix(ci): move TEST_MANIFEST_PATH to step-level env | — | (intermediate) |
+| 1f70c5a | fix(ci): upgrade Node.js to 22 for --test glob support | 29345984316 | FAILED (Migration tests: hardcoded Windows psql) |
+| 389a785 | fix(tests): make migration tests portable via DATABASE_URL parsing | 29346969087 | FAILED (Python tests: missing requests module) |
+| e21c0cd | fix(ci): install requests module for Python tests | 29347455931 | SUCCESS |
+
+### Manifest Summary (downloaded artifact)
+
+- pass: 14
+- fail: 0
+- not_tested: 1 (browser-e2e only — Wave 2 backlog)
+- total: 15
+- overall_exit: 0
+- NOT_TESTED does NOT include PostgreSQL, Redis, migration, or PHP (all VERIFIED)
+- skipped and passed tracked separately (no skip-then-PASS inflation)
+- mock integration: 6 discovered, 0 failed, 0 skipped (no 25-skip inflation)
+
+### CI Step Verification (all 23 required checks)
+
+1. PostgreSQL 16 service healthy: VERIFIED
+2. Redis 7 service healthy: VERIFIED
+3. PHP 8.3 installed: VERIFIED
+4. Python 3.12 installed: VERIFIED
+5. npm ci exit 0: VERIFIED
+6. prisma generate exit 0: VERIFIED
+7. prisma validate exit 0: VERIFIED
+8. prisma migrate deploy exit 0: VERIFIED
+9. typecheck exit 0: VERIFIED
+10. build exit 0: VERIFIED
+11. lint exit 0: VERIFIED
+12. unit exit 0: VERIFIED
+13. route exit 0: VERIFIED
+14. mock integration exit 0: VERIFIED
+15. smoke exit 0: VERIFIED
+16. real integration exit 0: VERIFIED
+17. migration tests exit 0: VERIFIED
+18. admin-js-check exit 0: VERIFIED
+19. PHP syntax exit 0: VERIFIED
+20. Python tests exit 0: VERIFIED
+21. secret scan exit 0: VERIFIED
+22. full gate exit 0: VERIFIED
+23. test manifest artifact uploaded: VERIFIED
+
+### Merge Approval Gating
+
+| Condition | Status |
+|-----------|--------|
+| CI commit == candidate branch HEAD | VERIFIED (e21c0cd) |
+| PostgreSQL VERIFIED | VERIFIED |
+| Redis VERIFIED | VERIFIED |
+| migration empty DB VERIFIED | VERIFIED |
+| existing DB upgrade VERIFIED | VERIFIED |
+| PHP VERIFIED | VERIFIED |
+| Python VERIFIED | VERIFIED |
+| typecheck VERIFIED | VERIFIED |
+| build VERIFIED | VERIFIED |
+| full gate FAIL=0 | VERIFIED |
+| manifest artifact VERIFIED | VERIFIED |
+| PR checks all green | VERIFIED |
+| working tree clean | VERIFIED |
+
+**Wave 1 merge approved: YES**
+**Wave 2 start approved: NO** (pending explicit human approval after reviewing this report)
+
+Note: Merge approval is informational only. This Agent does NOT execute the merge. Awaiting explicit human review and separate merge authorization.
