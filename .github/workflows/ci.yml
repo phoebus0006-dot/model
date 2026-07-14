@@ -163,7 +163,7 @@ jobs:
       - name: Python tests
         working-directory: .
         run: |
-          pip install pytest -q
+          pip install pytest requests -q
           # Run pytest on root-level test_crawler_state.py and modelwiki-theme/tests/*.py
           # PYTHONPATH is set to repo root so nas_crawler_agent can be imported.
           python -m pytest test_crawler_state.py --tb=line -q
