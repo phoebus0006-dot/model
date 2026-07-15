@@ -24,8 +24,11 @@ import { figureRoutes } from "../../src/routes/figures.js";
 import { communityRoutes } from "../../src/routes/community.js";
 import { registerBigIntSerializer } from "../../src/plugins/bigintSerializer.js";
 import { signAdminToken } from "../../src/plugins/admin-auth/token.js";
+import { ADMIN_JWT_AUDIENCE, ADMIN_JWT_TTL_SECONDS } from "../../src/plugins/admin-auth/constants.js";
+import { USER_JWT_AUDIENCE } from "../../src/runtime/config.js";
 
-const TEST_JWT_SECRET = "test-write-route-audit-secret-32!";
+const TEST_JWT_SECRET = "test-write-route-audit-user-secret-32!";
+const ADMIN_TEST_SECRET = "test-write-route-audit-admin-secret-32!";
 
 // ─── Mock data types ───────────────────────────────────────────────────────
 
@@ -395,9 +398,20 @@ async function buildApp(): Promise<{
   (app as any).prisma = prisma;
   (app as any).redis = redis;
   registerBigIntSerializer(app);
+  // User JWT — default namespace (app.jwt.sign / app.jwt.verify)
   await app.register(jwt, {
     secret: TEST_JWT_SECRET,
-    sign: { algorithm: "HS256", expiresIn: "2h" },
+    sign: { algorithm: "HS256", aud: USER_JWT_AUDIENCE, expiresIn: "2h" },
+    verify: { allowedAud: USER_JWT_AUDIENCE },
+  });
+  // Admin JWT — admin namespace (app.jwt.admin.sign / app.jwt.admin.verify)
+  // Required because signAdminToken uses app.jwt.admin.sign (ADMIN_TEST_SECRET).
+  await app.register(jwt, {
+    secret: ADMIN_TEST_SECRET,
+    namespace: "admin",
+    decoratorName: "admin",
+    sign: { algorithm: "HS256", aud: ADMIN_JWT_AUDIENCE, expiresIn: ADMIN_JWT_TTL_SECONDS },
+    verify: { allowedAud: ADMIN_JWT_AUDIENCE },
   });
   app.register(figureRoutes, { prefix: "/api/v1/figures" });
   app.register(communityRoutes, { prefix: "/api/v1" });
