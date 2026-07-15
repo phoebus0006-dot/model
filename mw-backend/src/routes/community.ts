@@ -1,5 +1,6 @@
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
+import { userGuard, requireVerifiedUser, type UserIdentity } from "../plugins/user-auth/guard.js";
 
 const commentSchema = z.object({
   body: z.string().trim().min(1).max(2000),
@@ -14,32 +15,6 @@ function publicUser(user: any) {
     role: user.role,
     createdAt: user.createdAt,
   };
-}
-
-async function requireUser(app: FastifyInstance, req: any, reply: any) {
-  const auth = req.headers.authorization;
-  if (!auth?.startsWith("Bearer ") || auth.length <= 7) {
-    reply.status(401).send({ success: false, error: { code: "UNAUTHORIZED", message: "请先登录" } });
-    return null;
-  }
-
-  try {
-    const payload = app.jwt.verify<{ userId: string | number; role: string }>(auth.slice(7));
-    const user = await app.prisma.user.findUnique({
-      where: { id: BigInt(payload.userId) },
-      select: { id: true, displayName: true, avatarUrl: true, role: true, isActive: true, createdAt: true },
-    });
-
-    if (!user?.isActive) {
-      reply.status(401).send({ success: false, error: { code: "USER_NOT_FOUND", message: "账号不可用" } });
-      return null;
-    }
-
-    return user;
-  } catch {
-    reply.status(401).send({ success: false, error: { code: "INVALID_TOKEN", message: "登录已过期" } });
-    return null;
-  }
 }
 
 async function findFigure(app: FastifyInstance, slug: string, reply: any) {
@@ -106,9 +81,16 @@ function sanitizeUserText(s: string): string {
 export async function communityRoutes(app: FastifyInstance) {
   const prisma = app.prisma as any;
 
-  app.get("/me/space", async (req: any, reply: any) => {
-    const user = await requireUser(app, req, reply);
-    if (!user) return;
+  // READ route: unverified users allowed (can view their space, resend verification, etc.)
+  app.get("/me/space", { preHandler: userGuard }, async (req: any, reply: any) => {
+    const identity = req.user as UserIdentity;
+    const user = await prisma.user.findUnique({
+      where: { id: BigInt(identity.userId) },
+      select: { id: true, email: true, displayName: true, avatarUrl: true, role: true, isActive: true, createdAt: true },
+    });
+    if (!user || !user.isActive) {
+      return reply.status(401).send({ success: false, error: { code: "UNAUTHORIZED", message: "账号不可用" } });
+    }
 
     const [favorites, likes, comments] = await Promise.all([
       prisma.favorite.findMany({
@@ -203,53 +185,50 @@ export async function communityRoutes(app: FastifyInstance) {
     };
   });
 
-  app.post("/figures/:slug/favorite", async (req: any, reply: any) => {
-    const user = await requireUser(app, req, reply);
-    if (!user) return;
+  // WRITE route: requires verified email. Unverified → 403 EMAIL_NOT_VERIFIED.
+  app.post("/figures/:slug/favorite", { preHandler: requireVerifiedUser }, async (req: any, reply: any) => {
+    const userId = BigInt(req.user.userId);
     const figure = await findFigure(app, (req.params as { slug: string }).slug, reply);
     if (!figure) return;
 
     const favorite = await prisma.favorite.upsert({
-      where: { userId_figureId: { userId: user.id, figureId: figure.id } },
-      create: { userId: user.id, figureId: figure.id },
+      where: { userId_figureId: { userId, figureId: figure.id } },
+      create: { userId, figureId: figure.id },
       update: {},
     });
 
     return { success: true, data: { favorited: true, favoriteId: favorite.id } };
   });
 
-  app.delete("/figures/:slug/favorite", async (req: any, reply: any) => {
-    const user = await requireUser(app, req, reply);
-    if (!user) return;
+  app.delete("/figures/:slug/favorite", { preHandler: requireVerifiedUser }, async (req: any, reply: any) => {
+    const userId = BigInt(req.user.userId);
     const figure = await findFigure(app, (req.params as { slug: string }).slug, reply);
     if (!figure) return;
 
-    await prisma.favorite.deleteMany({ where: { userId: user.id, figureId: figure.id } });
+    await prisma.favorite.deleteMany({ where: { userId, figureId: figure.id } });
     return { success: true, data: { favorited: false } };
   });
 
-  app.post("/figures/:slug/like", async (req: any, reply: any) => {
-    const user = await requireUser(app, req, reply);
-    if (!user) return;
+  app.post("/figures/:slug/like", { preHandler: requireVerifiedUser }, async (req: any, reply: any) => {
+    const userId = BigInt(req.user.userId);
     const figure = await findFigure(app, (req.params as { slug: string }).slug, reply);
     if (!figure) return;
 
     const like = await prisma.figureLike.upsert({
-      where: { userId_figureId: { userId: user.id, figureId: figure.id } },
-      create: { userId: user.id, figureId: figure.id },
+      where: { userId_figureId: { userId, figureId: figure.id } },
+      create: { userId, figureId: figure.id },
       update: {},
     });
 
     return { success: true, data: { liked: true, likeId: like.id } };
   });
 
-  app.delete("/figures/:slug/like", async (req: any, reply: any) => {
-    const user = await requireUser(app, req, reply);
-    if (!user) return;
+  app.delete("/figures/:slug/like", { preHandler: requireVerifiedUser }, async (req: any, reply: any) => {
+    const userId = BigInt(req.user.userId);
     const figure = await findFigure(app, (req.params as { slug: string }).slug, reply);
     if (!figure) return;
 
-    await prisma.figureLike.deleteMany({ where: { userId: user.id, figureId: figure.id } });
+    await prisma.figureLike.deleteMany({ where: { userId, figureId: figure.id } });
     return { success: true, data: { liked: false } };
   });
 
@@ -273,9 +252,8 @@ export async function communityRoutes(app: FastifyInstance) {
     return { success: true, data: comments };
   });
 
-  app.post("/figures/:slug/comments", { config: { rateLimit: { max: 20, timeWindow: "1 minute" } } }, async (req: any, reply: any) => {
-    const user = await requireUser(app, req, reply);
-    if (!user) return;
+  app.post("/figures/:slug/comments", { preHandler: requireVerifiedUser, config: { rateLimit: { max: 20, timeWindow: "1 minute" } } }, async (req: any, reply: any) => {
+    const userId = BigInt(req.user.userId);
     const figure = await findFigure(app, (req.params as { slug: string }).slug, reply);
     if (!figure) return;
     const { body } = commentSchema.parse(req.body);
@@ -283,7 +261,7 @@ export async function communityRoutes(app: FastifyInstance) {
     const sanitizedBody = sanitizeUserText(body);
 
     const comment = await prisma.figureComment.create({
-      data: { userId: user.id, figureId: figure.id, body: sanitizedBody },
+      data: { userId, figureId: figure.id, body: sanitizedBody },
       select: {
         id: true,
         body: true,
