@@ -1,6 +1,7 @@
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { scanKeys } from "../security/redisGuard.js";
+import { requireAdminRole } from "../plugins/adminGuard.js";
 
 const listQuery = z.object({
   page: z.coerce.number().min(1).default(1),
@@ -93,7 +94,7 @@ export async function manufacturerRoutes(app: FastifyInstance) {
     return { success: true, data, meta: { page: query.page, perPage: query.perPage, total, totalPages: Math.ceil(total / query.perPage) } };
   });
 
-  app.post("/", async (req: any, reply: any) => {
+  app.post("/", { preHandler: requireAdminRole("admin") }, async (req: any, reply: any) => {
     const data = createManufacturerSchema.parse(req.body);
     const existing = await app.prisma.manufacturer.findUnique({ where: { slug: data.slug } });
     if (existing) return reply.status(409).send({ success: false, error: { code: "SLUG_EXISTS" } });
@@ -103,7 +104,7 @@ export async function manufacturerRoutes(app: FastifyInstance) {
     return reply.status(201).send({ success: true, data: manufacturer });
   });
 
-  app.put("/:slug", async (req: any, reply: any) => {
+  app.put("/:slug", { preHandler: requireAdminRole("admin") }, async (req: any, reply: any) => {
     const { slug } = req.params as { slug: string };
     const data = updateManufacturerSchema.parse(req.body);
     const existing = await app.prisma.manufacturer.findUnique({ where: { slug } });
@@ -120,7 +121,7 @@ export async function manufacturerRoutes(app: FastifyInstance) {
     return { success: true, data: manufacturer };
   });
 
-  app.delete("/:slug", async (req: any, reply: any) => {
+  app.delete("/:slug", { preHandler: requireAdminRole("admin") }, async (req: any, reply: any) => {
     const { slug } = req.params as { slug: string };
     const existing = await app.prisma.manufacturer.findUnique({ where: { slug } });
     if (!existing) return reply.status(404).send({ success: false, error: { code: "MANUFACTURER_NOT_FOUND" } });

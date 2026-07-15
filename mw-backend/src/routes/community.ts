@@ -1,5 +1,6 @@
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
+import { PrismaClient } from "@prisma/client";
 import { userGuard, requireVerifiedUser, type UserIdentity } from "../plugins/user-auth/guard.js";
 
 const commentSchema = z.object({
@@ -79,7 +80,7 @@ function sanitizeUserText(s: string): string {
 }
 
 export async function communityRoutes(app: FastifyInstance) {
-  const prisma = app.prisma as any;
+  const prisma: PrismaClient = app.prisma;
 
   // READ route: unverified users allowed (can view their space, resend verification, etc.)
   app.get("/me/space", { preHandler: userGuard }, async (req: any, reply: any) => {

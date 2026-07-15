@@ -1,6 +1,7 @@
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { scanKeys } from "../security/redisGuard.js";
+import { requireAdminRole } from "../plugins/adminGuard.js";
 
 const createCategorySchema = z.object({
   slug: z.string().min(1),
@@ -88,7 +89,7 @@ export async function categoryRoutes(app: FastifyInstance) {
     return { success: true, data: JSON.parse(JSON.stringify(attachActiveCounts(category, counts))) };
   });
 
-  app.post("/", async (req: any, reply: any) => {
+  app.post("/", { preHandler: requireAdminRole("admin") }, async (req: any, reply: any) => {
     const data = createCategorySchema.parse(req.body);
     const existing = await app.prisma.category.findUnique({ where: { slug: data.slug } });
     if (existing) return reply.status(409).send({ success: false, error: { code: "SLUG_EXISTS" } });
@@ -98,7 +99,7 @@ export async function categoryRoutes(app: FastifyInstance) {
     return reply.status(201).send({ success: true, data: JSON.parse(JSON.stringify(category)) });
   });
 
-  app.put("/:slug", async (req: any, reply: any) => {
+  app.put("/:slug", { preHandler: requireAdminRole("admin") }, async (req: any, reply: any) => {
     const { slug } = req.params as { slug: string };
     const data = updateCategorySchema.parse(req.body);
     const existing = await app.prisma.category.findUnique({ where: { slug } });
@@ -115,7 +116,7 @@ export async function categoryRoutes(app: FastifyInstance) {
     return { success: true, data: JSON.parse(JSON.stringify(category)) };
   });
 
-  app.delete("/:slug", async (req: any, reply: any) => {
+  app.delete("/:slug", { preHandler: requireAdminRole("admin") }, async (req: any, reply: any) => {
     const { slug } = req.params as { slug: string };
     const existing = await app.prisma.category.findUnique({ where: { slug } });
     if (!existing) return reply.status(404).send({ success: false, error: { code: "CATEGORY_NOT_FOUND" } });
