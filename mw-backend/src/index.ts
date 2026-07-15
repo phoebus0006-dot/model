@@ -17,33 +17,61 @@ import { sculptorRoutes } from "./routes/sculptor.js";
 import { characterRoutes } from "./routes/characters.js";
 import { adminRoutes } from "./routes/admin.js";
 import { authRoutes } from "./routes/auth.js";
+import { adminAuthRoutes } from "./routes/admin-auth.js";
 import { imageRoutes } from "./routes/images.js";
 import { communityRoutes } from "./routes/community.js";
 import Redis from "ioredis";
 import { installRedisFlushGuard } from "./security/redisGuard.js";
 import { registerBigIntSerializer } from "./plugins/bigintSerializer.js";
 import { registerReadinessRoutes } from "./plugins/readiness.js";
-import { verifyUserFromDb, ROLE_ADMIN } from "./plugins/adminGuard.js";
+
+// Wave 2 dual-identity runtime: configuration, dual JWT factory, identity
+// collision guard, and graceful shutdown manager.
+import {
+  loadRuntimeConfig,
+  buildUserJwtOptions,
+  buildAdminJwtOptions,
+  registerIdentityCollisionGuard,
+  createShutdownManager,
+  LOG_REDACT_PATHS,
+} from "./runtime/index.js";
+
+import { adminGuard } from "./plugins/adminGuard.js";
+import { verifyAdminIdentity } from "./plugins/admin-auth/guard.js";
 
 async function main() {
-  const app = Fastify({ logger: true, trustProxy: true, bodyLimit: Number(process.env.BODY_LIMIT_BYTES || 20 * 1024 * 1024) });
-  const prisma = new PrismaClient();
-  const redis = new Redis(process.env.REDIS_URL || "redis://localhost:6379");
-  const jwtSecret = process.env.JWT_SECRET || "dev-secret-change-in-production";
-  const isProduction = process.env.NODE_ENV === "production";
+  // ─── Load + validate runtime config (fail-closed on bad secrets) ────────
+  // Throws before any resource is opened if production secrets are missing,
+  // short, or identical. Never falls back to JWT_SECRET / dev-secret.
+  const config = loadRuntimeConfig();
+  const isProduction = config.isProduction;
 
-  if (isProduction && (!process.env.JWT_SECRET || jwtSecret === "dev-secret-change-in-production" || jwtSecret.length < 32)) {
-    throw new Error("JWT_SECRET must be set to a strong secret in production");
-  }
+  const app = Fastify({
+    logger: {
+      // Redact credentials from logs. JWTs, cookies, passwords, and tokens
+      // are replaced with [REDACTED] at the pino serialization layer so they
+      // never appear in log output (contract: "DO NOT log JWT").
+      redact: {
+        paths: [...LOG_REDACT_PATHS],
+        censor: "[REDACTED]",
+      },
+    },
+    trustProxy: config.trustProxy,
+    bodyLimit: config.bodyLimitBytes,
+    // Propagate an inbound X-Request-Id or generate one per request.
+    requestIdHeader: "x-request-id",
+  });
+  const prisma = new PrismaClient();
+  const redis = new Redis(config.redisUrl);
 
   // Phase 1+2 runtime-security: REVIEW_CACHE_SIGNING_SECRET must be set in
   // production. The cached review-image endpoint signs URLs with an HMAC
   // using this secret. Without it, either the endpoint must be disabled or
   // a fallback secret would be used — both unacceptable. Refuse to start.
-  if (isProduction && !process.env.REVIEW_CACHE_SIGNING_SECRET) {
+  if (isProduction && !config.reviewCacheSigningSecret) {
     throw new Error("REVIEW_CACHE_SIGNING_SECRET must be set in production (no fallback allowed)");
   }
-  if (process.env.REVIEW_CACHE_SIGNING_SECRET && process.env.REVIEW_CACHE_SIGNING_SECRET.length < 32) {
+  if (config.reviewCacheSigningSecret && config.reviewCacheSigningSecret.length < 32) {
     if (isProduction) {
       throw new Error("REVIEW_CACHE_SIGNING_SECRET must be at least 32 characters in production");
     }
@@ -56,29 +84,21 @@ async function main() {
   // Phase 1+2 runtime-security: install FLUSHDB/FLUSHALL guard on the Redis
   // client. Contract §14: "FLUSHDB / FLUSHALL are forbidden everywhere; the
   // codebase MUST NOT call them, and a runtime guard MUST reject any attempt."
-  // This blocks both direct method calls (redis.flushdb()) and raw
-  // sendCommand({ name: "FLUSHDB" }) calls. Non-removable once installed.
   installRedisFlushGuard(redis);
 
-  // Phase 1+2 runtime-security: BigInt → string serialization.
-  // Replaces the old global BigInt.prototype.toJSON = Number(this) hack that
-  // silently truncated IDs > Number.MAX_SAFE_INTEGER. The preSerialization
-  // hook recursively converts BigInt to decimal string, preserving full
-  // precision for any ID size.
+  // BigInt → string serialization (preserves full precision for any ID size).
   registerBigIntSerializer(app);
 
-  // Phase 1+2 runtime-security: /health (liveness) and /ready (readiness).
-  // /health only reports process liveness; /ready checks PG + Redis.
+  // /health (liveness) and /ready (readiness: PG + Redis).
   registerReadinessRoutes(app);
 
-  const corsOrigins = process.env.CORS_ORIGINS
-    ? process.env.CORS_ORIGINS.split(",").map((origin) => origin.trim()).filter(Boolean)
-    : false;
-
+  // ─── CORS (explicit allowlist, credentials for HttpOnly cookies) ──────────
   await app.register(cors, {
-    origin: corsOrigins,
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    origin: config.cors.origin,
+    methods: config.cors.methods,
+    allowedHeaders: config.cors.allowedHeaders,
+    exposedHeaders: config.cors.exposedHeaders,
+    credentials: config.cors.credentials,
   });
 
   await app.register(helmet, {
@@ -98,47 +118,51 @@ async function main() {
     crossOriginResourcePolicy: { policy: "same-origin" },
   });
 
-  await app.register(jwt, {
-    secret: jwtSecret,
-    sign: { algorithm: "HS256", expiresIn: process.env.JWT_EXPIRES_IN || "2h" },
-  });
+  // ─── Dual JWT registration ───────────────────────────────────────────────
+  // User identity: default namespace (app.jwt) with USER_JWT_SECRET and
+  // aud=modelwiki-user. Admin identity: namespace "admin" (app.adminJwt*)
+  // with ADMIN_JWT_SECRET and aud=modelwiki-admin.
+  //
+  // Two independent guarantees prevent cross-system token acceptance:
+  //   1. Different secrets → signature mismatch on cross-verification.
+  //   2. Different audiences → verify rejects even if secrets matched.
+  await app.register(jwt, buildUserJwtOptions(config));
+  await app.register(jwt, buildAdminJwtOptions(config));
 
   await app.register(rateLimit, {
-    max: 300,
-    timeWindow: "1 minute",
+    max: config.rateLimitMax,
+    timeWindow: config.rateLimitTimeWindow,
     keyGenerator: (req) => req.ip,
   });
 
-  function isFigureInteractionPath(p: string) {
-    return /^\/api\/v1\/figures\/[^/]+\/(social|favorite|like|comments)(?:\?|\/|$)/.test(p);
-  }
+  // ─── Identity collision guard ─────────────────────────────────────────────
+  // A request MUST NOT carry both req.user and req.admin. This runs as a
+  // global preHandler and rejects dual-identity requests with 400 before any
+  // route handler executes.
+  registerIdentityCollisionGuard(app);
 
   app.addHook("onRequest", async (req, reply) => {
     const urlPath = req.url;
     const isAdminPath = urlPath.startsWith("/api/v1/admin");
     const isAuthPath = urlPath.startsWith("/api/v1/auth");
-    const isWriteMethod = ["POST", "PUT", "PATCH", "DELETE"].includes(req.method);
-    const isFigureWritePath = urlPath.startsWith("/api/v1/figures") && isWriteMethod && !isFigureInteractionPath(urlPath);
-    const isEntityWritePath =
-      (urlPath.startsWith("/api/v1/manufacturers") ||
-        urlPath.startsWith("/api/v1/series") ||
-        urlPath.startsWith("/api/v1/sculptors") ||
-        urlPath.startsWith("/api/v1/categories") ||
-        urlPath.startsWith("/api/v1/characters")) &&
-      isWriteMethod;
     if (isAdminPath || isAuthPath) {
       reply.header("Cache-Control", "no-store");
       reply.header("Pragma", "no-cache");
     }
-
-    // Phase 1+2 runtime-security: admin guard always re-queries the DB to
-    // confirm the user's CURRENT role is admin AND isActive=true. The JWT
-    // role claim is NOT trusted — a demoted or deactivated admin's existing
-    // token must stop working immediately.
-    if (isAdminPath || isFigureWritePath || isEntityWritePath) {
-      const ok = await verifyUserFromDb(app, req, reply, ROLE_ADMIN);
-      if (!ok) return; // verifyUserFromDb already sent the 401/403 response
+    // Wave 2: Admin route protection.
+    // /api/v1/admin/auth/login is public (no guard).
+    // All other /api/v1/admin/** routes require AdminAccount identity.
+    const isAdminAuthLoginPath = urlPath.startsWith("/api/v1/admin/auth/login");
+    if (isAdminPath && !isAdminAuthLoginPath) {
+      const ok = await verifyAdminIdentity(app as any, req as any, reply as any);
+      if (!ok) return;
     }
+    // NOTE: the old ambiguous admin判断 that queried the User table for
+    // admin role has been removed. Admin routes are now guarded by the
+    // dedicated `adminGuard` middleware (mounted by the Integrator on
+    // /api/v1/admin/** — see Integrator mount points below). User-protected
+    // routes use `userGuard`. Both guards verify their respective JWT
+    // audiences and re-query the DB; neither trusts the other's tokens.
   });
 
   app.register(imageRoutes, { prefix: "/api/v1/figures/images" });
@@ -156,7 +180,7 @@ async function main() {
       if (!/^[a-zA-Z0-9_-]+$/.test(reviewId) || !/^[a-f0-9]{64}\.[a-z]+$/i.test(fileName)) {
         return reply.status(404).send({ success: false, error: { code: "NOT_FOUND" } });
       }
-      const signingSecret = process.env.REVIEW_CACHE_SIGNING_SECRET;
+      const signingSecret = config.reviewCacheSigningSecret;
       if (!signingSecret) {
         // In production this is unreachable — startup check refuses to boot.
         app.log.error("REVIEW_CACHE_SIGNING_SECRET missing at request time");
@@ -187,9 +211,6 @@ async function main() {
       }
       const REVIEW_CACHE_DIR = process.env.REVIEW_CACHE_DIR || "/app/assets/review-cache";
       const filePath = path.join(REVIEW_CACHE_DIR, reviewId, fileName);
-      // Phase 1+2 runtime-security: use async fs.promises.readFile instead
-      // of fs.readFileSync to avoid blocking the event loop on cached image
-      // reads (high-frequency request path).
       let fileBuf: Buffer;
       try {
         fileBuf = await fsp.readFile(filePath);
@@ -212,11 +233,27 @@ async function main() {
     }
   });
 
+  // ─── Route mounting ───────────────────────────────────────────────────────
+  // Integrator mount points (completed after User/Admin auth agents merge):
+  //
+  //   1. authRoutes        — already mounted below (User Auth Agent owns it).
+  //   2. adminAuthRoutes   — mount at /api/v1/admin/auth (Admin Auth Agent).
+  //                          Import from "./routes/admin-auth.js" once it exists.
+  //   3. userGuard         — apply to user-protected routes (User Auth Agent).
+  //                          Import from "./plugins/user-auth/userGuard.js".
+  //   4. adminGuard        — apply to /api/v1/admin/** routes (Admin Auth Agent).
+  //                          Import from "./plugins/adminGuard.js" (rewritten).
+  //
+  // The Runtime branch does NOT import adminAuthRoutes/userGuard/adminGuard
+  // (they do not exist yet) to keep the build green. The Integrator adds
+  // these imports and wires the guards onto the appropriate route prefixes.
   app.register(adminRoutes, { prefix: "/api/v1/admin" });
   app.register(authRoutes, { prefix: "/api/v1/auth" });
+  // Wave 2: Admin auth routes (public login, guarded logout/change-password/me)
+  app.register(adminAuthRoutes, { prefix: "/api/v1/admin/auth" });
   app.register(communityRoutes, { prefix: "/api/v1" });
 
-  // Phase 1+2 runtime-security: sanitized error handler.
+  // ─── Sanitized error handler ──────────────────────────────────────────────
   // In production, never leak internal file paths, DNS details, stack traces,
   // or raw error messages to the client. Client errors (4xx) return the
   // error code only; server errors (5xx) return a generic code.
@@ -228,8 +265,6 @@ async function main() {
     if (error.statusCode === 429) return reply.status(429).send({ success: false, error: { code: "RATE_LIMITED" } });
     if (error.statusCode && error.statusCode < 500) {
       const code = error.code || "BAD_REQUEST";
-      // In production, suppress raw error.message for 4xx — it may contain
-      // internal details. Keep it in dev for debugging.
       const message = isProduction ? undefined : error.message;
       return reply.status(error.statusCode).send({
         success: false,
@@ -241,42 +276,28 @@ async function main() {
   });
 
   // ─── Graceful shutdown ───────────────────────────────────────────────────
-  // On SIGTERM/SIGINT: stop accepting new connections, drain in-flight
-  // requests, disconnect Prisma, quit Redis. Orchestrators (Docker/k8s)
-  // send SIGTERM; Ctrl+C sends SIGINT.
-  let shuttingDown = false;
-  async function shutdown(signal: string) {
-    if (shuttingDown) return; // idempotent
-    shuttingDown = true;
-    app.log.info({ signal }, "Graceful shutdown started");
-    try {
-      await app.close(); // closes HTTP server + runs onClose hooks
-    } catch (err) {
-      app.log.error({ err }, "Error during Fastify close");
-    }
-    try {
-      await prisma.$disconnect();
-      app.log.info("Prisma disconnected");
-    } catch (err) {
-      app.log.error({ err }, "Error during Prisma disconnect");
-    }
-    try {
-      redis.disconnect();
-      app.log.info("Redis disconnected");
-    } catch (err) {
-      app.log.error({ err }, "Error during Redis disconnect");
-    }
-    app.log.info("Graceful shutdown complete");
-    process.exit(0);
-  }
+  // Idempotent + timeout-bounded. On SIGTERM/SIGINT: close HTTP server,
+  // disconnect Prisma, quit Redis. A second shutdown call is a no-op.
+  const shutdownManager = createShutdownManager({
+    app,
+    prisma,
+    redis,
+    timeoutMs: 30_000,
+  });
 
-  process.on("SIGTERM", () => void shutdown("SIGTERM"));
-  process.on("SIGINT", () => void shutdown("SIGINT"));
+  process.on("SIGTERM", () => void shutdownManager.shutdown("SIGTERM"));
+  process.on("SIGINT", () => void shutdownManager.shutdown("SIGINT"));
 
   try {
-    await app.listen({ port: 3000, host: "0.0.0.0" });
+    await app.listen({ port: config.port, host: config.host });
   } catch (err) {
     app.log.error(err);
+    // Release any partially-opened resources before exiting.
+    try {
+      await shutdownManager.shutdown("STARTUP_FAILURE");
+    } catch {
+      // best-effort cleanup
+    }
     process.exit(1);
   }
 }
