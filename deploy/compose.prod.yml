@@ -1,0 +1,91 @@
+name: modelwiki-prod
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: modelwiki-prod-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_prod_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - internal-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: modelwiki-prod-redis
+    restart: always
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis_prod_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - internal-net
+
+  migrate:
+    build:
+      context: ../mw-backend
+      dockerfile: Dockerfile
+    container_name: modelwiki-prod-migrate
+    command: npx prisma migrate deploy
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - internal-net
+
+  api:
+    build:
+      context: ../mw-backend
+      dockerfile: Dockerfile
+    container_name: modelwiki-prod-api
+    restart: always
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      HOST: 0.0.0.0
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      USER_JWT_SECRET: ${USER_JWT_SECRET}
+      ADMIN_JWT_SECRET: ${ADMIN_JWT_SECRET}
+      REVIEW_CACHE_SIGNING_SECRET: ${REVIEW_CACHE_SIGNING_SECRET}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - internal-net
+
+networks:
+  internal-net:
+    driver: bridge
+
+volumes:
+  postgres_prod_data:
+    external: false
+  redis_prod_data:
+    external: false
