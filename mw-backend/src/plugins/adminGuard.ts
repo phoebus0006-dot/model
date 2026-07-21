@@ -127,3 +127,28 @@ export async function verifyUserFromDb(
   } as AuthUser;
   return true;
 }
+
+// ─── Wave 2: Guanli AdminAccount-based guard (re-exports) ────────────────────
+//
+// The code above (verifyUserFromDb / ROLE_ADMIN / normalizeRole) is the LEGACY
+// User.role-based admin guard. It is retained here unchanged so that the
+// existing index.ts (owned by the Runtime Agent) and the existing
+// auth-role.test.ts continue to compile and pass until the Runtime Agent
+// rewires index.ts to use the new AdminAccount-based guard.
+//
+// The NEW Guanli admin guard lives in src/plugins/admin-auth/guard.ts and is
+// completely independent of the User table. It is re-exported here under the
+// cross-agent interface names (WAVE2_AGENT_CONTRACTS.md):
+//   - adminGuard           : Fastify plugin (scoped preHandler)
+//   - verifyAdminIdentity  : core identity verifier (populates req.admin)
+//   - requireAdminRole     : role-specific preHandler factory
+//
+// These MUST be used for all Guanli admin routes. They reject User JWTs via the
+// mandatory "modelwiki-admin" audience check and re-query AdminAccount on every
+// request (never trusting the JWT role for authorization).
+export {
+  adminGuard,
+  verifyAdminIdentity,
+  requireAdminRole,
+} from "./admin-auth/guard.js";
+export type { AdminIdentity } from "./admin-auth/types.js";
