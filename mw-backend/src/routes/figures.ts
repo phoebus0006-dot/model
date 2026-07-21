@@ -1,3 +1,4 @@
+import { safeCacheGet, safeCacheSet } from "../utils/cache.js";
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { processAndStoreImage, upsertFigureImageRecord } from "./images.js";
@@ -272,13 +273,8 @@ export async function figureRoutes(app: FastifyInstance) {
     const query = { ...raw, minPrice: raw.minPrice ?? raw.priceMin, maxPrice: raw.maxPrice ?? raw.priceMax };
     const cacheKey = `figures:list:${JSON.stringify(query)}`;
 
-    let cached: string | null = null;
-    try {
-      cached = await app.redis.get(cacheKey);
-    } catch {
-      cached = null;
-    }
-    if (cached) return JSON.parse(cached);
+    const cachedData = await safeCacheGet(app.redis, cacheKey, app.log);
+    if (cachedData) return cachedData;
 
     const where: any = { isDeleted: false };
 
@@ -361,7 +357,7 @@ export async function figureRoutes(app: FastifyInstance) {
       meta: { page: query.page, perPage: query.perPage, total, totalPages: Math.ceil(total / query.perPage) },
     };
 
-    try { await app.redis.set(cacheKey, JSON.stringify(result), "EX", 300); } catch {}
+    safeCacheSet(app.redis, cacheKey, result, 300, app.log);
     return result;
   });
 
@@ -371,13 +367,8 @@ export async function figureRoutes(app: FastifyInstance) {
     const rawQuery = detailQuery.parse(req.query || {});
     const cacheKey = `figures:detail:${slug}:${rawQuery.lang || "all"}`;
 
-    let cached: string | null = null;
-    try {
-      cached = await app.redis.get(cacheKey);
-    } catch {
-      cached = null;
-    }
-    if (cached) return JSON.parse(cached);
+    const cachedData = await safeCacheGet(app.redis, cacheKey, app.log);
+    if (cachedData) return cachedData;
 
     const figure = await app.prisma.figure.findFirst({
       where: { isDeleted: false, OR: sourceSlugFallbacks(slug) },
@@ -432,7 +423,7 @@ export async function figureRoutes(app: FastifyInstance) {
     lineage = { ancestors, descendants };
 
     const result = { success: true, data: publicFigure({ ...figure, image: mainImage, images: transformedImages, lineage }) };
-    try { await app.redis.set(cacheKey, JSON.stringify(result), "EX", 3600); } catch {}
+    safeCacheSet(app.redis, cacheKey, result, 3600, app.log);
     return result;
   });
 

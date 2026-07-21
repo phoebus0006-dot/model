@@ -5,10 +5,7 @@
  * Each test file calls createDbHelpers(uniqueDbName) to get isolated database access.
  */
 import { execSync } from "node:child_process";
-import fs from "node:fs";
 import path from "node:path";
-
-const DATABASE_URL = process.env.DATABASE_URL || "postgresql://modelwiki:modelwiki_dev_pass_123@localhost:5432/modelwiki?schema=public";
 
 interface DbConn {
   user: string;
@@ -24,9 +21,13 @@ function parseDbUrl(url: string): DbConn {
 }
 
 export function createDbHelpers(dbName: string) {
-  if (!DATABASE_URL) throw new Error("DATABASE_URL must be set to a disposable PostgreSQL instance");
+  if (!process.env.DATABASE_URL) {
+    throw new Error("DATABASE_URL must be set to a disposable PostgreSQL instance");
+  }
+
+  const DATABASE_URL = process.env.DATABASE_URL;
   const conn = parseDbUrl(DATABASE_URL);
-  const dbUrl = `postgresql://${conn.user}:${conn.password}@${conn.host}:${conn.port}/${dbName}`;
+  const dbUrl = `postgresql://${conn.user}:${conn.password}@${conn.host}:${conn.port}/${dbName}?schema=public`;
   const env: NodeJS.ProcessEnv = { ...process.env, PGPASSWORD: conn.password, DATABASE_URL: dbUrl };
 
   function psqlBase(args: string): string {
@@ -34,16 +35,13 @@ export function createDbHelpers(dbName: string) {
   }
 
   function setup(): void {
-    try {
-      execSync(`psql -h ${conn.host} -p ${conn.port} -U ${conn.user} -d postgres -c "DROP DATABASE IF EXISTS ${dbName};"`, {
-        stdio: "pipe", timeout: 15000, env,
-      });
-      execSync(`psql -h ${conn.host} -p ${conn.port} -U ${conn.user} -d postgres -c "CREATE DATABASE ${dbName};"`, {
-        stdio: "pipe", timeout: 15000, env,
-      });
-    } catch {
-      // Disposable DB not running locally — tests handle graceful skip
-    }
+    // Database setup failure MUST throw error directly (no swallowing or graceful skip)
+    execSync(`psql -h ${conn.host} -p ${conn.port} -U ${conn.user} -d postgres -c "DROP DATABASE IF EXISTS ${dbName};"`, {
+      stdio: "pipe", timeout: 15000, env,
+    });
+    execSync(`psql -h ${conn.host} -p ${conn.port} -U ${conn.user} -d postgres -c "CREATE DATABASE ${dbName};"`, {
+      stdio: "pipe", timeout: 15000, env,
+    });
   }
 
   function teardown(): void {

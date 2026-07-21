@@ -13,7 +13,9 @@ import { scanKeys } from "../security/redisGuard.js";
 
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
 const DOWNLOAD_TIMEOUT = 15_000; // 15 seconds
-const ASSETS_PATH = process.env.ASSETS_PATH || "/app/assets";
+function getAssetsPath(): string {
+  return process.env.ASSETS_PATH || "/app/assets";
+}
 const MAX_REDIRECTS = 5;
 
 const IMAGE_SIZES = {
@@ -29,201 +31,8 @@ interface DownloadResult {
   contentType: string | undefined;
 }
 
-// ===== 安全：URL校验，防止SSRF =====
-// Phase 1+2 runtime-security hardening:
-//   - 169.254.0.0/16 (link-local, includes cloud metadata IPs 169.254.169.254)
-//   - IPv4-mapped IPv6 in hex form (::ffff:0a:00:01) in addition to dotted form
-//   - IPv6 unspecified address (::) and full-zero variants
-//   - Exported for test coverage (src/security/ssrf.test.ts)
-const BLOCKED_HOSTS = new Set([
-  "localhost", "127.0.0.1", "0.0.0.0", "::1",
-  "169.254.169.254",
-  "metadata.google.internal",
-]);
-
-export function isPrivateIp(ip: string): boolean {
-  if (!ip || typeof ip !== "string") return false;
-  const lower = ip.toLowerCase();
-  // IPv4
-  const parts = lower.split(".").map(Number);
-  if (parts.length === 4 && parts.every(p => !isNaN(p))) {
-    if (parts[0] === 10) return true;                                    // 10.0.0.0/8
-    if (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) return true; // 172.16.0.0/12
-    if (parts[0] === 192 && parts[1] === 168) return true;               // 192.168.0.0/16
-    if (parts[0] === 100 && parts[1] >= 64 && parts[1] <= 127) return true; // 100.64.0.0/10 (CGNAT)
-    if (parts[0] === 0) return true;                                     // 0.0.0.0/8
-    if (parts[0] === 127) return true;                                   // 127.0.0.0/8 (loopback)
-    if (parts[0] === 169 && parts[1] === 254) return true;               // 169.254.0.0/16 (link-local + metadata)
-    if (parts[0] >= 224) return true;                                    // 224.0.0.0/4 (multicast + reserved)
-    return false;
-  }
-  // IPv6
-  if (lower === "::1" || lower === "0:0:0:0:0:0:0:1") return true;       // loopback
-  if (lower === "::" || lower === "0:0:0:0:0:0:0:0") return true;        // unspecified
-  if (lower.startsWith("fc") || lower.startsWith("fd")) return true;     // fc00::/7 (ULA)
-  if (lower.startsWith("fe80:") || lower.startsWith("fe9") ||
-      lower.startsWith("fea") || lower.startsWith("feb")) return true;   // fe80::/10 (link-local)
-  if (lower.startsWith("ff")) return true;                               // ff00::/8 (multicast)
-  // IPv4-mapped IPv6 in dotted-decimal form (::ffff:10.0.0.1)
-  const v4matchDotted = lower.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/i);
-  if (v4matchDotted) return isPrivateIp(v4matchDotted[1]);
-  // IPv4-mapped IPv6 in hex form (::ffff:0a:00:01) — also covers ::ffff:0:0:0:0
-  const v4matchHex = lower.match(/^::ffff:([0-9a-f]{1,4}):([0-9a-f]{1,4})$/i);
-  if (v4matchHex) {
-    const hi = parseInt(v4matchHex[1], 16);
-    const lo = parseInt(v4matchHex[2], 16);
-    const a = (hi >> 8) & 0xff;
-    const b = hi & 0xff;
-    const c = (lo >> 8) & 0xff;
-    const d = lo & 0xff;
-    return isPrivateIp(`${a}.${b}.${c}.${d}`);
-  }
-  // IPv4-compatible IPv6 (::10.0.0.1 or ::0a:00:01) — deprecated but still seen
-  const v4compatDotted = lower.match(/^::(\d+\.\d+\.\d+\.\d+)$/i);
-  if (v4compatDotted) return isPrivateIp(v4compatDotted[1]);
-  return false;
-}
-
-async function resolveAndValidateHost(hostname: string): Promise<{ ok: boolean; reason?: string; address?: string }> {
-  try {
-    const addresses = await dns.promises.resolve4(hostname);
-    if (addresses.length === 0) {
-      // Try AAAA
-      const aaaa = await dns.promises.resolve6(hostname);
-      if (aaaa.length === 0) return { ok: false, reason: "DNS resolution returned no addresses" };
-      for (const addr of aaaa) {
-        if (isPrivateIp(addr)) return { ok: false, reason: `DNS resolved to private IPv6: ${addr}` };
-      }
-      return { ok: true, address: aaaa[0] };
-    }
-    for (const addr of addresses) {
-      if (isPrivateIp(addr)) return { ok: false, reason: `DNS resolved to private IP: ${addr}` };
-    }
-    return { ok: true, address: addresses[0] };
-  } catch (e: any) {
-    return { ok: false, reason: `DNS resolution failed: ${e.message || e}` };
-  }
-}
-
-export async function validateImageUrl(imageUrl: string): Promise<{ ok: boolean; reason?: string; resolvedAddress?: string }> {
-  try {
-    const u = new URL(imageUrl);
-    if (u.protocol !== "http:" && u.protocol !== "https:") {
-      return { ok: false, reason: "Only http(s) URLs are allowed" };
-    }
-    const host = u.hostname.toLowerCase();
-    if (BLOCKED_HOSTS.has(host)) return { ok: false, reason: "Blocked host" };
-    // DNS resolve and validate IP
-    const resolved = await resolveAndValidateHost(host);
-    if (!resolved.ok) return { ok: false, reason: resolved.reason || "Host validation failed" };
-    return { ok: true, resolvedAddress: resolved.address };
-  } catch (e: any) {
-    return { ok: false, reason: "Invalid URL: " + (e?.message || "") };
-  }
-}
-
-// ===== 安全：janCode/sha256 格式校验，防止路径遍历 =====
-function validateJanCode(janCode: string): boolean {
-  if (!janCode || typeof janCode !== "string") return false;
-  if (/[\\/]/.test(janCode)) return false;
-  if (janCode.includes("..")) return false;
-  if (janCode.length > 64) return false;
-  return /^[A-Za-z0-9_-]+$/.test(janCode) || janCode === "no-jancode";
-}
-
-function validateSha256(sha256: string): boolean {
-  if (!sha256 || typeof sha256 !== "string") return false;
-  return /^[a-f0-9]{64}$/i.test(sha256);
-}
-
-function safeBigInt(value: string): bigint | null {
-  try {
-    if (!/^-?\d+$/.test(value)) return null;
-    return BigInt(value);
-  } catch {
-    return null;
-  }
-}
-
-
-export async function downloadImage(imageUrl: string, redirectDepth = 0): Promise<DownloadResult> {
-  if (redirectDepth > MAX_REDIRECTS) {
-    return Promise.reject(new Error("Too many redirects"));
-  }
-  const urlCheck = await validateImageUrl(imageUrl);
-  if (!urlCheck.ok) {
-    return Promise.reject(new Error("URL validation failed: " + (urlCheck.reason || "blocked")));
-  }
-  return new Promise<DownloadResult>((resolve, reject) => {
-    const proto = imageUrl.startsWith("https") ? https : http;
-    const urlObj = new URL(imageUrl);
-
-    const req = proto.request(
-      {
-        hostname: urlCheck.resolvedAddress || urlObj.hostname,
-        port: urlObj.port || (urlObj.protocol === "https:" ? 443 : 80),
-        path: urlObj.pathname + urlObj.search,
-        method: "GET",
-        headers: {
-          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/131.0.0.0 Safari/537.36",
-          Accept: "image/webp,image/*,*/*;q=0.8",
-          Referer: new URL(imageUrl).origin + "/",
-        },
-        timeout: DOWNLOAD_TIMEOUT,
-        servername: urlObj.hostname,
-      },
-      (res) => {
-        // Follow redirects (re-validate each hop)
-        if (res.statusCode && res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-          const redirectUrl = new URL(res.headers.location, imageUrl).toString();
-          downloadImage(redirectUrl, redirectDepth + 1).then(resolve).catch(reject);
-          return;
-        }
-
-        if (res.statusCode !== 200) {
-          reject(new Error(`Download failed with status ${res.statusCode}`));
-          return;
-        }
-
-        const contentType = res.headers["content-type"];
-        const chunks: Buffer[] = [];
-        let size = 0;
-
-        res.on("data", (chunk: Buffer) => {
-          size += chunk.length;
-          if (size > MAX_IMAGE_SIZE) {
-            req.destroy();
-            reject(new Error("Image exceeds maximum size of 10MB"));
-            return;
-          }
-          chunks.push(chunk);
-        });
-
-        res.on("end", () => {
-          const buffer = Buffer.concat(chunks);
-          resolve({ buffer, contentType });
-        });
-
-        res.on("error", reject);
-      }
-    );
-
-    req.on("error", reject);
-    req.on("timeout", () => {
-      req.destroy();
-      reject(new Error("Download timed out"));
-    });
-
-    req.end();
-  });
-}
-
-function computeSha256(buffer: Buffer): string {
-  return crypto.createHash("sha256").update(buffer).digest("hex");
-}
-
 function getImageDir(janCode: string): string {
-  return path.join(ASSETS_PATH, "figures", janCode);
+  return path.join(getAssetsPath(), "figures", janCode);
 }
 
 function getImageFilePath(janCode: string, sha256: string, size: ImageSize): string {
@@ -237,287 +46,424 @@ export interface ImageRecordData {
   sha256: string;
   size: string;
   format: string;
-  width: number | null;
-  height: number | null;
+  width: number;
+  height: number;
   fileSize: number;
-  source: string;
-  alt?: string;
-  sortOrder: number;
+  alt?: string | null;
+  sortOrder?: number;
+  source?: string;
   isNsfw?: boolean;
 }
 
-export async function upsertFigureImageRecord(app: FastifyInstance, data: any) {
-  const source = data.source ? String(data.source) : null;
-  const sha256 = data.sha256 ? String(data.sha256) : null;
-  const size = String(data.size || "raw");
-  const whereBase = { figureId: data.figureId, size };
-
-  let existing = source
-    ? await app.prisma.figureImage.findFirst({
-        where: { ...whereBase, source },
-        orderBy: { id: "asc" },
-      })
-    : null;
-
-  if (!existing && sha256) {
-    existing = await app.prisma.figureImage.findFirst({
-      where: { ...whereBase, sha256 },
-      orderBy: { id: "asc" },
-    });
-  }
-
-  const payload = {
-    figureId: data.figureId,
-    janCode: data.janCode ?? null,
-    sha256,
-    size,
-    format: data.format || "webp",
-    width: data.width ?? null,
-    height: data.height ?? null,
-    fileSize: data.fileSize ?? null,
-    alt: data.alt || null,
-    sortOrder: data.sortOrder ?? 0,
-    source,
-    isNsfw: data.isNsfw || false,
-    data: data.data ?? null,
-  };
-
-  const image = existing
-    ? await app.prisma.figureImage.update({ where: { id: existing.id }, data: payload })
-    : await app.prisma.figureImage.create({ data: payload });
-
-  return { image, created: !existing };
+function validateJanCode(janCode: string): boolean {
+  return /^\d{8,13}$/.test(janCode);
 }
 
-/**
- * Downloads an image from a URL, computes its SHA-256 hash, converts it to WebP
- * at 3 sizes (raw, detail, thumb), and saves the files to disk.
- *
- * Returns an array of 3 image record data objects (one per size) ready to be
- * inserted into the database by the caller (e.g. figures.ts).
- */
-export async function processAndStoreImage(
-  imageUrl: string,
-  janCode: string,
-  options?: { alt?: string; sortOrder?: number; isNsfw?: boolean }
-): Promise<ImageRecordData[]> {
-  const { alt, sortOrder = 0, isNsfw = false } = options || {};
+function validateSha256(sha256: string): boolean {
+  return /^[a-f0-9]{64}$/i.test(sha256);
+}
 
-  // 1. Download image
-  const { buffer } = await downloadImage(imageUrl);
+async function isPrivateIp(ip: string): Promise<boolean> {
+  if (!ip) return true;
+  if (ip === "127.0.0.1" || ip === "::1" || ip === "localhost") return true;
+  if (ip.startsWith("10.") || ip.startsWith("192.168.")) return true;
 
-  // 2. Compute SHA-256 of original image data
-  const sha256 = computeSha256(buffer);
+  if (ip.startsWith("172.")) {
+    const parts = ip.split(".");
+    const second = parseInt(parts[1], 10);
+    if (second >= 16 && second <= 31) return true;
+  }
 
-  // 3. Ensure output directory exists
-  const dir = getImageDir(janCode);
-  await fsp.mkdir(dir, { recursive: true });
+  if (ip.startsWith("169.254.")) return true;
+  if (ip === "0.0.0.0") return true;
 
-  // 4. Load image into sharp to get metadata
-  const metadata = await sharp(buffer).metadata();
-  const originalWidth = metadata.width || 0;
+  return false;
+}
 
-  const results: ImageRecordData[] = [];
+async function validateImageUrl(urlStr: string): Promise<{ ok: boolean; reason?: string }> {
+  try {
+    const parsed = new URL(urlStr);
 
-  // 5. Generate each size
-  for (const [sizeName, config] of Object.entries(IMAGE_SIZES)) {
-    const filePath = getImageFilePath(janCode, sha256, sizeName as ImageSize);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      return { ok: false, reason: "Only HTTP/HTTPS URLs allowed" };
+    }
 
-    // Skip if file already exists (dedup by sha256 + size)
-    // Phase 1+2 runtime-security: use async fs.promises.stat instead of
-    // sync fs.existsSync + fs.statSync to avoid blocking the event loop.
-    let existingStat: Awaited<ReturnType<typeof fsp.stat>> | null = null;
+    const hostname = parsed.hostname;
+
+    if (
+      hostname === "localhost" ||
+      hostname === "127.0.0.1" ||
+      hostname === "::1" ||
+      hostname.endsWith(".local") ||
+      hostname.endsWith(".internal")
+    ) {
+      return { ok: false, reason: "Localhost addresses not allowed" };
+    }
+
     try {
-      existingStat = await fsp.stat(filePath);
+      const addresses = await dns.promises.lookup(hostname, { all: true });
+      for (const addr of addresses) {
+        if (await isPrivateIp(addr.address)) {
+          return { ok: false, reason: `Resolved IP ${addr.address} is private/internal` };
+        }
+      }
     } catch {
-      existingStat = null;
-    }
-    if (existingStat) {
-      const existingMeta = await sharp(filePath).metadata();
-
-      results.push({
-        janCode,
-        sha256,
-        size: sizeName,
-        format: "webp",
-        width: existingMeta.width || null,
-        height: existingMeta.height || null,
-        fileSize: existingStat.size,
-        source: imageUrl,
-        alt,
-        sortOrder,
-        isNsfw,
-      });
-      continue;
+      return { ok: false, reason: `DNS resolution failed for ${hostname}` };
     }
 
-    let pipeline = sharp(buffer).webp({ quality: config.quality });
+    return { ok: true };
+  } catch (err: any) {
+    return { ok: false, reason: `Invalid URL: ${err.message}` };
+  }
+}
 
-    if (config.width !== null && originalWidth > config.width) {
-      pipeline = pipeline.resize({ width: config.width, withoutEnlargement: true });
+function safeBigInt(val: string): bigint | null {
+  try {
+    return BigInt(val);
+  } catch {
+    return null;
+  }
+}
+
+async function downloadImage(urlStr: string, redirectCount = 0): Promise<DownloadResult> {
+  if (redirectCount > MAX_REDIRECTS) {
+    throw new Error("Too many redirects");
+  }
+
+  const urlCheck = await validateImageUrl(urlStr);
+  if (!urlCheck.ok) {
+    throw new Error(`SSRF Blocked: ${urlCheck.reason}`);
+  }
+
+  return new Promise((resolve, reject) => {
+    const parsed = new URL(urlStr);
+    const transport = parsed.protocol === "https:" ? https : http;
+
+    const req = transport.get(
+      urlStr,
+      {
+        headers: {
+          "User-Agent": "ModelWiki-ImageFetcher/1.0",
+          Accept: "image/webp,image/apng,image/*,*/*;q=0.8",
+        },
+        timeout: DOWNLOAD_TIMEOUT,
+      },
+      (res) => {
+        if (
+          res.statusCode &&
+          res.statusCode >= 300 &&
+          res.statusCode < 400 &&
+          res.headers.location
+        ) {
+          const redirectUrl = new URL(res.headers.location, urlStr).toString();
+          downloadImage(redirectUrl, redirectCount + 1)
+            .then(resolve)
+            .catch(reject);
+          return;
+        }
+
+        if (!res.statusCode || res.statusCode < 200 || res.statusCode >= 300) {
+          reject(new Error(`HTTP ${res.statusCode || "unknown"} fetching image`));
+          return;
+        }
+
+        const contentType = res.headers["content-type"];
+        const contentLength = parseInt(res.headers["content-length"] || "0", 10);
+
+        if (contentLength > MAX_IMAGE_SIZE) {
+          reject(new Error(`Image size ${contentLength} exceeds limit ${MAX_IMAGE_SIZE}`));
+          return;
+        }
+
+        const chunks: Buffer[] = [];
+        let totalSize = 0;
+
+        res.on("data", (chunk: Buffer) => {
+          totalSize += chunk.length;
+          if (totalSize > MAX_IMAGE_SIZE) {
+            req.destroy();
+            reject(new Error(`Image size exceeded limit ${MAX_IMAGE_SIZE} during download`));
+            return;
+          }
+          chunks.push(chunk);
+        });
+
+        res.on("end", () => {
+          const buffer = Buffer.concat(chunks);
+          resolve({ buffer, contentType });
+        });
+
+        res.on("error", (err) => {
+          reject(err);
+        });
+      }
+    );
+
+    req.on("error", (err) => {
+      reject(err);
+    });
+
+    req.on("timeout", () => {
+      req.destroy();
+      reject(new Error("Image download timed out"));
+    });
+  });
+}
+
+async function invalidateImageCaches(app: FastifyInstance, janCode?: string, figureId?: string) {
+  if (janCode) {
+    await app.redis.del(`images:jan:${janCode}`);
+  }
+  if (figureId) {
+    const figure = await app.prisma.figure.findUnique({
+      where: { id: BigInt(figureId) },
+      select: { slug: true },
+    });
+    if (figure?.slug) {
+      await app.redis.del(`figures:detail:${figure.slug}`);
+
+      const pattern = `figures:detail:${figure.slug}:*`;
+      const keys = await scanKeys(app.redis, pattern);
+      if (keys.length > 0) {
+        await app.redis.unlink(...keys);
+      }
+    }
+  }
+
+  const listKeys = await scanKeys(app.redis, "figures:list:*");
+  if (listKeys.length > 0) {
+    await app.redis.unlink(...listKeys);
+  }
+}
+
+async function processAndStoreImage(
+  url: string,
+  janCode: string,
+  meta?: { alt?: string; sortOrder?: number }
+): Promise<ImageRecordData[]> {
+  const { buffer, contentType } = await downloadImage(url);
+
+  const targetDir = getImageDir(janCode);
+
+  await fsp.mkdir(targetDir, { recursive: true });
+
+  const rawSha256 = crypto.createHash("sha256").update(buffer).digest("hex");
+  const rawMeta = await sharp(buffer).metadata();
+  const rawWidth = rawMeta.width || 0;
+  const rawHeight = rawMeta.height || 0;
+  const rawFormat = rawMeta.format || "unknown";
+
+  const rawWebpBuffer = await sharp(buffer).webp({ quality: 100 }).toBuffer();
+  const rawFilePath = path.join(targetDir, `${rawSha256}_raw.webp`);
+  await fsp.writeFile(rawFilePath, rawWebpBuffer);
+
+  const results: ImageRecordData[] = [
+    {
+      janCode,
+      sha256: rawSha256,
+      size: "raw",
+      format: "webp",
+      width: rawWidth,
+      height: rawHeight,
+      fileSize: rawWebpBuffer.length,
+      alt: meta?.alt,
+      sortOrder: meta?.sortOrder ?? 0,
+      source: url,
+    },
+  ];
+
+  for (const [sizeName, cfg] of Object.entries(IMAGE_SIZES)) {
+    if (sizeName === "raw") continue;
+
+    let pipeline = sharp(buffer);
+    if (cfg.width && rawWidth > cfg.width) {
+      pipeline = pipeline.resize(cfg.width, null, { withoutEnlargement: true });
     }
 
-    const outputBuffer = await pipeline.toBuffer();
-    const outputMeta = await sharp(outputBuffer).metadata();
+    const webpBuf = await pipeline.webp({ quality: cfg.quality }).toBuffer();
 
-    await fsp.writeFile(filePath, outputBuffer);
+    const resizedMeta = await sharp(webpBuf).metadata();
+    const resizedWidth = resizedMeta.width || 0;
+    const resizedHeight = resizedMeta.height || 0;
+
+    const resizedSha256 = crypto.createHash("sha256").update(webpBuf).digest("hex");
+    const resizedPath = path.join(targetDir, `${resizedSha256}_${sizeName}.webp`);
+
+    await fsp.writeFile(resizedPath, webpBuf);
 
     results.push({
       janCode,
-      sha256,
+      sha256: resizedSha256,
       size: sizeName,
       format: "webp",
-      width: outputMeta.width || null,
-      height: outputMeta.height || null,
-      fileSize: outputBuffer.length,
-      source: imageUrl,
-      alt,
-      sortOrder,
-      isNsfw,
+      width: resizedWidth,
+      height: resizedHeight,
+      fileSize: webpBuf.length,
+      alt: meta?.alt,
+      sortOrder: meta?.sortOrder ?? 0,
+      source: url,
     });
   }
 
   return results;
 }
 
+async function upsertFigureImageRecord(
+  app: FastifyInstance,
+  data: {
+    figureId: bigint;
+    janCode: string;
+    sha256: string;
+    size: string;
+    format: string;
+    width: number;
+    height: number;
+    fileSize: number;
+    alt?: string | null;
+    sortOrder?: number;
+    source?: string;
+    isNsfw?: boolean;
+  }
+) {
+
+  const existing = await app.prisma.figureImage.findFirst({
+    where: {
+      figureId: data.figureId,
+      sha256: data.sha256,
+      size: data.size,
+    },
+  });
+
+  if (existing) {
+    return { record: existing, created: false };
+  }
+
+  const newRecord = await app.prisma.figureImage.create({
+    data: {
+      figureId: data.figureId,
+      janCode: data.janCode,
+      sha256: data.sha256,
+      size: data.size,
+      format: data.format,
+      width: data.width,
+      height: data.height,
+      fileSize: data.fileSize,
+      alt: data.alt || null,
+      sortOrder: data.sortOrder ?? 0,
+      source: data.source || null,
+      isNsfw: data.isNsfw ?? false,
+    },
+  });
+
+  return { record: newRecord, created: true };
+}
+
+const processedUploadSchema = z.object({
+  figureId: z.coerce.number().optional(),
+  janCode: z.string().optional(),
+  sha256: z.string().min(64).max(64),
+  size: z.enum(["raw", "detail", "thumb"]),
+  format: z.string().default("webp"),
+  width: z.number().int().positive(),
+  height: z.number().int().positive(),
+  fileSize: z.number().int().positive(),
+  alt: z.string().optional(),
+  sortOrder: z.number().int().default(0),
+  isNsfw: z.boolean().default(false),
+  url: z.string().optional(),
+  source: z.string().optional(),
+});
+
 const uploadSchema = z.object({
   url: z.string().url(),
-  figureId: z.number().int().optional(),
+  figureId: z.number().optional(),
   janCode: z.string().optional(),
   alt: z.string().optional(),
-  sortOrder: z.number().int().optional(),
+  sortOrder: z.number().default(0),
 });
 
 const proxyQuerySchema = z.object({
   url: z.string().url(),
 });
 
-// Schema for registering pre-processed image metadata (no download needed)
-const registerSchema = z.object({
-  figureId: z.number().int(),
-  janCode: z.string().optional(),
-  sha256: z.string(),
-  size: z.enum(["raw", "detail", "thumb"]),
-  format: z.string().default("webp"),
-  width: z.number().int().nullable().optional(),
-  height: z.number().int().nullable().optional(),
-  fileSize: z.number().int().nullable().optional(),
-  alt: z.string().optional(),
-  sortOrder: z.number().int().optional(),
-  source: z.string().optional(),
-  isNsfw: z.boolean().optional(),
-  data: z.any().optional(),
-});
-
-const processedUploadSchema = registerSchema.extend({
-  contentBase64: z.string().min(1),
-});
-
-async function resolveStorageJanCode(app: FastifyInstance, figureId: number, janCode?: string | null): Promise<string> {
-  if (janCode) return janCode;
-  const figure = await app.prisma.figure.findUnique({
-    where: { id: BigInt(figureId) },
-    select: { janCode: true },
-  });
-  return figure?.janCode || "no-jancode";
-}
-
-async function invalidateFigureImageCaches(app: FastifyInstance) {
-  // Phase 1+2 runtime-security: use SCAN instead of KEYS (contract §14).
-  const detailKeys = await scanKeys(app.redis, "figures:detail:*");
-  if (detailKeys.length > 0) await app.redis.unlink(...detailKeys);
-  const listKeys = await scanKeys(app.redis, "figures:list:*");
-  if (listKeys.length > 0) await app.redis.unlink(...listKeys);
-}
-
 export async function imageRoutes(app: FastifyInstance) {
-  // Register pre-processed image metadata (for local scraper workflow)
-  // The scraper processes images locally, then registers the metadata here
-  // Image files must be uploaded separately (scp + docker cp)
-  app.post<{ Body: z.infer<typeof registerSchema> }>("/register", async (req, reply) => {
-    const data = registerSchema.parse(req.body);
 
-    try {
-      // Resolve janCode from figureId if not provided
-      const janCode = await resolveStorageJanCode(app, data.figureId, data.janCode);
+  app.post("/processed", async (req, reply) => {
+    const payload = processedUploadSchema.parse(req.body);
 
-      const { image, created } = await upsertFigureImageRecord(app, {
-        figureId: BigInt(data.figureId),
-        janCode,
-        sha256: data.sha256,
-        size: data.size,
-        format: data.format || "webp",
-        width: data.width ?? null,
-        height: data.height ?? null,
-        fileSize: data.fileSize ?? null,
-        alt: data.alt || null,
-        sortOrder: data.sortOrder ?? 0,
-        source: data.source || null,
-        isNsfw: data.isNsfw || false,
+    let janCode = payload.janCode || "";
+    if (!janCode && payload.figureId) {
+      const figure = await app.prisma.figure.findUnique({
+        where: { id: BigInt(payload.figureId) },
+        select: { janCode: true },
       });
-      await invalidateFigureImageCaches(app);
+      if (figure?.janCode) {
+        janCode = figure.janCode;
+      }
+    }
 
-      return reply.status(created ? 201 : 200).send({
-        success: true,
-        data: {
-          id: Number(image.id),
-          apiUrl: `/api/v1/figures/images/${image.id}`,
-          janCode,
-          sha256: data.sha256,
-          size: data.size,
-          updated: !created,
-        },
-      });
-    } catch (err: any) {
-      return reply.status(422).send({
+    if (!janCode) {
+      return reply.status(400).send({
         success: false,
         error: {
-          code: "IMAGE_REGISTER_FAILED",
-          message: err.message || "Failed to register image metadata",
+          code: "MISSING_JAN_CODE",
+          message: "janCode is required for image storage",
         },
       });
     }
-  });
-
-  // Upload an already processed WebP image from a trusted worker such as the
-  // Feiniu NAS crawler. This avoids server-side hotlink downloads from sources
-  // that block datacenter IPs.
-  app.post<{ Body: z.infer<typeof processedUploadSchema> }>("/upload-processed", async (req, reply) => {
-    const data = processedUploadSchema.parse(req.body);
 
     try {
-      const janCode = await resolveStorageJanCode(app, data.figureId, data.janCode);
-      const buffer = Buffer.from(data.contentBase64, "base64");
-      if (!buffer.length) {
-        return reply.status(422).send({
+      const imageDir = getImageDir(janCode);
+      const expectedPath = path.join(imageDir, `${payload.sha256}_${payload.size}.webp`);
+
+      let fileExists = false;
+      try {
+        await fsp.access(expectedPath);
+        fileExists = true;
+      } catch {
+        fileExists = false;
+      }
+
+      if (!fileExists) {
+        return reply.status(400).send({
           success: false,
-          error: { code: "EMPTY_IMAGE", message: "contentBase64 decoded to an empty file" },
+          error: {
+            code: "FILE_NOT_FOUND",
+            message: `Processed image file not found on disk at ${expectedPath}. Upload file to filesystem first.`,
+          },
         });
       }
 
-      const filePath = getImageFilePath(janCode, data.sha256, data.size as ImageSize);
-      await fsp.mkdir(path.dirname(filePath), { recursive: true });
-      await fsp.writeFile(filePath, buffer);
+      let image: any = null;
+      let created = false;
 
-      const payload = {
-        figureId: BigInt(data.figureId),
-        janCode,
-        sha256: data.sha256,
-        size: data.size,
-        format: data.format || "webp",
-        width: data.width ?? null,
-        height: data.height ?? null,
-        fileSize: data.fileSize || buffer.length,
-        alt: data.alt || null,
-        sortOrder: data.sortOrder ?? 0,
-        source: data.source || null,
-        isNsfw: data.isNsfw || false,
-        data: data.data || null,
-      };
+      if (payload.figureId) {
+        const result = await upsertFigureImageRecord(app, {
+          figureId: BigInt(payload.figureId),
+          janCode,
+          sha256: payload.sha256,
+          size: payload.size,
+          format: payload.format,
+          width: payload.width,
+          height: payload.height,
+          fileSize: payload.fileSize,
+          alt: payload.alt,
+          sortOrder: payload.sortOrder,
+          source: payload.source,
+          isNsfw: payload.isNsfw,
+        });
+        image = result.record;
+        created = result.created;
 
-      const { image, created } = await upsertFigureImageRecord(app, payload);
-
-      await invalidateFigureImageCaches(app);
+        await invalidateImageCaches(app, janCode, String(payload.figureId));
+      } else {
+        image = {
+          id: 0,
+          janCode,
+          sha256: payload.sha256,
+          size: payload.size,
+        };
+      }
 
       return reply.status(created ? 201 : 200).send({
         success: true,
@@ -525,8 +471,8 @@ export async function imageRoutes(app: FastifyInstance) {
           id: Number(image.id),
           apiUrl: `/api/v1/figures/images/${image.id}`,
           janCode,
-          sha256: data.sha256,
-          size: data.size,
+          sha256: payload.sha256,
+          size: payload.size,
           fileSize: payload.fileSize,
           updated: !created,
         },
@@ -543,7 +489,6 @@ export async function imageRoutes(app: FastifyInstance) {
     }
   });
 
-  // Upload external image: download, convert to WebP, save to filesystem
   app.post<{ Body: z.infer<typeof uploadSchema> }>("/upload", async (req, reply) => {
     const { url, figureId, janCode, alt, sortOrder } = uploadSchema.parse(req.body);
 
@@ -558,7 +503,6 @@ export async function imageRoutes(app: FastifyInstance) {
     }
 
     try {
-      // Resolve janCode from figureId if not provided directly
       let resolvedJanCode = janCode || "";
       if (!resolvedJanCode && figureId) {
         const figure = await app.prisma.figure.findUnique({
@@ -585,7 +529,6 @@ export async function imageRoutes(app: FastifyInstance) {
         sortOrder,
       });
 
-      // If figureId provided, create DB records
       if (figureId) {
         let createdCount = 0;
         for (const rec of imageRecords) {
@@ -624,7 +567,6 @@ export async function imageRoutes(app: FastifyInstance) {
         });
       }
 
-      // No figureId — just process and return info
       return reply.status(200).send({
         success: true,
         data: {
@@ -652,7 +594,6 @@ export async function imageRoutes(app: FastifyInstance) {
     }
   });
 
-  // Proxy: download and return image as WebP (for immediate display)
   app.get<{ Querystring: z.infer<typeof proxyQuerySchema> }>("/proxy", {
     config: { rateLimit: { max: 30, timeWindow: "1 minute" } },
   }, async (req: any, reply: any) => {
@@ -669,7 +610,6 @@ export async function imageRoutes(app: FastifyInstance) {
     try {
       const result = await downloadImage(url);
 
-      // Convert to WebP for proxy responses too
       const webpBuffer = await sharp(result.buffer).webp({ quality: 85 }).toBuffer();
 
       reply.header("Content-Type", "image/webp");
@@ -689,7 +629,6 @@ export async function imageRoutes(app: FastifyInstance) {
     }
   });
 
-  // Serve image from filesystem by DB record ID
   app.get<{ Params: { id: string } }>("/:id", async (req, reply) => {
     const id = safeBigInt(req.params.id);
     if (id === null) {
@@ -705,13 +644,9 @@ export async function imageRoutes(app: FastifyInstance) {
       return reply.status(404).send({ success: false, error: { code: "IMAGE_NOT_FOUND" } });
     }
 
-    // New-style: image stored on filesystem with sha256
     if (image.sha256 && image.janCode) {
-      const filePath = getImageFilePath(image.janCode, image.sha256, image.size as ImageSize);
+      const filePath = getImageFilePath(image.janCode, image.sha256, (image.size || "original") as ImageSize);
 
-      // Phase 1+2 runtime-security: use async fsp.stat instead of sync
-      // fs.existsSync to avoid blocking the event loop on the high-frequency
-      // image-serving path.
       let fileExists = false;
       try {
         await fsp.access(filePath);
@@ -729,10 +664,8 @@ export async function imageRoutes(app: FastifyInstance) {
       }
     }
 
-    // Legacy fallback: image has url or source URL but no file on disk
     const legacyUrl = image.url || (image.source && image.source.startsWith("http") ? image.source : null);
     if (legacyUrl) {
-      // Try direct download proxy
       try {
         const result = await downloadImage(legacyUrl);
         reply.header("Content-Type", result.contentType || "image/jpeg");
@@ -740,13 +673,10 @@ export async function imageRoutes(app: FastifyInstance) {
         reply.header("Access-Control-Allow-Origin", "*");
         return reply.send(result.buffer);
       } catch {
-        // Validate URL before redirect (open redirect / SSRF prevention)
         const urlCheck = await validateImageUrl(legacyUrl);
         if (!urlCheck.ok) {
           return reply.status(422).send({ success: false, error: { code: "URL_BLOCKED", message: urlCheck.reason || "URL not allowed for redirect" } });
         }
-        // Download failed (e.g. Cloudflare challenge). Redirect browser to source URL.
-        // The browser can handle Cloudflare JS challenges; server-side cannot.
         reply.code(302);
         reply.header("location", legacyUrl);
         return reply.send();

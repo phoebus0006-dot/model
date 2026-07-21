@@ -1,3 +1,4 @@
+import { safeCacheGet, safeCacheSet } from "../utils/cache.js";
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { scanKeys } from "../security/redisGuard.js";
@@ -34,13 +35,8 @@ export async function sculptorRoutes(app: FastifyInstance) {
   app.get("/", async (req: any) => {
     const query = listQuery.parse(req.query);
     const cacheKey = `sculptors:list:${query.page}:${query.perPage}`;
-    let cached: string | null = null;
-    try {
-      cached = await app.redis.get(cacheKey);
-    } catch {
-      cached = null;
-    }
-    if (cached) return JSON.parse(cached);
+    const cachedData = await safeCacheGet(app.redis, cacheKey, app.log);
+    if (cachedData) return cachedData;
 
     const [data, total] = await Promise.all([
       app.prisma.sculptor.findMany({
@@ -53,20 +49,15 @@ export async function sculptorRoutes(app: FastifyInstance) {
     ]);
 
     const result = { success: true, data, meta: { page: query.page, perPage: query.perPage, total, totalPages: Math.ceil(total / query.perPage) } };
-    try { await app.redis.set(cacheKey, JSON.stringify(result), "EX", 600); } catch {}
+    safeCacheSet(app.redis, cacheKey, result, 600, app.log);
     return result;
   });
 
   app.get("/:slug", async (req: any, reply: any) => {
     const { slug } = req.params as { slug: string };
     const cacheKey = `sculptors:detail:${slug}`;
-    let cached: string | null = null;
-    try {
-      cached = await app.redis.get(cacheKey);
-    } catch {
-      cached = null;
-    }
-    if (cached) return JSON.parse(cached);
+    const cachedData = await safeCacheGet(app.redis, cacheKey, app.log);
+    if (cachedData) return cachedData;
 
     const sculptor = await app.prisma.sculptor.findUnique({
       where: { slug },
@@ -75,7 +66,7 @@ export async function sculptorRoutes(app: FastifyInstance) {
     if (!sculptor) return reply.status(404).send({ success: false, error: { code: "SCULPTOR_NOT_FOUND" } });
 
     const result = { success: true, data: sculptor };
-    try { await app.redis.set(cacheKey, JSON.stringify(result), "EX", 3600); } catch {}
+    safeCacheSet(app.redis, cacheKey, result, 3600, app.log);
     return result;
   });
 

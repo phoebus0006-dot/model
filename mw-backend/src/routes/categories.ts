@@ -1,3 +1,4 @@
+import { safeCacheGet, safeCacheSet } from "../utils/cache.js";
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { scanKeys } from "../security/redisGuard.js";
@@ -61,13 +62,8 @@ function collectCategoryIds(categories: any[]): any[] {
 export async function categoryRoutes(app: FastifyInstance) {
   app.get("/", async () => {
     const cacheKey = "categories:all";
-    let cached: string | null = null;
-    try {
-      cached = await app.redis.get(cacheKey);
-    } catch {
-      cached = null;
-    }
-    if (cached) return JSON.parse(cached);
+    const cachedData = await safeCacheGet(app.redis, cacheKey, app.log);
+    if (cachedData) return cachedData;
 
     const categories = await app.prisma.category.findMany({
       where: { parentId: null },
@@ -78,7 +74,7 @@ export async function categoryRoutes(app: FastifyInstance) {
     const categoriesWithCounts = categories.map((category: any) => attachActiveCounts(category, counts));
 
     const result = { success: true, data: JSON.parse(JSON.stringify(categoriesWithCounts)) };
-    try { await app.redis.set(cacheKey, JSON.stringify(result), "EX", 600); } catch {}
+    safeCacheSet(app.redis, cacheKey, result, 600, app.log);
     return result;
   });
 

@@ -1,0 +1,76 @@
+name: modelwiki-dev
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: modelwiki-dev-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-modelwiki}
+      POSTGRES_USER: ${POSTGRES_USER:-modelwiki}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-modelwiki_dev_pass_123}
+    ports:
+      - "5432:5432"
+    volumes:
+      - dev_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-modelwiki} -d ${POSTGRES_DB:-modelwiki}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: modelwiki-dev-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - dev_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: modelwiki-dev-migrate
+    command: npx prisma migrate deploy
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://modelwiki:modelwiki_dev_pass_123@postgres:5432/modelwiki?schema=public}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: modelwiki-dev-api
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      HOST: 0.0.0.0
+      DATABASE_URL: ${DATABASE_URL:-postgresql://modelwiki:modelwiki_dev_pass_123@postgres:5432/modelwiki?schema=public}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      USER_JWT_SECRET: ${USER_JWT_SECRET:-dev-user-jwt-secret-at-least-32-chars-long!}
+      ADMIN_JWT_SECRET: ${ADMIN_JWT_SECRET:-dev-admin-jwt-secret-at-least-32-chars-long!}
+      JWT_SECRET: ${JWT_SECRET:-dev-user-jwt-secret-at-least-32-chars-long!}
+      REVIEW_CACHE_SIGNING_SECRET: ${REVIEW_CACHE_SIGNING_SECRET:-dev-review-signing-secret-32-chars!}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+volumes:
+  dev_postgres_data:
+  dev_redis_data:
