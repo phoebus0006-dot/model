@@ -61,7 +61,12 @@ function collectCategoryIds(categories: any[]): any[] {
 export async function categoryRoutes(app: FastifyInstance) {
   app.get("/", async () => {
     const cacheKey = "categories:all";
-    const cached = await app.redis.get(cacheKey);
+    let cached: string | null = null;
+    try {
+      cached = await app.redis.get(cacheKey);
+    } catch {
+      cached = null;
+    }
     if (cached) return JSON.parse(cached);
 
     const categories = await app.prisma.category.findMany({
@@ -73,7 +78,7 @@ export async function categoryRoutes(app: FastifyInstance) {
     const categoriesWithCounts = categories.map((category: any) => attachActiveCounts(category, counts));
 
     const result = { success: true, data: JSON.parse(JSON.stringify(categoriesWithCounts)) };
-    await app.redis.set(cacheKey, JSON.stringify(result), "EX", 600);
+    try { await app.redis.set(cacheKey, JSON.stringify(result), "EX", 600); } catch {}
     return result;
   });
 

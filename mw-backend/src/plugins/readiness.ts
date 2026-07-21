@@ -1,17 +1,4 @@
-// Phase 1+2 runtime-security: /health and /ready endpoints.
-//
-// Contract: docs/implementation/PHASE12_CONTRACT.md §health-checks
-//
-// /health — liveness probe. Returns 200 { status: "ok" } as long as the
-//   process is alive and the event loop is turning. Does NOT check any
-//   external dependencies (PG/Redis). Used by orchestrators to decide
-//   whether to restart the container.
-//
-// /ready — readiness probe. Actually checks PostgreSQL (SELECT 1) and
-//   Redis (PING). Returns 200 if both are reachable, 503 otherwise. Used
-//   by orchestrators to decide whether to route traffic to this instance.
-//
-// Run tests: npx tsx --test src/plugins/readiness.test.ts
+// Phase 1+2 runtime-security: /health and /ready endpoints with independent timeouts.
 
 import type { FastifyInstance } from "fastify";
 
@@ -25,19 +12,28 @@ export interface ReadinessResult {
   checks: ReadinessCheck;
 }
 
-async function checkPostgres(prisma: any): Promise<"ok" | "fail"> {
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number, fallback: T): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((resolve) => setTimeout(() => resolve(fallback), timeoutMs)),
+  ]);
+}
+
+async function checkPostgres(prisma: any, timeoutMs = 2000): Promise<"ok" | "fail"> {
+  if (!prisma) return "fail";
   try {
-    await prisma.$queryRaw`SELECT 1`;
-    return "ok";
+    const task = prisma.$queryRaw`SELECT 1`.then(() => "ok" as const).catch(() => "fail" as const);
+    return await withTimeout(task, timeoutMs, "fail");
   } catch {
     return "fail";
   }
 }
 
-async function checkRedis(redis: any): Promise<"ok" | "fail"> {
+async function checkRedis(redis: any, timeoutMs = 2000): Promise<"ok" | "fail"> {
+  if (!redis) return "fail";
   try {
-    const res = await redis.ping();
-    return res === "PONG" ? "ok" : "fail";
+    const task = redis.ping().then((res: string) => (res === "PONG" ? ("ok" as const) : ("fail" as const))).catch(() => "fail" as const);
+    return await withTimeout(task, timeoutMs, "fail");
   } catch {
     return "fail";
   }
@@ -53,14 +49,14 @@ export function registerReadinessRoutes(app: FastifyInstance): void {
     return { status: "ok" };
   });
 
-  // Readiness — check PG + Redis
+  // Readiness — check PG + Redis with independent timeouts
   app.get("/ready", async (_req: any, reply: any) => {
     const prisma = (app as any).prisma;
     const redis = (app as any).redis;
 
     const [pgStatus, redisStatus] = await Promise.all([
-      prisma ? checkPostgres(prisma) : ("fail" as const),
-      redis ? checkRedis(redis) : ("fail" as const),
+      checkPostgres(prisma, 2000),
+      checkRedis(redis, 2000),
     ]);
 
     const checks: ReadinessCheck = { postgres: pgStatus, redis: redisStatus };

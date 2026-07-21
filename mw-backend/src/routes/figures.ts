@@ -272,7 +272,12 @@ export async function figureRoutes(app: FastifyInstance) {
     const query = { ...raw, minPrice: raw.minPrice ?? raw.priceMin, maxPrice: raw.maxPrice ?? raw.priceMax };
     const cacheKey = `figures:list:${JSON.stringify(query)}`;
 
-    const cached = await app.redis.get(cacheKey);
+    let cached: string | null = null;
+    try {
+      cached = await app.redis.get(cacheKey);
+    } catch {
+      cached = null;
+    }
     if (cached) return JSON.parse(cached);
 
     const where: any = { isDeleted: false };
@@ -356,7 +361,7 @@ export async function figureRoutes(app: FastifyInstance) {
       meta: { page: query.page, perPage: query.perPage, total, totalPages: Math.ceil(total / query.perPage) },
     };
 
-    await app.redis.set(cacheKey, JSON.stringify(result), "EX", 300);
+    try { await app.redis.set(cacheKey, JSON.stringify(result), "EX", 300); } catch {}
     return result;
   });
 
@@ -366,7 +371,12 @@ export async function figureRoutes(app: FastifyInstance) {
     const rawQuery = detailQuery.parse(req.query || {});
     const cacheKey = `figures:detail:${slug}:${rawQuery.lang || "all"}`;
 
-    const cached = await app.redis.get(cacheKey);
+    let cached: string | null = null;
+    try {
+      cached = await app.redis.get(cacheKey);
+    } catch {
+      cached = null;
+    }
     if (cached) return JSON.parse(cached);
 
     const figure = await app.prisma.figure.findFirst({
@@ -422,7 +432,7 @@ export async function figureRoutes(app: FastifyInstance) {
     lineage = { ancestors, descendants };
 
     const result = { success: true, data: publicFigure({ ...figure, image: mainImage, images: transformedImages, lineage }) };
-    await app.redis.set(cacheKey, JSON.stringify(result), "EX", 3600);
+    try { await app.redis.set(cacheKey, JSON.stringify(result), "EX", 3600); } catch {}
     return result;
   });
 

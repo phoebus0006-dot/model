@@ -33,7 +33,12 @@ export async function seriesRoutes(app: FastifyInstance) {
   app.get("/", async (req: any) => {
     const query = listQuery.parse(req.query);
     const cacheKey = `series:list:${query.page}:${query.perPage}`;
-    const cached = await app.redis.get(cacheKey);
+    let cached: string | null = null;
+    try {
+      cached = await app.redis.get(cacheKey);
+    } catch {
+      cached = null;
+    }
     if (cached) return JSON.parse(cached);
 
     const [data, total] = await Promise.all([
@@ -47,14 +52,19 @@ export async function seriesRoutes(app: FastifyInstance) {
     ]);
 
     const result = { success: true, data, meta: { page: query.page, perPage: query.perPage, total, totalPages: Math.ceil(total / query.perPage) } };
-    await app.redis.set(cacheKey, JSON.stringify(result), "EX", 600);
+    try { await app.redis.set(cacheKey, JSON.stringify(result), "EX", 600); } catch {}
     return result;
   });
 
   app.get("/:slug", async (req: any, reply: any) => {
     const { slug } = req.params as { slug: string };
     const cacheKey = `series:detail:${slug}`;
-    const cached = await app.redis.get(cacheKey);
+    let cached: string | null = null;
+    try {
+      cached = await app.redis.get(cacheKey);
+    } catch {
+      cached = null;
+    }
     if (cached) return JSON.parse(cached);
 
     const series = await app.prisma.series.findUnique({
@@ -64,7 +74,7 @@ export async function seriesRoutes(app: FastifyInstance) {
     if (!series) return reply.status(404).send({ success: false, error: { code: "SERIES_NOT_FOUND" } });
 
     const result = { success: true, data: series };
-    await app.redis.set(cacheKey, JSON.stringify(result), "EX", 3600);
+    try { await app.redis.set(cacheKey, JSON.stringify(result), "EX", 3600); } catch {}
     return result;
   });
 

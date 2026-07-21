@@ -34,7 +34,12 @@ export async function sculptorRoutes(app: FastifyInstance) {
   app.get("/", async (req: any) => {
     const query = listQuery.parse(req.query);
     const cacheKey = `sculptors:list:${query.page}:${query.perPage}`;
-    const cached = await app.redis.get(cacheKey);
+    let cached: string | null = null;
+    try {
+      cached = await app.redis.get(cacheKey);
+    } catch {
+      cached = null;
+    }
     if (cached) return JSON.parse(cached);
 
     const [data, total] = await Promise.all([
@@ -48,14 +53,19 @@ export async function sculptorRoutes(app: FastifyInstance) {
     ]);
 
     const result = { success: true, data, meta: { page: query.page, perPage: query.perPage, total, totalPages: Math.ceil(total / query.perPage) } };
-    await app.redis.set(cacheKey, JSON.stringify(result), "EX", 600);
+    try { await app.redis.set(cacheKey, JSON.stringify(result), "EX", 600); } catch {}
     return result;
   });
 
   app.get("/:slug", async (req: any, reply: any) => {
     const { slug } = req.params as { slug: string };
     const cacheKey = `sculptors:detail:${slug}`;
-    const cached = await app.redis.get(cacheKey);
+    let cached: string | null = null;
+    try {
+      cached = await app.redis.get(cacheKey);
+    } catch {
+      cached = null;
+    }
     if (cached) return JSON.parse(cached);
 
     const sculptor = await app.prisma.sculptor.findUnique({
@@ -65,7 +75,7 @@ export async function sculptorRoutes(app: FastifyInstance) {
     if (!sculptor) return reply.status(404).send({ success: false, error: { code: "SCULPTOR_NOT_FOUND" } });
 
     const result = { success: true, data: sculptor };
-    await app.redis.set(cacheKey, JSON.stringify(result), "EX", 3600);
+    try { await app.redis.set(cacheKey, JSON.stringify(result), "EX", 3600); } catch {}
     return result;
   });
 

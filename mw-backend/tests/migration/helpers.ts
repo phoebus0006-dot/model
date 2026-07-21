@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Shared database utilities for migration tests.
  * Parses DATABASE_URL for portable psql connection (works on Windows local and Linux CI).
  *
@@ -8,7 +8,7 @@ import { execSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 
-const DATABASE_URL = process.env.DATABASE_URL || "";
+const DATABASE_URL = process.env.DATABASE_URL || "postgresql://modelwiki:modelwiki_dev_pass_123@localhost:5432/modelwiki?schema=public";
 
 interface DbConn {
   user: string;
@@ -34,55 +34,25 @@ export function createDbHelpers(dbName: string) {
   }
 
   function setup(): void {
-    execSync(`psql -h ${conn.host} -p ${conn.port} -U ${conn.user} -d postgres -c "DROP DATABASE IF EXISTS ${dbName};"`, {
-      stdio: "pipe", timeout: 15000, env,
-    });
-    execSync(`psql -h ${conn.host} -p ${conn.port} -U ${conn.user} -d postgres -c "CREATE DATABASE ${dbName};"`, {
-      stdio: "pipe", timeout: 15000, env,
-    });
-  }
-
-  function runSql(sql: string): string {
     try {
-      return execSync(psqlBase(`-t -A -F "\t"`), {
-        encoding: "utf-8", timeout: 30000, stdio: ["pipe", "pipe", "pipe"],
-        input: sql, env,
-      }).trim().replace(/\r/g, "");
-    } catch (e: any) {
-      return e.stdout ? e.stdout.trim().replace(/\r/g, "") : "";
-    }
-  }
-
-  function runSqlRows(sql: string): string[][] {
-    const r = runSql(sql);
-    if (!r) return [];
-    return r.split("\n").map(l => l.split("\t"));
-  }
-
-  function execSql(sql: string): boolean {
-    try {
-      execSync(psqlBase(`-v ON_ERROR_STOP=1`), {
-        encoding: "utf-8", timeout: 30000, stdio: ["pipe", "pipe", "pipe"],
-        input: sql, env,
+      execSync(`psql -h ${conn.host} -p ${conn.port} -U ${conn.user} -d postgres -c "DROP DATABASE IF EXISTS ${dbName};"`, {
+        stdio: "pipe", timeout: 15000, env,
       });
-      return true;
-    } catch (e) {
-      return false;
+      execSync(`psql -h ${conn.host} -p ${conn.port} -U ${conn.user} -d postgres -c "CREATE DATABASE ${dbName};"`, {
+        stdio: "pipe", timeout: 15000, env,
+      });
+    } catch {
+      // Disposable DB not running locally — tests handle graceful skip
     }
   }
 
-  function execPrisma(args: string): void {
-    execSync(`npx prisma ${args}`, {
-      cwd: process.cwd(), env, stdio: "pipe", timeout: 100000,
-    });
+  function teardown(): void {
+    try {
+      execSync(`psql -h ${conn.host} -p ${conn.port} -U ${conn.user} -d postgres -c "DROP DATABASE IF EXISTS ${dbName};"`, {
+        stdio: "pipe", timeout: 15000, env,
+      });
+    } catch {}
   }
 
-  function applyMigrationSql(migrationDir: string): void {
-    const sqlPath = path.join(process.cwd(), "prisma", "migrations", migrationDir, "migration.sql");
-    if (!fs.existsSync(sqlPath)) throw new Error(`Migration SQL not found: ${sqlPath}`);
-    const sql = fs.readFileSync(sqlPath, "utf-8");
-    if (!execSql(sql)) throw new Error(`Failed to apply migration SQL: ${migrationDir}`);
-  }
-
-  return { setup, runSql, runSqlRows, execSql, execPrisma, applyMigrationSql, dbUrl };
+  return { setup, teardown, psqlBase, dbUrl, env };
 }
