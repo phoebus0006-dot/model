@@ -1,7 +1,7 @@
 import { FastifyInstance } from "fastify";
 import { z } from "zod";
 import { PrismaClient } from "@prisma/client";
-import { userGuard, requireVerifiedUser, type UserIdentity } from "../plugins/user-auth/guard.js";
+import { userGuard, requireActiveUser, type UserIdentity } from "../plugins/user-auth/guard.js";
 
 const commentSchema = z.object({
   body: z.string().trim().min(1).max(2000),
@@ -187,7 +187,7 @@ export async function communityRoutes(app: FastifyInstance) {
   });
 
   // WRITE route: requires verified email. Unverified → 403 EMAIL_NOT_VERIFIED.
-  app.post("/figures/:slug/favorite", { preHandler: requireVerifiedUser }, async (req: any, reply: any) => {
+  app.post("/figures/:slug/favorite", { preHandler: requireActiveUser }, async (req: any, reply: any) => {
     const userId = BigInt(req.user.userId);
     const figure = await findFigure(app, (req.params as { slug: string }).slug, reply);
     if (!figure) return;
@@ -201,7 +201,7 @@ export async function communityRoutes(app: FastifyInstance) {
     return { success: true, data: { favorited: true, favoriteId: favorite.id } };
   });
 
-  app.delete("/figures/:slug/favorite", { preHandler: requireVerifiedUser }, async (req: any, reply: any) => {
+  app.delete("/figures/:slug/favorite", { preHandler: requireActiveUser }, async (req: any, reply: any) => {
     const userId = BigInt(req.user.userId);
     const figure = await findFigure(app, (req.params as { slug: string }).slug, reply);
     if (!figure) return;
@@ -210,7 +210,7 @@ export async function communityRoutes(app: FastifyInstance) {
     return { success: true, data: { favorited: false } };
   });
 
-  app.post("/figures/:slug/like", { preHandler: requireVerifiedUser }, async (req: any, reply: any) => {
+  app.post("/figures/:slug/like", { preHandler: requireActiveUser }, async (req: any, reply: any) => {
     const userId = BigInt(req.user.userId);
     const figure = await findFigure(app, (req.params as { slug: string }).slug, reply);
     if (!figure) return;
@@ -224,7 +224,7 @@ export async function communityRoutes(app: FastifyInstance) {
     return { success: true, data: { liked: true, likeId: like.id } };
   });
 
-  app.delete("/figures/:slug/like", { preHandler: requireVerifiedUser }, async (req: any, reply: any) => {
+  app.delete("/figures/:slug/like", { preHandler: requireActiveUser }, async (req: any, reply: any) => {
     const userId = BigInt(req.user.userId);
     const figure = await findFigure(app, (req.params as { slug: string }).slug, reply);
     if (!figure) return;
@@ -253,7 +253,7 @@ export async function communityRoutes(app: FastifyInstance) {
     return { success: true, data: comments };
   });
 
-  app.post("/figures/:slug/comments", { preHandler: requireVerifiedUser, config: { rateLimit: { max: 20, timeWindow: "1 minute" } } }, async (req: any, reply: any) => {
+  app.post("/figures/:slug/comments", { preHandler: requireActiveUser, config: { rateLimit: { max: 20, timeWindow: "1 minute" } } }, async (req: any, reply: any) => {
     const userId = BigInt(req.user.userId);
     const figure = await findFigure(app, (req.params as { slug: string }).slug, reply);
     if (!figure) return;

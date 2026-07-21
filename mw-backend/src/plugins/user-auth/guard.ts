@@ -1,4 +1,4 @@
-// Frontend User authorization guard (Remediated: Email optional contract alignment).
+// Frontend User authorization guard (Remediated: Email-optional contract alignment).
 //
 // Contract: docs/implementation/AUTH_ACCOUNT_CONTRACT.md
 // Guarantees:
@@ -6,7 +6,7 @@
 //   - Verifies JWT signature, re-queries DB on EVERY request for isActive, role, sessionVersion.
 //   - Rejects when sessionVersion in JWT does not match DB (session invalidation).
 //   - req.user is populated with User identity.
-//   - requireVerifiedUser is aligned with main contract: allows email-less users to write.
+//   - requireActiveUser permits active users (with or without email) to perform write operations.
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 
@@ -144,10 +144,14 @@ export async function userGuard(req: FastifyRequest, reply: FastifyReply): Promi
 }
 
 /**
- * Remediated preHandler for write operations (favorite/comment/edit).
- * Verifies active user identity. Does NOT block users without email.
+ * PreHandler for write operations (favorite/comment/edit).
+ * Requires an active, authenticated User identity.
+ * Does NOT block users who register without email.
  */
-export async function requireVerifiedUser(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+export async function requireActiveUser(req: FastifyRequest, reply: FastifyReply): Promise<void> {
   const ok = await verifyUserIdentity(req.server, req, reply);
   if (!ok) return;
 }
+
+/** Deprecated backward-compatible alias for requireActiveUser */
+export const requireVerifiedUser = requireActiveUser;
