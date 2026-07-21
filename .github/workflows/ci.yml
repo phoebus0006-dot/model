@@ -1,14 +1,15 @@
-# ModelWiki CI — contract section 15.
+# ModelWiki CI — contract section 15 & Phase 3 remediation requirements.
 # Uses DISPOSABLE PostgreSQL + Redis service containers (never production).
 # No continue-on-error: any failing step fails the build (contract section 8).
-# CI environment: PostgreSQL 16, Redis 7, PHP 8.3, Python 3.12.
+# CI environment: PostgreSQL 16, Redis 7, PHP 8.3, Python 3.12, Node.js 22.
 name: CI
 
 on:
   push:
-    branches: [main, "agent/**"]
+    branches: [main, "repair/**", "agent/**"]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -54,7 +55,9 @@ jobs:
     env:
       DATABASE_URL: postgresql://mwtest:mwtest@localhost:5432/mwtest
       REDIS_URL: redis://localhost:6379
-      JWT_SECRET: ci-test-secret-at-least-32-characters-long
+      USER_JWT_SECRET: ci-user-jwt-secret-at-least-32-characters-long
+      ADMIN_JWT_SECRET: ci-admin-jwt-secret-at-least-32-characters-long
+      JWT_SECRET: ci-user-jwt-secret-at-least-32-characters-long
       REVIEW_CACHE_SIGNING_SECRET: ci-review-signing-secret-32-chars-min
       NODE_OPTIONS: --max-old-space-size=4096
       PYTHONPATH: ${{ github.workspace }}
@@ -66,7 +69,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
           cache: npm
           cache-dependency-path: mw-backend/package-lock.json
 
@@ -81,63 +84,67 @@ jobs:
           php-version: "8.3"
           coverage: none
 
-      # ─── 1. Install dependencies (frozen, single lockfile) ─────────────
+      # 1. Install dependencies (frozen, single lockfile)
       - name: Install dependencies (npm ci)
         run: npm ci
 
-      # ─── 2. Prisma generate ─────────────────────────────────────────────
+      # 2. Prisma generate
       - name: Prisma generate
         run: npx prisma generate
 
-      # ─── 3. Prisma validate ─────────────────────────────────────────────
+      # 3. Prisma validate
       - name: Prisma validate
         run: npm run prisma:validate
 
-      # ─── 4. Prisma migrate deploy (disposable DB) ───────────────────────
+      # 4. Prisma migrate deploy (disposable DB)
       - name: Prisma migrate deploy
         run: npx prisma migrate deploy
 
-      # ─── 5. Typecheck ───────────────────────────────────────────────────
+      # 5. Typecheck
       - name: Typecheck
         run: npm run typecheck
 
-      # ─── 6. Build ───────────────────────────────────────────────────────
+      # 6. Build
       - name: Build
         run: npm run build
 
-      # ─── 7. Lint ────────────────────────────────────────────────────────
+      # 7. Lint
       - name: Lint
         run: npm run lint
 
-      # ─── 8. Unit tests (src/**/*.test.ts excluding routes/) ─────────────
+      # 8. Unit tests
       - name: Unit tests
         run: npm run test:unit
 
-      # ─── 9. Mock route tests (src/routes/**/*.test.ts) ──────────────────
+      # 9. Mock route tests
       - name: Mock route tests
         run: npm run test:route
 
-      # ─── 10. Mock integration tests (tests/mock/**/*.test.ts) ───────────
+      # 10. Mock integration tests
       - name: Mock integration tests
         run: npm run test:mock-integration
 
-      # ─── 11. Smoke tests (startup + account isolation) ──────────────────
+      # 11. Wave 2 integration tests
+      - name: Wave 2 integration tests
+        run: npm run test:wave2
+
+      # 12. Smoke tests
       - name: Smoke tests
         run: npm run test:smoke
 
-      # ─── 12. Real integration tests (real PG + Redis) ───────────────────
+      # 13. Real integration tests (real PG + Redis)
       - name: Real integration tests
         run: npm run test:integration
 
-      # ─── 13. Migration tests (prisma migrate deploy on disposable PG) ───
+      # 14. Migration tests
       - name: Migration tests
         run: npm run test:migration
 
-      # ─── 14. Admin JS check (SyntaxError → exit 1) ──────────────────────
+      # 15. Admin JS check
       - name: Admin JS check
         run: npm run admin-js-check
 
-      # ─── 15. PHP syntax check (PHP 8.3) ─────────────────────────────────
+      # 16. PHP syntax check
       - name: PHP syntax check
         working-directory: .
         run: |
@@ -158,15 +165,12 @@ jobs:
           fi
           exit $fail
 
-      # ─── 16. Python tests (pytest on test_crawler_state.py + theme tests) ─
+      # 17. Python tests
       - name: Python tests
         working-directory: .
         run: |
           pip install pytest -q
-          # Run pytest on root-level test_crawler_state.py and modelwiki-theme/tests/*.py
-          # PYTHONPATH is set to repo root so nas_crawler_agent can be imported.
           python -m pytest test_crawler_state.py --tb=line -q
-          # Python compile check for all .py files
           fail=0
           for f in nas_crawler_agent.py mfc_batch_scraper.py; do
             if [ -f "$f" ]; then
@@ -178,7 +182,7 @@ jobs:
           done || fail=1
           exit $fail
 
-      # ─── 17. Secret scan ────────────────────────────────────────────────
+      # 18. Secret scan
       - name: Secret scan
         working-directory: .
         run: |
@@ -218,14 +222,16 @@ jobs:
           fi
           echo "No secrets found."
 
-      # ─── 18. Full gate (runs all gates, generates manifest) ─────────────
+      # 19. Full gate (runs all gates, generates manifest)
       - name: Full QA gate
-        run: npm run gate
+        run: |
+          npm run gate
+          cp test-manifest.json "${{ runner.temp }}/modelwiki-test-manifest.json"
 
-      # ─── 19. Upload test manifest (CI artifact, NOT source code) ────────
+      # 20. Upload test manifest (CI artifact, NOT source code)
       - name: Upload test manifest
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-manifest
-          path: mw-backend/test-manifest.json
+          path: ${{ runner.temp }}/modelwiki-test-manifest.json
