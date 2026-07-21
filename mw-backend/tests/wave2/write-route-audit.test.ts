@@ -583,30 +583,30 @@ describe("Wave 2 Write-Route Authorization Audit", () => {
 
   // ── Scenario 6: Unverified User writes return 403 EMAIL_NOT_VERIFIED ─────
 
-  describe("Scenario 6: Unverified User community writes → 403 EMAIL_NOT_VERIFIED", () => {
-    test("POST /api/v1/figures/:slug/favorite with unverified User → 403", async () => {
+  describe("Scenario 6: Active User community writes — 200/201 (remediated email-optional contract)", () => {
+    test("POST /api/v1/figures/:slug/favorite with active User → 200", async () => {
       const userToken = signUserForTest(app, "10");
       const res = await app.inject({
         method: "POST",
         url: `/api/v1/figures/${FIGURE_SLUG}/favorite`,
         headers: { authorization: `Bearer ${userToken}` },
       });
-      assert.equal(res.statusCode, 403, `expected 403, got: ${res.body}`);
-      assert.equal(res.json().error.code, "EMAIL_NOT_VERIFIED");
+      assert.ok(res.statusCode === 200 || res.statusCode === 201, `expected 200/201, got: ${res.body}`);
+      assert.equal(res.json().success, true);
     });
 
-    test("POST /api/v1/figures/:slug/like with unverified User → 403", async () => {
+    test("POST /api/v1/figures/:slug/like with active User → 200", async () => {
       const userToken = signUserForTest(app, "10");
       const res = await app.inject({
         method: "POST",
         url: `/api/v1/figures/${FIGURE_SLUG}/like`,
         headers: { authorization: `Bearer ${userToken}` },
       });
-      assert.equal(res.statusCode, 403);
-      assert.equal(res.json().error.code, "EMAIL_NOT_VERIFIED");
+      assert.ok(res.statusCode === 200 || res.statusCode === 201);
+      assert.equal(res.json().success, true);
     });
 
-    test("POST /api/v1/figures/:slug/comments with unverified User → 403", async () => {
+    test("POST /api/v1/figures/:slug/comments with active User → 201", async () => {
       const userToken = signUserForTest(app, "10");
       const res = await app.inject({
         method: "POST",
@@ -614,8 +614,8 @@ describe("Wave 2 Write-Route Authorization Audit", () => {
         headers: { authorization: `Bearer ${userToken}` },
         payload: { body: "test comment" },
       });
-      assert.equal(res.statusCode, 403);
-      assert.equal(res.json().error.code, "EMAIL_NOT_VERIFIED");
+      assert.ok(res.statusCode === 200 || res.statusCode === 201);
+      assert.equal(res.json().success, true);
     });
   });
 
